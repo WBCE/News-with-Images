@@ -1,5 +1,4 @@
 <?php
-
 /**
  *
  * @category        modules
@@ -14,16 +13,18 @@
  *
  */
 
-if (defined('WB_URL')) {
-    function nwi_create_new_post($filename, $filetime=null, $content)
+if(defined('WB_URL')) {
+
+    function create_new_post($filename, $filetime=NULL, $content )
     {
         global $page_id, $section_id, $post_id;
     	// The depth of the page directory in the directory hierarchy
     	// '/pages' is at depth 1
-        $pages_dir_depth = count(explode('/', PAGES_DIRECTORY))-1;
+    	$pages_dir_depth = count(explode('/',PAGES_DIRECTORY))-1;
     	// Work-out how many ../'s we need to get to the index page
     	$index_location = '../';
-        for ($i = 0; $i < $pages_dir_depth; $i++) {
+    	for($i = 0; $i < $pages_dir_depth; $i++)
+        {
     		$index_location .= '../';
     	}
 
@@ -34,27 +35,33 @@ define("POST_ID", $post_id);
 require("'.$index_location.'config.php");
 require(WB_PATH."/index.php");
 ?>';
-        if ($handle = fopen($filename, 'w+')) {
+    	if($handle = fopen($filename, 'w+'))
+        {
         	fwrite($handle, $content);
         	fclose($handle);
-            if ($filetime) {
+            if($filetime)
+            {
                 touch($filename, $filetime);
             }
         	change_mode($filename);
         }
-    }   // end function nwi_create_new_post()
+    }   // end function create_new_post()
 
     // read files from /pages/posts/
-    if (!function_exists('scandir')) {
+    if( !function_exists('scandir') )
+    {
         function scandir($directory, $sorting_order = 0)
         {
             $dh  = opendir($directory);
-            while (false !== ($filename = readdir($dh))) {
+            while( false !== ($filename = readdir($dh)) )
+            {
                 $files[] = $filename;
             }
-            if ($sorting_order == 0) {
+            if( $sorting_order == 0 )
+            {
                 sort($files);
-            } else {
+            } else
+            {
                 rsort($files);
             }
             return($files);
@@ -66,27 +73,30 @@ require(WB_PATH."/index.php");
 	natcasesort($files);
 
 	// All files in /pages/posts/
-    foreach ($files as $file) {
-        if (file_exists($target_dir.$file)
-            and ($file != '.')
-                and ($file != '..')
-                    and ($file != 'index.php')) {
+	foreach( $files as $file )
+    {
+        if( file_exists($target_dir.$file)
+            AND ($file != '.')
+                AND ($file != '..')
+                    AND ($file != 'index.php') )
+        {
             clearstatcache();
-            $timestamp = filemtime($target_dir.$file);
+            $timestamp = filemtime ( $target_dir.$file );
             $lines = file($target_dir.$file);
             $content = '';
             // read lines until first define
             foreach ($lines as $line_num => $line) {
-                if (strstr($line, 'define')) {
+                if(strstr($line,'define'))
+                {
                   break;
                 }
                 $content .= $line;
             }
-            nwi_create_new_post($target_dir.$file, $timestamp, $content);
-        }
+
+            create_new_post($target_dir.$file, $timestamp, $content);
         }
 
-    // ----- update database ---------------------------------------------------
+    }
 
     // 2014-04-10 by BlackBird Webprogrammierung:
     //            image position
@@ -147,114 +157,70 @@ require(WB_PATH."/index.php");
     //            add permalink column to mod_news_img_posts table
     $database->query("ALTER TABLE `".TABLE_PREFIX."mod_news_img_img` CHANGE COLUMN `bildname` `picname` VARCHAR(255) NOT NULL DEFAULT '' AFTER `id`, CHANGE COLUMN `bildbeschreibung` `picdesc` VARCHAR(255) NOT NULL DEFAULT '' AFTER `picname`");
 
-    // v5.0
+    // 2019-04-18 Bianka Martinovic
+    //            image directory
+    if(!is_dir(WB_PATH.MEDIA_DIRECTORY.'/.news_img')) {
+        require_once WB_PATH.'/framework/functions.php';
+        if(make_dir(WB_PATH.MEDIA_DIRECTORY.'/.news_img')) {
+            // Add a index.php file to prevent directory spoofing
+            $content = ''.
+"<?php
 
-    // 2019-07-05 Bianka Martinovic
-    //            add new table that links images to posts
-    $database->query(sprintf(
-        "CREATE TABLE IF NOT EXISTS `%smod_news_img_posts_img` (
-          `post_id` int(11) NOT NULL,
-          `pic_id` int(11) NOT NULL,
-          `position` int(11) NOT NULL,
-          UNIQUE KEY `post_id_pic_id` (`post_id`,`pic_id`),
-          KEY `FK_%smod_news_img_posts_img_%smod_news_img_img` (`pic_id`),
-          CONSTRAINT `FK_%smod_news_img_posts_img_%smod_news_img_img` FOREIGN KEY (`pic_id`) REFERENCES `%smod_news_img_img` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-          CONSTRAINT `FK_%smod_news_img_posts_img_%smod_news_img_posts` FOREIGN KEY (`post_id`) REFERENCES `%smod_news_img_posts` (`post_id`) ON DELETE CASCADE ON UPDATE CASCADE
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
-        TABLE_PREFIX,
-        TABLE_PREFIX,
-        TABLE_PREFIX,
-        TABLE_PREFIX,
-        TABLE_PREFIX,
-        TABLE_PREFIX,
-        TABLE_PREFIX,
-        TABLE_PREFIX,
-        TABLE_PREFIX
-    ));
+/**
+ *
+ * @category        modules
+ * @package         news_img
+ * @author          WBCE Community
+ * @copyright       2004-2009, Ryan Djurovich
+ * @copyright       2009-2010, Website Baker Org. e.V.
+ * @copyright       2019-, WBCE Community
+ * @link            https://www.wbce.org/
+ * @license         http://www.gnu.org/licenses/gpl.html
+ * @platform        WBCE
+ *
+ */
 
-    // 2019-07-05 Bianka Martinovic
-    //            retrieve old data from img-table
-    $q = $database->query(sprintf(
-        'SELECT `id`, `post_id`, `position` FROM `%smod_news_img_img`',
-        TABLE_PREFIX
-    ));
-    $old_data = array();
-    if (!empty($q) && $q->numRows() > 0) {
-        while (null!==($row = $q->fetchRow())) {
-            $old_data[] = $row;
-        }
+header('Location: ../');
+?>";
+            $handle = fopen(WB_PATH.MEDIA_DIRECTORY.'/.news_img/index.php', 'w');
+            fwrite($handle, $content);
+            fclose($handle);
+            change_mode(WB_PATH.MEDIA_DIRECTORY.'/.news_img/index.php', 'file');
         }
 
-    // 2019-07-05 Bianka Martinovic
-    //            insert data into new table
-    if (is_array($old_data) && count($old_data)>0) {
-        foreach ($old_data as $index => $item) {
-            $database->query(sprintf(
-                "INSERT IGNORE INTO `%smod_news_img_posts_img` ".
-                "( `post_id`, `pic_id`, `position` ) ".
-                "VALUES( %d, %d, %d )",
-                TABLE_PREFIX,
-                intval($item['post_id']),
-                intval($item['id']),
-                intval($item['position'])
-            ));
+        if(make_dir(WB_PATH.MEDIA_DIRECTORY.'/.news_img/thumb')) {
+            // Add a index.php file to prevent directory spoofing
+            $content = ''.
+"<?php
+
+/**
+ *
+ * @category        modules
+ * @package         news_img
+ * @author          WBCE Community
+ * @copyright       2004-2009, Ryan Djurovich
+ * @copyright       2009-2010, Website Baker Org. e.V.
+ * @copyright       2019-, WBCE Community
+ * @link            https://www.wbce.org/
+ * @license         http://www.gnu.org/licenses/gpl.html
+ * @platform        WBCE
+ *
+ */
+
+header('Location: ../../');
+?>";
+            $handle = fopen(WB_PATH.MEDIA_DIRECTORY.'/.news_img/thumb/index.php', 'w');
+            fwrite($handle, $content);
+            fclose($handle);
+            change_mode(WB_PATH.MEDIA_DIRECTORY.'/.news_img/thumb/index.php', 'file');
         }
     }
 
-    // 2019-07-05 Bianka Martinovic
-    //            remove (moved) columns from img-table
-    $database->query(sprintf(
-        'ALTER TABLE `%smod_news_img_img DROP COLUMN `post_id`, DROP COLUMN `position`',
-        TABLE_PREFIX
-    ));
-
-    // 2019-07-05 Bianka Martinovic
-    //            add database tables for tags
-    $database->query(sprintf(
-        "CREATE TABLE IF NOT EXISTS `%smod_news_img_tags` (
-          `tag_id` int(11) NOT NULL AUTO_INCREMENT,
-          `tag` varchar(255) NOT NULL,
-          PRIMARY KEY (`tag_id`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
-        TABLE_PREFIX,
-        TABLE_PREFIX,
-        TABLE_PREFIX,
-        TABLE_PREFIX
-    ));
-
-    // 2019-07-05 Bianka Martinovic
-    //            assigns tags to posts
-    $database->query(sprintf(
-        "CREATE TABLE IF NOT EXISTS `%smod_news_img_tags_posts` (
-          `post_id` int(11) NOT NULL,
-          `tag_id` int(11) NOT NULL,
-          UNIQUE KEY `post_id_tag_id` (`post_id`,`tag_id`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
-        TABLE_PREFIX
-    ));
-
-    $database->query(sprintf(
-        "CREATE TABLE IF NOT EXISTS `%smod_news_img_tags_sections` (
-    	`section_id` INT(11) UNSIGNED NOT NULL DEFAULT '0',
-    	`tag_id` INT(11) UNSIGNED NOT NULL,
-    	UNIQUE INDEX `section_id_tag_id` (`section_id`, `tag_id`)
-        ) ENGINE=InnoDB",
-        TABLE_PREFIX
-    ));
-
-    require_once __DIR__.'/functions.inc.php';
-
-    // make sure the media folder exists
-    // $mod_nwi_file_dir is defined in functions.inc.php
-    if (!is_dir($mod_nwi_file_dir)) {
-        // also creates thumb-subfolder and index.php
-        mod_nwi_img_makedir($mod_nwi_file_dir);
-    }
 
     // 2019-05-08 Martin Hecht
     //            config file
-    $nwi_config_file = __DIR__.'/config.php';
-    if (!file_exists($nwi_config_file)) {
+    $nwi_config_file=__DIR__.'/config.php';
+    if(!file_exists($nwi_config_file)) {
         $content = ''.
 "<?php
 
@@ -268,33 +234,37 @@ if(!defined('NWI_USE_SECOND_BLOCK')){
         change_mode($nwi_config_file, 'file');
     }
 
+
     // 2019-05-11 Martin Hecht
     //            move pictures to new location during update
     $old_file_dir = WB_PATH.PAGES_DIRECTORY.'/beitragsbilder/';
     $old_thumb_dir = WB_PATH.PAGES_DIRECTORY.'/beitragsbilder/thumb/';
 
-    $query_img = $database->query(sprintf(
-        "SELECT * FROM `%smod_news_img_img` AS t1 ".
-        "LEFT JOIN `%smod_news_img_posts_img` AS t2 ".
-        "ON t1.`id`=t2.`pic_id` ".
-        "ORDER BY `position`,`id` ASC",
-        TABLE_PREFIX,TABLE_PREFIX
-    ));
+require_once __DIR__.'/functions.inc.php';
 
+    // make sure the folder exists
+    if(!is_dir($mod_nwi_file_dir)) {
+        mod_nwi_img_makedir($mod_nwi_file_dir);
+    }
+
+    $query_img = $database->query("SELECT * FROM `".TABLE_PREFIX."mod_news_img_img`");
     if ($query_img->numRows() > 0) {
 	while ($row = $query_img->fetchRow()) {
-            $post_id = $row['post_id'];
-            $picname = $row['picname'];
-            $dest_img = $mod_nwi_file_dir.'/'.$picname;
-            $source_img = $old_file_dir.'/'.$picname;
-            if (!file_exists($dest_img) && file_exists($source_img)) {
+            $post_id=$row['post_id'];
+	    $picname=$row['picname'];
+	    $dest_img=$mod_nwi_file_dir.'/'.$picname;
+	    $source_img=$old_file_dir.'/'.$picname;
+            if(!file_exists($dest_img) && file_exists($source_img)){
 	    	rename($source_img, $dest_img);
 	    }
 	    $dest_img=$mod_nwi_thumb_dir.'/'.$picname;
 	    $source_img=$old_thumb_dir.'/'.$picname;
-            if (!file_exists($dest_img) && file_exists($source_img)) {
+            if(!file_exists($dest_img) && file_exists($source_img)){
 	    	rename($source_img, $dest_img);
 	    }
 	}
     }
+
+    // Print admin footer
+    $admin->print_footer();
 }

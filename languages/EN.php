@@ -17,59 +17,46 @@
 $module_description = 'Module for creating news items with item image and item gallery (optional).';
 
 //Variables for the backend
-$MOD_NEWS_IMG['ACTION'] = "Marked posts";
-$MOD_NEWS_IMG['ACTIVATE'] = "activate";
-$MOD_NEWS_IMG['ACTIVATE_POST'] = "activate post";
 $MOD_NEWS_IMG['ADD_GROUP'] = 'Add group';
 $MOD_NEWS_IMG['ADD_POST'] = 'Add post';
-$MOD_NEWS_IMG['ADD_TAG'] = 'Add keyword';
-$MOD_NEWS_IMG['ALL'] = "All";
-$MOD_NEWS_IMG['CHOOSE_EXISTING'] = '--- choose from existing ---';
-$MOD_NEWS_IMG['CONTINUE'] = "Next";
-$MOD_NEWS_IMG['COPY'] = "copy";
+$MOD_NEWS_IMG['NEW_POST'] = 'Create new post';
 $MOD_NEWS_IMG['COPY_POST'] = 'Copy post';
-$MOD_NEWS_IMG['COPY_WITH_TAGS'] = 'Copy (incl. keywords)';
-$MOD_NEWS_IMG['DEACTIVATE'] = "deactivate";
-$MOD_NEWS_IMG['DEACTIVATE_POST'] = "deactivate post";
-$MOD_NEWS_IMG['DELETE'] = "delete";
 $MOD_NEWS_IMG['DELETEIMAGE'] ='Delete this image?';
-$MOD_NEWS_IMG['EXPIRED_NOTE'] = 'The posting is no longer displayed in the frontend because the expiration date has passed.';
 $MOD_NEWS_IMG['GALLERY_SETTINGS'] ='Gallery / image settings';
 $MOD_NEWS_IMG['GALLERYIMAGES'] = 'Gallery images';
 $MOD_NEWS_IMG['GENERIC_IMAGE_ERROR'] ='Issues with post and/or gallery image(s). Please check file name, file type amd file size.';
-$MOD_NEWS_IMG['GLOBAL'] = 'Global keyword';
 $MOD_NEWS_IMG['GOBACK'] = 'Back';
 $MOD_NEWS_IMG['IMAGE_FILENAME_ERROR'] ='Filename is too long (max. 256 characters allowed)';
 $MOD_NEWS_IMG['IMAGE_INVALID_TYPE'] = 'Image type not supported';
 $MOD_NEWS_IMG['IMAGE_LARGER_THAN'] ='Image is too large, max. size: ';
 $MOD_NEWS_IMG['IMAGE_TOO_SMALL'] = 'Image is too small';
 $MOD_NEWS_IMG['IMAGEUPLOAD'] = 'Upload images';
-$MOD_NEWS_IMG['IMPORT_OPTIONS'] = "Import options";
-$MOD_NEWS_IMG['INFO_GLOBAL'] = "Global keywords apply to all News-with-Images sections";
-$MOD_NEWS_IMG['LINK'] = 'Link';
-$MOD_NEWS_IMG['LOAD_VALUES'] = "Load values";
-$MOD_NEWS_IMG['MANAGE_POSTS'] = "manage posts";
-$MOD_NEWS_IMG['MOVE'] = "move";
-$MOD_NEWS_IMG['NEW_POST'] = 'Create new post';
-$MOD_NEWS_IMG['NONE'] = "None";
 $MOD_NEWS_IMG['OPTIONS'] ='Options';
-$MOD_NEWS_IMG['OR'] = 'oder';
-$MOD_NEWS_IMG['ORDER_CUSTOM_INFO'] = 'The setting &quot;custom&quot; allows the manual sorting of articles via up/down arrows.';
 $MOD_NEWS_IMG['ORDERBY']  = 'Order by';
+$MOD_NEWS_IMG['ORDER_CUSTOM_INFO'] = 'The setting &quot;custom&quot; allows the manual sorting of articles via up/down arrows.';
 $MOD_NEWS_IMG['OVERVIEW_SETTINGS'] ='Overview page settings';
-$MOD_NEWS_IMG['POST_ACTIVE'] = 'Post is visible';
 $MOD_NEWS_IMG['POST_CONTENT'] = 'Post content';
-$MOD_NEWS_IMG['POST_INACTIVE'] = 'Post not visible';
 $MOD_NEWS_IMG['POST_SETTINGS'] = 'Post settings';
 $MOD_NEWS_IMG['PREVIEWIMAGE'] = 'Preview image';
 $MOD_NEWS_IMG['SAVEGOBACK'] = 'Save and go back';
 $MOD_NEWS_IMG['SETTINGS'] = 'News Settings';
-$MOD_NEWS_IMG['TAG'] = 'Keyword';
-$MOD_NEWS_IMG['TAG_EXISTS'] = 'Keyword already exists';
-$MOD_NEWS_IMG['TAGS'] = 'Keywords';
-$MOD_NEWS_IMG['TAGS_INFO'] = 'To make use of the keywords, edit a post and select the keywords you want to attach';
+$MOD_NEWS_IMG['LINK'] = 'Link';
+$MOD_NEWS_IMG['EXPIRED_NOTE'] = 'The posting is no longer displayed in the frontend because the expiration date has passed.';
+$MOD_NEWS_IMG['ACTION'] = "Marked posts";
+$MOD_NEWS_IMG['COPY'] = "copy";
+$MOD_NEWS_IMG['MOVE'] = "move";
+$MOD_NEWS_IMG['DELETE'] = "delete";
 $MOD_NEWS_IMG['TO'] = "to";
-$MOD_NEWS_IMG['UPLOAD'] = 'Upload';
+$MOD_NEWS_IMG['CONTINUE'] = "Next";
+$MOD_NEWS_IMG['IMPORT_OPTIONS'] = "Import options";
+$MOD_NEWS_IMG['LOAD_VALUES'] = "Load values";
+$MOD_NEWS_IMG['ALL'] = "All";
+$MOD_NEWS_IMG['ACTIVATE_POST'] = "activate post";
+$MOD_NEWS_IMG['DEACTIVATE_POST'] = "deactivate post";
+$MOD_NEWS_IMG['MANAGE_POSTS'] = "manage posts";
+$MOD_NEWS_IMG['ACTIVATE'] = "activate";
+$MOD_NEWS_IMG['DEACTIVATE'] = "deactivate";
+$MOD_NEWS_IMG['NONE'] = "None";
 
 //image settings
 $MOD_NEWS_IMG['CROP'] = 'Crop';
@@ -83,7 +70,7 @@ $MOD_NEWS_IMG['TEXT_CROP'] = 'If the aspect ratio of the original does not match
 $MOD_NEWS_IMG['TEXT_DEFAULTS'] = 'Default sizes';
 $MOD_NEWS_IMG['TEXT_DEFAULTS_CLICK'] = 'Click to choose from the defaults';
 $MOD_NEWS_IMG['THUMB_SIZE'] = 'Thumbnail size';
-
+$MOD_NEWS_IMG['MISSING_GD'] = 'IMPORTANT NOTE: The GD library is missing, it will not be possible to resize uploaded images automatically!';
 
 //Uploader
 $MOD_NEWS_IMG['DRAG_N_DROP_HERE'] = 'Drag &amp; drop files here';

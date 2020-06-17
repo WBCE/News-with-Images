@@ -15,7 +15,6 @@
 
 require_once __DIR__.'/functions.inc.php';
 
-// check input data
 if (!isset($_POST['section_id']) or !isset($_POST['page_id']) or !is_numeric($_POST['section_id']) or !is_numeric($_POST['page_id'])) {
     header("Location: ".ADMIN_URL."/pages/index.php");
     exit(0);
@@ -42,11 +41,14 @@ require WB_PATH.'/framework/class.order.php';
 
 $section_id = intval($_POST['section_id']);
 $page_id = intval($_POST['page_id']);
+
+
 $group_id = 0;
 $old_section_id = $section_id;
 $old_page_id = $page_id;
 
 $group = $admin->get_post_escaped('group');
+
 
 if (!empty($group)) {
     $gid_value = urldecode($group);
@@ -66,21 +68,15 @@ if (!empty($group)) {
 $mod_nwi_file_base=$mod_nwi_file_dir; 
 
 $posts=array();
-if(isset($_POST['manage_posts']) && is_array($_POST['manage_posts'])) {
-    $posts = $_POST['manage_posts'];
-}
-
+if(isset($_POST['manage_posts'])&&is_array($_POST['manage_posts'])) $posts=$_POST['manage_posts'];
 foreach($posts as $idx=>$pid) {
     $post_id = intval($pid);
 
-    if($post_id != 0) {
-        // Update row
-        $database->query(sprintf(
-            "UPDATE `%smod_news_img_posts` SET `page_id`=%d, ".
-            "`section_id`=%d, `group_id`=%d " .
-            "WHERE `post_id`=%d",
-            TABLE_PREFIX, intval($page_id), intval($section_id), intval($group_id), intval($post_id)
-        ));
+    if($post_id != 0){
+    
+	// Update row
+	$database->query("UPDATE `".TABLE_PREFIX."mod_news_img_posts` SET `page_id` = '$page_id', `section_id` = '$section_id', `group_id` = '$group_id'  WHERE `post_id` = '$post_id'");
+
     }
 
     // Clean up ordering (e.g. if we were moving posts across section borders
@@ -92,7 +88,7 @@ foreach($posts as $idx=>$pid) {
     // Check if there is a db error, otherwise say successful
     if($database->is_error())
     {
-	   $admin->print_error($database->get_error(),  ADMIN_URL.'/pages/modify.php?page_id='.$old_page_id);
+	$admin->print_error($database->get_error(),  ADMIN_URL.'/pages/modify.php?page_id='.$old_page_id);
     }  
     
     // get post link

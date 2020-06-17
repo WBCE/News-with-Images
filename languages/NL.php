@@ -13,25 +13,17 @@
  *
  */
 
+
+
 // Modulbeschrijving 
 $module_description = 'Module voor het maken van nieuwsitems met itemafbeelding en itemgalerij (optioneel).';
 
 // Variabelen voor de backend 
-$MOD_NEWS_IMG['ACTION'] = "Geselecteerde items";
-$MOD_NEWS_IMG['ACTIVATE'] = "activeren";
-$MOD_NEWS_IMG['ACTIVATE_POST'] = "activeer bericht";
 $MOD_NEWS_IMG['ADD_GROUP'] = 'Groep toevoegen';
 $MOD_NEWS_IMG['ADD_POST'] = 'Voeg bericht toe';
-$MOD_NEWS_IMG['ADD_TAG'] = 'Add keyword';
-$MOD_NEWS_IMG['ALL'] = "Alle";
-$MOD_NEWS_IMG['CONTINUE'] = "Volgende";
-$MOD_NEWS_IMG['COPY'] = "kopi&euml;ren";
+$MOD_NEWS_IMG['NEW_POST'] = 'Maak nieuw bericht';
 $MOD_NEWS_IMG['COPY_POST'] = 'Post kopi&euml;ren';
-$MOD_NEWS_IMG['DEACTIVATE'] = "deactiveren";
-$MOD_NEWS_IMG['DEACTIVATE_POST'] = "deactiveren bericht";
-$MOD_NEWS_IMG['DELETE'] = "verwijderen";
 $MOD_NEWS_IMG['DELETEIMAGE'] = 'Verwijder deze afbeelding?';
-$MOD_NEWS_IMG['EXPIRED_NOTE'] = 'Het bericht wordt niet langer weergegeven in de frontend omdat de vervaldatum is verstreken.';
 $MOD_NEWS_IMG['GALLERY_SETTINGS'] = 'Galerij / beeldinstellingen';
 $MOD_NEWS_IMG['GALLERYIMAGES'] = 'Galerijafbeeldingen';
 $MOD_NEWS_IMG['GENERIC_IMAGE_ERROR'] = 'Problemen met post- en / of galerijafbeelding (en). Controleer de bestandsnaam, bestandsgrootte en bestandsgrootte. ';
@@ -41,32 +33,32 @@ $MOD_NEWS_IMG['IMAGE_INVALID_TYPE'] = 'Afbeeldingstype wordt niet ondersteund';
 $MOD_NEWS_IMG['IMAGE_LARGER_THAN'] = 'Afbeelding is te groot, max. grootte: ';
 $MOD_NEWS_IMG['IMAGE_TOO_SMALL'] = 'Afbeelding is te klein';
 $MOD_NEWS_IMG['IMAGEUPLOAD'] = 'Upload afbeeldingen';
-$MOD_NEWS_IMG['IMPORT_OPTIONS'] = "Instellingen importeren";
-$MOD_NEWS_IMG['IMPORT_OPTIONS'] = "Import options";
-$MOD_NEWS_IMG['INFO_GLOBAL'] = "Global keywords apply to all News-with-Images sections";
-$MOD_NEWS_IMG['LINK'] = 'Link';
-$MOD_NEWS_IMG['LOAD_VALUES'] = "Laad waarden";
-$MOD_NEWS_IMG['MANAGE_POSTS'] = "beheer berichten";
-$MOD_NEWS_IMG['MOVE'] = "verplaats";
-$MOD_NEWS_IMG['NEW_POST'] = 'Maak nieuw bericht';
-$MOD_NEWS_IMG['NONE'] = "Geen";
 $MOD_NEWS_IMG['OPTIONS'] = 'Opties';
-$MOD_NEWS_IMG['ORDER_CUSTOM_INFO'] = 'De instelling &quot;aangepast&quot; maakt het handmatig sorteren van artikelen via de pijlen omhoog / omlaag mogelijk. ';
 $MOD_NEWS_IMG['ORDERBY'] = 'Volgorde door';
+$MOD_NEWS_IMG['ORDER_CUSTOM_INFO'] = 'De instelling &quot;aangepast&quot; maakt het handmatig sorteren van artikelen via de pijlen omhoog / omlaag mogelijk. ';
 $MOD_NEWS_IMG['OVERVIEW_SETTINGS'] = 'Instellingen overzichtspagina';
-$MOD_NEWS_IMG['POST_ACTIVE'] = 'Post is visible';
 $MOD_NEWS_IMG['POST_CONTENT'] = 'Inhoud plaatsen';
-$MOD_NEWS_IMG['POST_INACTIVE'] = 'Post not visible';
 $MOD_NEWS_IMG['POST_SETTINGS'] = 'Berichtinstellingen';
 $MOD_NEWS_IMG['PREVIEWIMAGE'] = 'Voorbeeldafbeelding';
 $MOD_NEWS_IMG['SAVEGOBACK'] = 'Opslaan en teruggaan';
 $MOD_NEWS_IMG['SETTINGS'] = 'Nieuwsinstellingen';
-$MOD_NEWS_IMG['TAG'] = 'Keyword';
-$MOD_NEWS_IMG['TAG_EXISTS'] = 'Keyword already exists';
-$MOD_NEWS_IMG['TAGS'] = 'Keywords';
-$MOD_NEWS_IMG['TAGS_INFO'] = 'To make use of the keywords, edit a post and select the keywords you want to attach';
-
+$MOD_NEWS_IMG['LINK'] = 'Link';
+$MOD_NEWS_IMG['EXPIRED_NOTE'] = 'Het bericht wordt niet langer weergegeven in de frontend omdat de vervaldatum is verstreken.';
+$MOD_NEWS_IMG['ACTION'] = "Geselecteerde items";
+$MOD_NEWS_IMG['COPY'] = "kopi&euml;ren";
+$MOD_NEWS_IMG['MOVE'] = "verplaats";
+$MOD_NEWS_IMG['DELETE'] = "verwijderen";
 $MOD_NEWS_IMG['TO'] = "tot";
+$MOD_NEWS_IMG['CONTINUE'] = "Volgende";
+$MOD_NEWS_IMG['IMPORT_OPTIONS'] = "Instellingen importeren";
+$MOD_NEWS_IMG['LOAD_VALUES'] = "Laad waarden";
+$MOD_NEWS_IMG['ALL'] = "Alle";
+$MOD_NEWS_IMG['ACTIVATE_POST'] = "activeer bericht";
+$MOD_NEWS_IMG['DEACTIVATE_POST'] = "deactiveren bericht";
+$MOD_NEWS_IMG['MANAGE_POSTS'] = "beheer berichten";
+$MOD_NEWS_IMG['ACTIVATE'] = "activeren";
+$MOD_NEWS_IMG['DEACTIVATE'] = "deactiveren";
+$MOD_NEWS_IMG['NONE'] = "Geen";
 
 // afbeeldingsinstellingen 
 $MOD_NEWS_IMG ['CROP'] = 'Bijsnijden';
@@ -80,6 +72,7 @@ $MOD_NEWS_IMG['TEXT_CROP'] = 'Als de beeldverhouding van het origineel niet over
 $MOD_NEWS_IMG['TEXT_DEFAULTS'] = 'Standaardformaten';
 $MOD_NEWS_IMG['TEXT_DEFAULTS_CLICK'] = 'Klik om uit de standaardinstellingen te kiezen';
 $MOD_NEWS_IMG['THUMB_SIZE'] = 'Thumbnail grootte';
+$MOD_NEWS_IMG['MISSING_GD'] = 'BELANGRIJKE OPMERKING: De GD-bibliotheek ontbreekt, het zal niet mogelijk zijn om geüploade afbeeldingen automatisch te verkleinen!';
 
 // Uploader
 $MOD_NEWS_IMG['DRAG_N_DROP_HERE'] = 'Drag &amp; zet hier bestanden neer ';

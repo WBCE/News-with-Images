@@ -80,13 +80,14 @@ if ($query_users->numRows() > 0) {
 if (!defined('POST_ID') or !is_numeric(POST_ID)) {
     // -------------------------|   show main page    |-------------------------
 
-    // Check if we should only list posts from a certain group
-    if (isset($_GET['g']) and is_numeric($_GET['g'])) {
+     // Check if we should only list posts from a certain group
+     if (isset($_GET['g']) and is_numeric($_GET['g'])) {
         $query_extra = " AND group_id = '".$_GET['g']."'";
-    } else {
-        $query_extra = '';
-    }
+     } else {
+         $query_extra = '';
+     }
  
+
     if (isset($_GET['m']) and is_numeric($_GET['m']) and isset($_GET['y']) and is_numeric($_GET['y']) and isset($_GET['method']) and is_numeric($_GET['method'])) {
         $startdate = mktime(0, 0, 0, $_GET['m'], 1, $_GET['y']);
         $enddate = mktime(0, 0, 0, $_GET['m']+1, 1, $_GET['y']);
@@ -99,7 +100,7 @@ if (!defined('POST_ID') or !is_numeric(POST_ID)) {
             break;
         }
         $query_extra .= " AND ".$date_option." >= '$startdate' AND ".$date_option." < '$enddate'";
-    }
+    } 
 
     // Get settings
     $query_settings = $database->query("SELECT * FROM `".TABLE_PREFIX."mod_news_img_settings` WHERE `section_id` = '$section_id'");
@@ -150,37 +151,13 @@ if (!defined('POST_ID') or !is_numeric(POST_ID)) {
         $limit_sql = "";
     }
     
-    $sql_filter_posts = null;
-    $tags = (isset($_GET['tags']) ? $_GET['tags'] : null);
-    if(!empty($tags)) {
-        $tags = explode(",",$tags);
-        $r = $database->query(
-            "SELECT `t2`.`post_id` FROM `".TABLE_PREFIX."mod_news_img_tags` as `t1` ".
-            "JOIN `".TABLE_PREFIX."mod_news_img_tags_posts` AS `t2` ".
-            "ON `t1`.`tag_id`=`t2`.`tag_id` ".
-            "WHERE `tag` IN ('".implode("', '", $tags)."') ".
-            "GROUP BY `t2`.`post_id`"
-        );
-        while(null!==($row=$r->fetchRow())) {
-            $filter_posts[] = $row['post_id'];
-        }
-        if(count($filter_posts)>0) {
-            $sql_filter_posts = " AND `p`.`post_id` IN (".implode(',',array_values($filter_posts)).") ";
-        }
-    }
-    
     // Query posts (for this page)
-    $query_posts = $database->query(sprintf(
-        "SELECT p.*,g.active,g.position FROM `%smod_news_img_posts` AS p ".
-        "LEFT JOIN `%smod_news_img_groups` AS g " .
-        "ON (g.group_id = p.group_id OR p.group_id = 0 AND g.group_id = NULL) " .
-        "WHERE p.section_id = '$section_id' AND (g.active = 1 OR p.group_id = 0) AND p.active = 1 AND p.title != ''" .
-        str_replace(array('group_id','posted_when','published_when'), array('p.group_id','p.posted_when','p.published_when'), $query_extra) .
-        "AND (p.published_when = 0 OR p.published_when <= $t) AND (p.published_until = 0 OR p.published_until >= $t) " .
-        $sql_filter_posts .
-        "ORDER BY g.position,p.$order_by DESC".$limit_sql,
-        TABLE_PREFIX,TABLE_PREFIX
-    ));
+    $query_posts = $database->query("SELECT p.*,g.active,g.position FROM `".TABLE_PREFIX."mod_news_img_posts` AS p
+        LEFT JOIN `".TABLE_PREFIX."mod_news_img_groups` AS g ON (g.group_id = p.group_id OR p.group_id = 0 AND g.group_id = NULL)
+        WHERE p.section_id = '$section_id' AND (g.active = 1 OR p.group_id = 0) AND p.active = 1 AND p.title != ''"
+	.str_replace(array('group_id','posted_when','published_when'),array('p.group_id','p.posted_when','p.published_when'),$query_extra)
+        ."AND (p.published_when = 0 OR p.published_when <= $t) AND (p.published_until = 0 OR p.published_until >= $t)
+        ORDER BY g.position,p.$order_by DESC".$limit_sql);
     $num_posts = $query_posts->numRows();
     // Create previous and next links
     if ($setting_posts_per_page != 0) {
@@ -262,22 +239,22 @@ if (!defined('POST_ID') or !is_numeric(POST_ID)) {
                     $post['published_when'] = time();
                 }
                 if ($post['published_when'] > $post['posted_when']) {
-                    $post_date = gmdate(DATE_FORMAT, $post['published_when']+TIMEZONE);
-                    $post_time = gmdate(TIME_FORMAT, $post['published_when']+TIMEZONE);
+                    $post_date = date(DATE_FORMAT, $post['published_when']+TIMEZONE);
+                    $post_time = date(TIME_FORMAT, $post['published_when']+TIMEZONE);
                 } else {
-                    $post_date = gmdate(DATE_FORMAT, $post['posted_when']+TIMEZONE);
-                    $post_time = gmdate(TIME_FORMAT, $post['posted_when']+TIMEZONE);
+                    $post_date = date(DATE_FORMAT, $post['posted_when']+TIMEZONE);
+                    $post_time = date(TIME_FORMAT, $post['posted_when']+TIMEZONE);
                 }
 
-                $publ_date = gmdate(DATE_FORMAT, $post['published_when']+TIMEZONE);
-                $publ_time = gmdate(TIME_FORMAT, $post['published_when']+TIMEZONE);
+                $publ_date = date(DATE_FORMAT, $post['published_when']+TIMEZONE);
+                $publ_time = date(TIME_FORMAT, $post['published_when']+TIMEZONE);
 
                 // Work-out the post link
                 $post_link = page_link($post['link']);
                 $post_link_path = str_replace(WB_URL, WB_PATH, $post_link);
                 if (file_exists($post_link_path)) {
-                    $create_date = gmdate(DATE_FORMAT, filemtime($post_link_path)+TIMEZONE);
-                    $create_time = gmdate(TIME_FORMAT, filemtime($post_link_path)+TIMEZONE);
+                    $create_date = date(DATE_FORMAT, filemtime($post_link_path)+TIMEZONE);
+                    $create_time = date(TIME_FORMAT, filemtime($post_link_path)+TIMEZONE);
                 } else {
                     $create_date = $publ_date;
                     $create_time = $publ_time;
@@ -310,28 +287,22 @@ if (!defined('POST_ID') or !is_numeric(POST_ID)) {
                     $group_image = "<img src='".$group_image."' alt='".$group_title."' />";
                 }
 
+                // Replace [wblink--PAGE_ID--] with real link
                 $short = ($post['content_short']);
-                $long = ($post['content_long']);
-
-                // posting image
+                //$wb->preprocess($short);
+				
+				$long = ($post['content_long']);
+                //$wb->preprocess($long);
+                
                 if ($post['image'] != "") {
-                    $imgdata = mod_nwi_img_get($post['image']);
-                    $post_img = "<img src='".WB_URL.MEDIA_DIRECTORY.'/.news_img/'.$post['image']."' alt='".$post['title']."' />";
+                    $post_img = "<img src='".WB_URL.MEDIA_DIRECTORY.'/.news_img/'.$post['post_id'].'/'.$post['image']."' alt='".$post['title']."' />";
                 } else {
                     $post_img = "<img src='".WB_URL."/modules/news_img/images/nopic.png' alt='empty placeholder' />";
                 }
 
-                // tags
-                $tags = mod_nwi_get_tags_for_post($post['post_id']);
-
-                foreach($tags as $i => $tag) {
-                    $tags[$i] = "<span class=\"mod_nwi_tag\" id=\"mod_nwi_tag_".$post['post_id']."_".$i."\">"
-                              . "<a href=\"".$wb->page_link()."?tags=".$tag."\">".$tag."</a></span>";
-                }
-
-                // anzahl der post images  - wichtig für link "weiterlesen"  SHOW_READ_MORE
-                $sql_result = mod_nwi_img_get_by_post($post['post_id']);
-                $anz_post_img = count($sql_result);
+                // anzahl der post images  - wichtig für link "weiterlesen"  SCHOW_READ_MORE
+                $sql_result = $database->query("SELECT * FROM ".TABLE_PREFIX."mod_news_img_img WHERE post_id = ".$post['post_id']);
+                $anz_post_img = $sql_result->numRows();
 
                 // Replace vars with values
                 $post_long_len = strlen($post['content_long']);
@@ -361,130 +332,21 @@ if (!defined('POST_ID') or !is_numeric(POST_ID)) {
                     '[TEXT_READ_MORE]',
                     '[SHOW_READ_MORE]',
                     '[GROUP_IMAGE_URL]',
-                    '[CONTENT_LONG]',
-                    '[POST_ID]',
-                    '[TAGS]',
+					'[CONTENT_LONG]',
+					'[POST_ID]'
                 );
 
                 if (isset($users[$uid]['username']) and $users[$uid]['username'] != '') {
                     if (($post_long_len < 9) && ($anz_post_img < 1)) {
-                        $values = array(
-                            PAGE_TITLE,
-                            $group_id,
-                            $group_title,
-                            $group_image,
-                            $display_group,
-                            $display_image,
-                            $post['title'],
-                            $post_img,
-                            $short,
-                            '#" onclick="javascript:void(0);return false;" style="cursor:no-drop;',
-                            $post_date,
-                            $post_time,
-                            $create_date,
-                            $create_time,
-                            $publ_date,
-                            $publ_time,
-                            $uid,
-                            $users[$uid]['username'],
-                            $users[$uid]['display_name'],
-                            $users[$uid]['email'],
-                            '',
-                            'hidden',
-                            $group_image_url,
-                            $long,
-                            $post['post_id'],
-                            implode(" ",$tags),
-                        );
+                        $values = array(PAGE_TITLE, $group_id, $group_title, $group_image, $display_group, $display_image, $post['title'], $post_img, $short, '#" onclick="javascript:void(0);return false;" style="cursor:no-drop;', $post_date, $post_time, $create_date, $create_time, $publ_date, $publ_time, $uid, $users[$uid]['username'], $users[$uid]['display_name'], $users[$uid]['email'], '', 'hidden',$group_image_url,$long,$post['post_id']);
                     } else {
-                        $values = array(
-                            PAGE_TITLE,
-                            $group_id,
-                            $group_title,
-                            $group_image,
-                            $display_group,
-                            $display_image,
-                            $post['title'],
-                            $post_img,
-                            $short,
-                            $post_link,
-                            $post_date,
-                            $post_time,
-                            $create_date,
-                            $create_time,
-                            $publ_date,
-                            $publ_time,
-                            $uid,
-                            $users[$uid]['username'],
-                            $users[$uid]['display_name'],
-                            $users[$uid]['email'],
-                            $MOD_NEWS_IMG['TEXT_READ_MORE'],
-                            'visible',
-                            $group_image_url,
-                            $long,
-                            $post['post_id'],
-                            implode(" ",$tags),
-                        );
+                        $values = array(PAGE_TITLE, $group_id, $group_title, $group_image, $display_group, $display_image, $post['title'], $post_img, $short, $post_link, $post_date, $post_time, $create_date, $create_time, $publ_date, $publ_time, $uid, $users[$uid]['username'], $users[$uid]['display_name'], $users[$uid]['email'], $MOD_NEWS_IMG['TEXT_READ_MORE'], 'visible',$group_image_url,$long,$post['post_id']);
                     }
                 } else {
                     if (($post_long_len < 9) && ($anz_post_img < 1)) {
-                        $values = array(
-                            PAGE_TITLE,
-                            $group_id,
-                            $group_title,
-                            $group_image,
-                            $display_group,
-                            $display_image,
-                            $post['title'],
-                            $post_img,
-                            $short,
-                            '#" onclick="javascript:void(0);return false;" style="cursor:no-drop;',
-                            $post_date,
-                            $post_time,
-                            $create_date,
-                            $create_time,
-                            $publ_date,
-                            $publ_time,
-                            '',
-                            '',
-                            '',
-                            '',
-                            '',
-                            'hidden',
-                            $group_image_url,
-                            '',
-                            $post['post_id'],
-                            implode(" ",$tags),
-                        );
+                        $values = array(PAGE_TITLE, $group_id, $group_title, $group_image, $display_group, $display_image, $post['title'], $post_img, $short, '#" onclick="javascript:void(0);return false;" style="cursor:no-drop;', $post_date, $post_time, $create_date, $create_time, $publ_date, $publ_time, '', '', '', '', '','hidden',$group_image_url,'',$post['post_id']);
                     } else {
-                        $values = array(
-                            PAGE_TITLE,
-                            $group_id,
-                            $group_title,
-                            $group_image,
-                            $display_group,
-                            $display_image,
-                            $post['title'],
-                            $post_img,
-                            $short,
-                            $post_link,
-                            $post_date,
-                            $post_time,
-                            $create_date,
-                            $create_time,
-                            $publ_date,
-                            $publ_time,
-                            '',
-                            '',
-                            '',
-                            '',
-                            $MOD_NEWS_IMG['TEXT_READ_MORE'],
-                            'visible',
-                            $group_image_url,
-                            '',
-                            $post['post_id'],
-                            implode(" ",$tags),
-                        );
+                        $values = array(PAGE_TITLE, $group_id, $group_title, $group_image, $display_group, $display_image, $post['title'], $post_img, $short, $post_link, $post_date, $post_time, $create_date, $create_time, $publ_date, $publ_time, '', '', '', '', $MOD_NEWS_IMG['TEXT_READ_MORE'],'visible',$group_image_url,'',$post['post_id']);
                     }
                 }
                 echo str_replace($vars, $values, $setting_post_loop);
@@ -560,11 +422,11 @@ if (!defined('POST_ID') or !is_numeric(POST_ID)) {
                     $post['published_when'] = time();
                 }
                 if ($post['published_when'] > $post['posted_when']) {
-                    $post_date = gmdate(DATE_FORMAT, $post['published_when']+TIMEZONE);
-                    $post_time = gmdate(TIME_FORMAT, $post['published_when']+TIMEZONE);
+                    $post_date = date(DATE_FORMAT, $post['published_when']+TIMEZONE);
+                    $post_time = date(TIME_FORMAT, $post['published_when']+TIMEZONE);
                 } else {
-                    $post_date = gmdate(DATE_FORMAT, $post['posted_when']+TIMEZONE);
-                    $post_time = gmdate(TIME_FORMAT, $post['posted_when']+TIMEZONE);
+                    $post_date = date(DATE_FORMAT, $post['posted_when']+TIMEZONE);
+                    $post_time = date(TIME_FORMAT, $post['posted_when']+TIMEZONE);
                 }
 
                 if ($post['image'] != "") {
@@ -574,16 +436,16 @@ if (!defined('POST_ID') or !is_numeric(POST_ID)) {
                 }
 
 
-                $publ_date = gmdate(DATE_FORMAT, $post['published_when']+TIMEZONE);
-                $publ_time = gmdate(TIME_FORMAT, $post['published_when']+TIMEZONE);
+                $publ_date = date(DATE_FORMAT, $post['published_when']+TIMEZONE);
+                $publ_time = date(TIME_FORMAT, $post['published_when']+TIMEZONE);
 
                 // Work-out the post link
                 $post_link = page_link($post['link']);
 
                 $post_link_path = str_replace(WB_URL, WB_PATH, $post_link);
                 if (file_exists($post_link_path)) {
-                    $create_date = gmdate(DATE_FORMAT, filemtime($post_link_path)+TIMEZONE);
-                    $create_time = gmdate(TIME_FORMAT, filemtime($post_link_path)+TIMEZONE);
+                    $create_date = date(DATE_FORMAT, filemtime($post_link_path)+TIMEZONE);
+                    $create_time = date(TIME_FORMAT, filemtime($post_link_path)+TIMEZONE);
                 } else {
                     $create_date = $publ_date;
                     $create_time = $publ_time;
@@ -598,9 +460,11 @@ if (!defined('POST_ID') or !is_numeric(POST_ID)) {
                 if ($group_image != "") {
                     $group_image= "<img src='".$group_image."' alt='".$group_title."' />";
                 }
-                
-                $post_short=$post['content_short'];
-                $post_long = ($post['content_long']);
+				
+				$post_short=$post['content_short'];
+				//$wb->preprocess($post_short);
+				$post_long = ($post['content_long']);
+				//$wb->preprocess($post_long);
                 $vars = array('[PAGE_TITLE]', '[GROUP_ID]', '[GROUP_TITLE]', '[GROUP_IMAGE]', '[DISPLAY_GROUP]', '[DISPLAY_IMAGE]', '[TITLE]', '[IMAGE]', '[SHORT]', '[BACK]', '[TEXT_BACK]', '[TEXT_LAST_CHANGED]', '[MODI_DATE]', '[TEXT_AT]', '[MODI_TIME]', '[CREATED_DATE]', '[CREATED_TIME]', '[PUBLISHED_DATE]', '[PUBLISHED_TIME]', '[TEXT_POSTED_BY]', '[TEXT_ON]', '[USER_ID]', '[USERNAME]', '[DISPLAY_NAME]', '[EMAIL]','[CONTENT_LONG]','[POST_ID]');
                
                 
@@ -609,6 +473,8 @@ if (!defined('POST_ID') or !is_numeric(POST_ID)) {
                 } else {
                     $values = array(PAGE_TITLE, $group_id, $group_title, $group_image, $display_group, $display_image, $post['title'], $post_img, $post_short, $page_link, $MOD_NEWS_IMG['TEXT_BACK'], $MOD_NEWS_IMG['TEXT_LAST_CHANGED'], $post_date, $MOD_NEWS_IMG['TEXT_AT'], $post_time, $create_date, $create_time, $publ_date, $publ_time, $MOD_NEWS_IMG['TEXT_POSTED_BY'], $MOD_NEWS_IMG['TEXT_ON'], '', '', '', '',$post_long,$post['post_id']);
                 }
+
+                
             }
         } else {
             $wb->print_error($MESSAGE['FRONTEND']['SORRY_NO_ACTIVE_SECTIONS'], "javascript: history.go(-1);", false);
@@ -624,12 +490,14 @@ if (!defined('POST_ID') or !is_numeric(POST_ID)) {
         $sql_result = $database->query("SELECT * FROM `".TABLE_PREFIX."mod_news_img_img` WHERE `post_id` = '".POST_ID."' ORDER BY `position`, `id` ASC");
 
         $images = array();
-        if (!empty($sql_result) && $sql_result->numRows() > 0) {
+        if ($sql_result->numRows() > 0) {
             while ($row = $sql_result->fetchRow()) {
                 $images[] = str_replace(array('[IMAGE]','[DESCRIPTION]'), array(WB_URL.MEDIA_DIRECTORY.'/.news_img/'.POST_ID.'/'.$row['picname'],$row['picdesc']), $setting_image_loop);
             }
         }
 
+        // Replace [wblink--PAGE_ID--] with real link
+        //$wb->preprocess($post_long);
         // echo post
         echo str_replace(
             array('[IMAGES]','[CONTENT]','[SHORT]','[CONTENT_LONG]'),
@@ -641,17 +509,15 @@ if (!defined('POST_ID') or !is_numeric(POST_ID)) {
         echo str_replace($vars, $values, $setting_post_footer);
 
         // Block2
-        if (NWI_USE_SECOND_BLOCK) {
+	if(NWI_USE_SECOND_BLOCK){
             $post_block2 = ($post['content_block2']);
-            if (empty($post_block2) and $setting_block2 != null) {
-                $post_block2 = $setting_block2;
-            }
-            $post_block2 = str_replace($vars, $values, $post_block2);
+	    if(empty($post_block2) AND $setting_block2 != NULL) $post_block2 = $setting_block2;
+	    $post_block2 = str_replace($vars, $values, $post_block2);
             define("NEWS_BLOCK2", $post_block2);
             define("TOPIC_BLOCK2", $post_block2); // re-use the constant from topics for backwards compatibility
             if (!defined("MODULES_BLOCK2")) {
-                define("MODULES_BLOCK2", $post_block2);
+        	define("MODULES_BLOCK2", $post_block2);
             }
-        }
+	}
     }
 }

@@ -22,11 +22,11 @@ if((!isset($_GET['post_id']))AND(!isset($_POST['manage_posts']))) {
 	exit(0);
 }
 
-$update_when_modified = true;
+// Include WB admin wrapper script
+$update_when_modified = true; // Tells script to update when this page was last updated
 $admin_header = FALSE;
 // Include WB admin wrapper script
 require WB_PATH.'/modules/admin.php';
-
 if ( isset($_POST['manage_posts']) && is_array($_POST['manage_posts']) && !$admin->checkFTAN()){
     $admin->print_header();
     $admin->print_error($MESSAGE['GENERIC_SECURITY_ACCESS']
@@ -37,10 +37,9 @@ if ( isset($_POST['manage_posts']) && is_array($_POST['manage_posts']) && !$admi
 } else $admin->print_header();
 
 $post_id = $admin->checkIDKEY('post_id', 0, 'GET');
-if(defined('WB_VERSION') && (version_compare(WB_VERSION, '2.8.3', '>'))) {
+if(defined('WB_VERSION') && (version_compare(WB_VERSION, '2.8.3', '>'))) 
     $post_id = intval($_GET['post_id']);
-}
-if (!$post_id && isset($_GET['post_id'])) {
+if (!$post_id && isset($_GET['post_id'])){
     $admin->print_error($MESSAGE['GENERIC_SECURITY_ACCESS']
 	 .' (IDKEY) '.__FILE__.':'.__LINE__,
          ADMIN_URL.'/pages/index.php');
@@ -62,24 +61,26 @@ if (isset($_GET['post_id'])){
 // Include the ordering class
 require WB_PATH.'/framework/class.order.php';
 
-// store this one for later use
+//store this one for later use
 $mod_nwi_file_base=$mod_nwi_file_dir; 
 
 foreach($posts as $post_id) {
+ 
     // Update row
-    $database->query(sprintf(
-        "UPDATE `%smod_news_img_posts`"
+    $database->query(
+    "UPDATE `".TABLE_PREFIX."mod_news_img_posts`"
     . " SET `active` = '$value' "
-        . " WHERE `post_id` = '$post_id'",
-        TABLE_PREFIX
-    ));
+    . " WHERE `post_id` = '$post_id'");
+    
     if($database->is_error()) break;
 }
 
+// Check if there is a db error, otherwise say successful
 if($database->is_error()) {
 	$admin->print_error($database->get_error(), ADMIN_URL.'/pages/modify.php?page_id='.$page_id);
 } else {
 	$admin->print_success($TEXT['SUCCESS'], ADMIN_URL.'/pages/modify.php?page_id='.$page_id);
 }
 
+// Print admin footer
 $admin->print_footer();
