@@ -258,7 +258,7 @@ require(WB_PATH."/index.php");
     //            remove (moved) columns from img-table
     try {
         $database->query(sprintf(
-            'ALTER TABLE `%smod_news_img_img DROP COLUMN `post_id`, DROP COLUMN `position`',
+            'ALTER TABLE `%smod_news_img_img` DROP COLUMN `post_id`, DROP COLUMN `position`',
             TABLE_PREFIX
         ));
     } catch(\PDOException $e) {}
@@ -307,6 +307,15 @@ require(WB_PATH."/index.php");
             }
         }
     }
+	// 2020/07/28 Florian:
+    // Add TNL controller
+    try {
+        $database->query(sprintf(
+            'ALTER TABLE `%smod_news_img_posts` ADD `publishnewsletter` INT(11) NOT NULL DEFAULT \'0\' AFTER `content_long`',
+            TABLE_PREFIX
+        ));
+    } catch(\PDOException $e) {}
+	
 
     // find second block setting in config.php and delete that file then
     if(file_exists(__DIR__.'/config.php')) {
