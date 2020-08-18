@@ -711,14 +711,14 @@ if ($module_type == "news_img") {
 
             $fetch_content = $post;
 
-            $title = $fetch_content['title'];
-            $link = $fetch_content['link'];
+            $title = mod_nwi_escapeString($fetch_content['title']);
+            $link = mod_nwi_escapeString($fetch_content['link']);
             $group_id = 0;
             $posted_by = $fetch_content['posted_by'];
-            $short = $fetch_content['content_short'];
-            $long = $fetch_content['content_long'];
+            $short = mod_nwi_escapeString($fetch_content['content_short']);
+            $long = mod_nwi_escapeString($fetch_content['content_long']);
             $block2 = '';
-            $image = $fetch_content['picture'];
+            $image = mod_nwi_escapeString($fetch_content['picture']);
             $active = ($fetch_content['active']>3)?1:0;
             $publishedwhen =  $fetch_content['published_when'];
             $publisheduntil = $fetch_content['published_until'];
