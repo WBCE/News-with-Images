@@ -1158,7 +1158,7 @@ function mod_nwi_posts_render($section_id,$posts,$posts_per_page=0)
                   . (strlen($tag['tag_color'])>0 ? " style=\"background-color:".$tag['tag_color']."\"" : "" ) .">"
                   . "<a href=\"".$wb->page_link($page_id)."?tags=".$tag['tag']."\">".$tag['tag']."</a></span>";
         }
-        // gallery images - wichtig für link "weiterlesen"  SHOW_READ_MORE
+        // gallery images - wichtig fÃ¼r link "weiterlesen"  SHOW_READ_MORE
         $images = mod_nwi_img_get_by_post($post['post_id'],false);
         $anz_post_img = count($images);
         // no "read more" link if no long content
@@ -1327,24 +1327,24 @@ function mod_nwi_post_process($post,$section_id,$users)
     }
     if(!defined('CAT_PATH')) {
         if ($post['published_when'] > $post['posted_when']) {
-            $post['post_date'] = gmdate(DATE_FORMAT, $post['published_when']+TIMEZONE);
-            $post['post_time'] = gmdate(TIME_FORMAT, $post['published_when']+TIMEZONE);
+            $post['post_date'] = date(DATE_FORMAT, $post['published_when']+TIMEZONE);
+            $post['post_time'] = date(TIME_FORMAT, $post['published_when']+TIMEZONE);
         } else {
-            $post['post_date'] = gmdate(DATE_FORMAT, $post['posted_when']+TIMEZONE);
-            $post['post_time'] = gmdate(TIME_FORMAT, $post['posted_when']+TIMEZONE);
+            $post['post_date'] = date(DATE_FORMAT, $post['posted_when']+TIMEZONE);
+            $post['post_time'] = date(TIME_FORMAT, $post['posted_when']+TIMEZONE);
         }
-        $post['published_date'] = gmdate(DATE_FORMAT, $post['published_when']+TIMEZONE);
-        $post['published_time'] = gmdate(TIME_FORMAT, $post['published_when']+TIMEZONE);
+        $post['published_date'] = date(DATE_FORMAT, $post['published_when']+TIMEZONE);
+        $post['published_time'] = date(TIME_FORMAT, $post['published_when']+TIMEZONE);
 
-        $post['publishing_date'] = gmdate(DATE_FORMAT, ( $post['published_when']==0 ? time()+TIMEZONE : $post['published_when']+TIMEZONE )) . ' ' . $post['published_time'];
-        $post['publishing_end_date'] = ( $post['published_until']!=0 ? gmdate(DATE_FORMAT, $post['published_until']+TIMEZONE) : '' );
+        $post['publishing_date'] = date(DATE_FORMAT, ( $post['published_when']==0 ? time()+TIMEZONE : $post['published_when']+TIMEZONE )) . ' ' . $post['published_time'];
+        $post['publishing_end_date'] = ( $post['published_until']!=0 ? date(DATE_FORMAT, $post['published_until']+TIMEZONE) : '' );
         if(strlen($post['publishing_end_date'])>0) {
-            $post['publishing_end_date'] .= ' ' . gmdate(TIME_FORMAT, $post['published_until']+TIMEZONE);
+            $post['publishing_end_date'] .= ' ' . date(TIME_FORMAT, $post['published_until']+TIMEZONE);
         }
 
         if (file_exists($post['post_link_path'])) {
-            $post['create_date'] = gmdate(DATE_FORMAT, filemtime($post['post_link_path'])+TIMEZONE);
-            $post['create_time'] = gmdate(TIME_FORMAT, filemtime($post['post_link_path'])+TIMEZONE);
+            $post['create_date'] = date(DATE_FORMAT, filemtime($post['post_link_path'])+TIMEZONE);
+            $post['create_time'] = date(TIME_FORMAT, filemtime($post['post_link_path'])+TIMEZONE);
         } else {
             $post['create_date'] = $post['published_date'];
             $post['create_time'] = $post['published_time'];
@@ -1925,12 +1925,12 @@ function mod_nwi_replacements()
         'SHOW_READ_MORE',               // wether to show "read more" link
         'TAGS',                         // tags
         'TEXT_AT',                      // text for "at" ("um")
-        'TEXT_BACK',                    // text for "back" ("zurück")
-        'TEXT_LAST_CHANGED',            // text for "last changed" ("zuletzt geändert")
-        'TEXT_NEXT_POST',                // text for "next post" ("nächster Beitrag")
+        'TEXT_BACK',                    // text for "back" ("zurÃ¼ck")
+        'TEXT_LAST_CHANGED',            // text for "last changed" ("zuletzt geÃ¤ndert")
+        'TEXT_NEXT_POST',                // text for "next post" ("nÃ¤chster Beitrag")
         'TEXT_O_CLOCK',                 // text for "o'clock" ("Uhr")
         'TEXT_ON',                      // text for "on" ("am")
-        'TEXT_POSTED_BY',               // text for "posted by" ("verfaßt von")
+        'TEXT_POSTED_BY',               // text for "posted by" ("verfaÃŸt von")
         'TEXT_PREV_POST',               // text for "previous post" ("voriger Beitrag")
         'TEXT_READ_MORE',               // text for "read more" ("Weiterlesen")
         'TITLE',                        // post title (heading)
@@ -1948,7 +1948,7 @@ function mod_nwi_display_news_items(
 	$max_news_items = 10,           // maximum number of news shown (default:= 10, min:=1, max:= 999)
 	$max_news_length = -1,          // maximum length of the short news text shown (default:=-1 => full news length)
 	$lang_id = 'AUTO',              // language file to load and lang_id used if $lang_filer = true (default:= auto, examples: AUTO, DE, EN)
-	$strip_tags = true,             // true:=remove tags from short and long text (default:=true); false:=don´t strip tags
+	$strip_tags = true,             // true:=remove tags from short and long text (default:=true); false:=donÂ´t strip tags
 	$allowed_tags = '<p><a><img>',  // tags not striped off (default:='<p><a><img>')
 	$custom_placeholder = false,    // false:= none (default), array('MY_VAR_1' => '%TAG%#', ... 'MY_VAR_N' => '#regex_N#' ...)
 	$sort_by = 1,                   // 1:=position (default), 2:=posted_when, 3:=published_when, 4:=random order
@@ -1999,7 +1999,7 @@ function mod_nwi_get_news_items($options=array())
 		'start_news_item' => 0,           // start showing news from the Nth news item onwards (default:= 0, min:=-999, max:= 999); Note: -1: last item, -2: 2nd last etc.
 		'max_news_items' => 10,           // maximum number of news shown (default:= 10, min:=1, max:= 999)
 		'max_news_length' => -1,          // maximum length of the short news text shown (default:=-1 => full news length)
-		'strip_tags' => true,             // true:=remove tags from short and long text (default:=true); false:=don´t strip tags
+		'strip_tags' => true,             // true:=remove tags from short and long text (default:=true); false:=dont strip tags
 		'allowed_tags' => '<p><a><img>',  // tags not striped off (default:='<p><a><img>')
 		'sort_by' => 1,                   // 1:=position (default), 2:=posted_when, 3:=published_when, 4:=random order
 		'sort_order' => 1,                // 1:=descending (default), 2:=ascending
@@ -2214,7 +2214,7 @@ function mod_nwi_get_news_items($options=array())
                           . (strlen($tag['tag_color'])>0 ? " style=\"background-color:".$tag['tag_color']."\"" : "" ) .">"
                           . "<a href=\"".$wb->page_link(PAGE_ID)."?tags=".$tag."\">".$tag."</a></span>";
             }
-            // gallery images - wichtig für link "weiterlesen"  SHOW_READ_MORE
+            // gallery images - wichtig fÃ¼r link "weiterlesen"  SHOW_READ_MORE
             $images = mod_nwi_img_get_by_post($post['post_id'],false);
             $anz_post_img = count($images);
             // no "read more" link if no long content
@@ -2271,7 +2271,7 @@ function mod_nwi_sanitize_input(&$input, $filter)
 {
 	// $input...        input variable to filter
 	// $filter...       filter to apply for input variable
-	//	Numeric filter: b|i¦d{default;min;max}
+	//	Numeric filter: b|iÂ¦d{default;min;max}
 	//	List filter:    l{default;string1;string2;..;stringN}
 	//	String filter:  s{TRIM|STRIP|ENTITY}
 
