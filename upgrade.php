@@ -258,7 +258,7 @@ require(WB_PATH."/index.php");
     //            remove (moved) columns from img-table
     try {
         $database->query(sprintf(
-            'ALTER TABLE `%smod_news_img_img DROP COLUMN `post_id`, DROP COLUMN `position`',
+            'ALTER TABLE `%smod_news_img_img` DROP COLUMN `post_id`, DROP COLUMN `position`',
             TABLE_PREFIX
         ));
     } catch(\PDOException $e) {}
