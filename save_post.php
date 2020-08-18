@@ -74,7 +74,7 @@ if ($admin->get_post('title') == '' and $admin->get_post('url') == '') {
     $image = mod_nwi_escapeString($admin->get_post('image'));
     $active = mod_nwi_escapeString($admin->get_post('active'));
     $group = mod_nwi_escapeString($admin->get_post('group'));
-	$publishnewsletter = mod_nwi_escapeString($admin->get_post('publishnewsletter'));
+
     $tags = $admin->get_post('tags');
 }
 
@@ -174,8 +174,7 @@ $database->query(
     . " `published_when` = '$publishedwhen',"
     . " `published_until` = '$publisheduntil',"
     . " `posted_when` = '".time()."',"
-    . " `posted_by` = '".$admin->get_user_id()."',"
-	. " `publishnewsletter` = '$publishnewsletter'"
+    . " `posted_by` = '".$admin->get_user_id()."'"
     . " WHERE `post_id` = '$post_id'"
 );
 
@@ -218,38 +217,6 @@ if (is_array($tags) && count($tags)>0) {
             ));
         }
     }
-}
-
-if ($publishnewsletter=='1') {
-	$timeForNesletter = time();
-	if ($active=='1' && $publishedwhen < $timeForNesletter && ($publisheduntil=='' || $publisheduntil > $timeForNesletter)) {
-		
-		$nlbody = '<p><strong>'.$title.'</strong></p>'.$short.'<p><a href="'.WB_URL.PAGES_DIRECTORY.$post_link.PAGE_EXTENSION.'">'.$MOD_NEWS_IMG['TEXT_READ_MORE'].'</a></p>';
-		$nlbodytext = strip_tags($title).PHP_EOL;
-		$nlbodytext.= strip_tags($short).PHP_EOL;
-		$nlbodytext.= $MOD_NEWS_IMG['TEXT_READ_MORE'].': '.WB_URL.PAGES_DIRECTORY.$post_link.PAGE_EXTENSION.PHP_EOL;
-		if ($publisheduntil=='') {
-			$pu = $timeForNesletter + (3600 * 24 * 7);
-		} else {
-			$pu = $publisheduntil;
-		}
-		$templateSettings = '{"nwinl":["nwinl"]}';
-
-		$sql = "INSERT INTO `".TABLE_PREFIX."mod_tiny_newsletter_newsletters` (
-				`tnl_subject`, `tnl_body`, `tnl_published_when`, `tnl_published_until`, `tnl_body_text`, `tnl_template_data`, `tnl_status`
-				) VALUES (
-				'$title', '$nlbody', '$publishedwhen', '$pu', '$nlbodytext', '$templateSettings', '2'
-				)";
-	$query = $database->query($sql);
-	} else {
-		$post_id_key = $admin->getIDKEY($id);
-		$database->query(
-		"UPDATE `".TABLE_PREFIX."mod_news_img_posts`"
-			. " SET `publishnewsletter` = '0'"
-			. " WHERE `post_id` = '$post_id'"
-		);
-		$admin->print_error($MOD_NEWS_IMG['NEWSLETTER_ERROR_NEWS_NOT_ACTIVE'],WB_URL.'/modules/news_img/modify_post.php?page_id='.$page_id.'&section_id='.$section_id.'&post_id='.$post_id_key);
-	}
 }
 
 // Check result

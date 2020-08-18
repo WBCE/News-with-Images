@@ -54,36 +54,18 @@
 <?php include __DIR__.'/group_select.phtml'; ?>
                 </td>
             </tr>
-            <?php if (file_exists(WB_PATH.'/modules/tiny_newsletter/do.php')) { ?>
             <tr>
-            	<td class="setting_name"><?php echo $MOD_NEWS_IMG['NEWSLETTER_SEND_OUT']; ?>:</td>
-            	<td class="setting_value">
-            		<input type="radio" name="publishnewsletter" id="publishnewsletter_true" value="1" />
-            		<label for="publishnewsletter_true"><?php echo $TEXT['YES']; ?></label>            		
-            		&nbsp;
-            		<input type="radio" name="publishnewsletter" id="publishnewsletter_false" value="0" checked="checked" />
-            		<label for="publishnewsletter_false"><?php echo $TEXT['NO']; ?></label>
-            		 <?php if ($post_data['publishnewsletter'] == 1) {
-						 echo $MOD_NEWS_IMG['NEWSLETTER_HAS_BEEN_SENT_OUT'];
-					 } else {
-						 echo $MOD_NEWS_IMG['NEWSLETTER_HAS_NOT_BEEN_SENT_OUT'];
-					 }
-					 ?>
-            	</td>
-            </tr>
-			<?php } ?>
-			 <tr>
             	<td class="setting_name"><?php echo $TEXT['ACTIVE']; ?>:</td>
             	<td class="setting_value">
             		<input type="radio" name="active" id="active_true" value="1" <?php if ($post_data['active'] == 1): echo ' checked="checked"'; endif; ?> />
-            		<label for="active_true">
+            		<a href="#" onclick="javascript: document.getElementById('active_true').checked = true;">
             		<?php echo $TEXT['YES']; ?>
-            		</label>
+            		</a>
             		&nbsp;
             		<input type="radio" name="active" id="active_false" value="0" <?php if ($post_data['active'] == 0): echo ' checked="checked"'; endif; ?> />
-            		<label for="active_false">
+            		<a href="#" onclick="javascript: document.getElementById('active_false').checked = true;">
             		<?php echo $TEXT['NO']; ?>
-            		</label>
+            		</a>
             	</td>
             </tr>
             <tr>
