@@ -13,10 +13,10 @@
  *
  */
 
-//Modul Description
+// Modul Description
 $module_description = 'Módulo para criar itens de notícias com imagem e galeria de itens (opcional).';
 
-//Variables for the backend
+// Variables for the backend
 $MOD_NEWS_IMG['ADD_GROUP'] = 'Adicionar grupo';
 $MOD_NEWS_IMG['ADD_POST'] = 'Adicionar postagem';
 $MOD_NEWS_IMG['NEW_POST'] = 'Criar nova postagem';
@@ -58,7 +58,7 @@ $MOD_NEWS_IMG['ACTIVATE'] = 'ativar';
 $MOD_NEWS_IMG['DEACTIVATE'] = 'desativar';
 $MOD_NEWS_IMG['NONE'] = 'Nenhum';
 
-//image settings
+// Image settings
 $MOD_NEWS_IMG['CROP'] = 'Colheita';
 $MOD_NEWS_IMG['GALLERY'] = 'Galeria de imagens';
 $MOD_NEWS_IMG['GALLERY_INFO'] = 'Depois de alterar a configuração da galeria, pressione salvar; a marcação para o loop da imagem será ajustada automaticamente.';
@@ -72,13 +72,13 @@ $MOD_NEWS_IMG['TEXT_DEFAULTS_CLICK'] = 'Clique para escolher entre os padrões';
 $MOD_NEWS_IMG['THUMB_SIZE'] = 'Tamanho da miniatura';
 $MOD_NEWS_IMG['MISSING_GD'] = 'IMPORTANT NOTE: The GD library is missing, it will not be possible to resize uploaded images automatically!';
 
-//Uploader
+// Uploader
 $MOD_NEWS_IMG['DRAG_N_DROP_HERE'] = 'Arraste &amp; solte arquivos aqui';
 $MOD_NEWS_IMG['CLICK_TO_ADD'] = 'Clique para adicionar arquivos';
 $MOD_NEWS_IMG['NO_FILES_UPLOADED'] = 'Nenhum arquivo enviado.';
 $MOD_NEWS_IMG['COMPLETE_MESSAGE'] = 'Salve suas alterações para mostrar o upload na galeria';
 
-//Variables for the frontend
+// Variables for the frontend
 $MOD_NEWS_IMG['PAGE_NOT_FOUND'] = 'Página não encontrada';
 $MOD_NEWS_IMG['TEXT_AT'] = 'às';
 $MOD_NEWS_IMG['TEXT_BACK'] = 'De volta';
@@ -88,5 +88,3 @@ $MOD_NEWS_IMG['TEXT_ON'] = 'em';
 $MOD_NEWS_IMG['TEXT_POSTED_BY'] = 'Postado por';
 $MOD_NEWS_IMG['TEXT_READ_MORE'] = 'Consulte mais informação';
 $MOD_NEWS_IMG['IMPORT'] = 'importar';
-
-

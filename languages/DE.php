@@ -13,10 +13,10 @@
  *
  */
 
-//Modul Description
+// Modul Description
 $module_description = 'Modul zum Erstellen von Newsbeitr&auml;gen mit optionalem Beitragsbild und Beitrags-Bildergalerie. Siehe README.md für weitere Informationen';
 
-//Variables for the backend
+// Variables for the backend
 $MOD_NEWS_IMG['ADD_GROUP'] = 'Gruppe anlegen';
 $MOD_NEWS_IMG['ADD_POST'] = 'Beitrag verfassen';
 $MOD_NEWS_IMG['NEW_POST'] = 'Neuen Beitrag verfassen';
@@ -58,7 +58,7 @@ $MOD_NEWS_IMG['ACTIVATE'] = "aktivieren";
 $MOD_NEWS_IMG['DEACTIVATE'] = "deaktivieren";
 $MOD_NEWS_IMG['NONE'] = "keine";
 
-//image settings
+// Image settings
 $MOD_NEWS_IMG['CROP'] = 'Beschneiden';
 $MOD_NEWS_IMG['GALLERY'] = 'Bildergalerie';
 $MOD_NEWS_IMG['GALLERY_INFO'] = 'Nach dem &Auml;ndern der Galerie-Einstellung speichern; danach wird automatisch das Markup angepasst.';
@@ -78,7 +78,7 @@ $MOD_NEWS_IMG['CLICK_TO_ADD'] = 'Klicken, um Dateien hinzuzuf&uuml;gen';
 $MOD_NEWS_IMG['NO_FILES_UPLOADED'] = 'Keine Dateien hochgeladen.';
 $MOD_NEWS_IMG['COMPLETE_MESSAGE'] = 'Speichern Sie Ihre &Auml;nderungen, um den Upload in der Galerie anzuzeigen';
 
-//Variables for the frontend
+// Variables for the frontend
 $MOD_NEWS_IMG['TEXT_READ_MORE'] = 'Details anzeigen';
 $MOD_NEWS_IMG['TEXT_POSTED_BY'] = 'Ver&ouml;ffentlicht von';
 $MOD_NEWS_IMG['TEXT_ON'] = 'am';
@@ -88,4 +88,3 @@ $MOD_NEWS_IMG['TEXT_BACK'] = 'Zur&uuml;ck zur &Uuml;bersicht';
 $MOD_NEWS_IMG['TEXT_BY'] = 'von';
 $MOD_NEWS_IMG['PAGE_NOT_FOUND'] = 'Seite nicht gefunden';
 $MOD_NEWS_IMG['IMPORT'] = 'importieren';
-

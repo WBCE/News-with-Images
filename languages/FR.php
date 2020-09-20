@@ -24,7 +24,7 @@ $MOD_NEWS_IMG['COPY_POST'] = 'Copier le message';
 $MOD_NEWS_IMG['DELETEIMAGE'] = 'Supprimer cette image?';
 $MOD_NEWS_IMG['GALLERY_SETTINGS'] = "Param&egrave;tres de la galerie / de l'image";
 $MOD_NEWS_IMG['GALLERYIMAGES'] = 'Images de la galerie';
-$MOD_NEWS_IMG['GENERIC_IMAGE_ERROR'] = 'Probl&egrave;mes avec les images de publication et / ou de galerie. Veuillez v&eacute;rifier le nom du fichier, le type de fichier et la taille du fichier. ';
+$MOD_NEWS_IMG['GENERIC_IMAGE_ERROR'] = 'Probl&egrave;mes avec les images de publication et / ou de galerie. Veuillez v&eacute;rifier le nom du fichier, le type de fichier et la taille du fichier.';
 $MOD_NEWS_IMG['GOBACK'] = 'Retour';
 $MOD_NEWS_IMG['IMAGE_FILENAME_ERROR'] = 'Le nom du fichier est trop long (maximum 256 caract&egrave;res autoris&eacute;s)';
 $MOD_NEWS_IMG['IMAGE_INVALID_TYPE'] = "Type d'image non support&eacute";
@@ -33,7 +33,7 @@ $MOD_NEWS_IMG['IMAGE_TOO_SMALL'] = "L'image est trop petite";
 $MOD_NEWS_IMG['IMAGEUPLOAD'] = 'T&eacute;l&eacute;charger des images';
 $MOD_NEWS_IMG['OPTIONS'] = 'Options';
 $MOD_NEWS_IMG['ORDERBY'] = 'Trier par';
-$MOD_NEWS_IMG['ORDER_CUSTOM_INFO'] = 'Le param&egrave;tre &quot;custom&quot; permet le tri manuel des articles via les fl&egrave;ches haut / bas. ';
+$MOD_NEWS_IMG['ORDER_CUSTOM_INFO'] = 'Le param&egrave;tre &quot;custom&quot; permet le tri manuel des articles via les fl&egrave;ches haut / bas.';
 $MOD_NEWS_IMG['OVERVIEW_SETTINGS'] = 'Param&egrave;tres de la page de pr&eacute;sentation';
 $MOD_NEWS_IMG['POST_CONTENT'] = 'Publier du contenu';
 $MOD_NEWS_IMG['POST_SETTINGS'] = 'Param&egrave;tres postaux';
@@ -58,10 +58,10 @@ $MOD_NEWS_IMG['ACTIVATE'] = "activer";
 $MOD_NEWS_IMG['DEACTIVATE'] = "d&eacute;sactiver";
 $MOD_NEWS_IMG['NONE'] = "Aucun";
 
-// parametres d'image
+// Parametres d'image
 $MOD_NEWS_IMG['CROP'] = 'Recadrage';
 $MOD_NEWS_IMG['GALLERY'] = "Galerie d'images";
-$MOD_NEWS_IMG['GALLERY_INFO'] = 'Apr&egrave;s avoir modifi&eacute; les param&egrave;tres de la galerie, cliquez sur enregistrer; le balisage de la boucle image sera ajust&eacute; automatiquement. ';
+$MOD_NEWS_IMG['GALLERY_INFO'] = 'Apr&egrave;s avoir modifi&eacute; les param&egrave;tres de la galerie, cliquez sur enregistrer; le balisage de la boucle image sera ajust&eacute; automatiquement.';
 $MOD_NEWS_IMG['GALLERY_WARNING'] = "&Ecirc;tes-vous s&ucirc;r? Notez que les param&egrave;tres personnalis&eacute;s pour le balisage de la boucle d'image seront perdus.";
 $MOD_NEWS_IMG['IMAGE_MAX_SIZE'] = "Max. taille de l'image en kilooctets ";
 $MOD_NEWS_IMG['RESIZE_PREVIEW_IMAGE_TO'] = "Redimensionner l'image d'aper&ccedil;u en";

@@ -13,10 +13,10 @@
  *
  */
 
-// Descrizione modulo 
+// Descrizione modulo
 $module_description = "Modulo per la creazione di notizie con immagine dell'articolo e galleria di articoli (opzionale).";
 
-// Variabili per il back-end 
+// Variabili per il back-end
 $MOD_NEWS_IMG['ADD_GROUP'] = 'Aggiungi gruppo';
 $MOD_NEWS_IMG['ADD_POST'] = 'Aggiungi post';
 $MOD_NEWS_IMG['NEW_POST'] = 'Crea nuovo post';
@@ -58,7 +58,7 @@ $MOD_NEWS_IMG['ACTIVATE'] = "activate";
 $MOD_NEWS_IMG['DEACTIVATE'] = "disattiva";
 $MOD_NEWS_IMG['NONE'] = "no";
 
-// impostazioni dell'immagine 
+// Impostazioni dell'immagine
 $MOD_NEWS_IMG['CROP'] = 'Ritaglia';
 $MOD_NEWS_IMG['GALLERY'] = 'Galleria immagini';
 $MOD_NEWS_IMG['GALLERY_INFO'] = "Dopo aver modificato l'impostazione della galleria, premi save; il markup per il loop dell'immagine verr&agrave;  regolato automaticamente. ";
@@ -78,14 +78,13 @@ $MOD_NEWS_IMG['CLICK_TO_ADD'] = 'Clicca per aggiungere file';
 $MOD_NEWS_IMG['NO_FILES_UPLOADED'] = 'Nessun file caricato.';
 $MOD_NEWS_IMG['COMPLETE_MESSAGE'] = 'Salva le modifiche per mostrare il caricamento nella galleria';
 
-// Variabili per il frontend 
-$MOD_NEWS_IMG ['PAGE_NOT_FOUND'] = 'Pagina non trovata';
-$MOD_NEWS_IMG ['TEXT_AT'] = 'il';
-$MOD_NEWS_IMG ['TEXT_BACK'] = 'Indietro';
-$MOD_NEWS_IMG ['TEXT_BY'] = 'per';
-$MOD_NEWS_IMG ['TEXT_LAST_CHANGED'] = 'Ultima modifica';
-$MOD_NEWS_IMG ['TEXT_ON'] = 'il';
-$MOD_NEWS_IMG ['TEXT_POSTED_BY'] = 'Inserito da';
-$MOD_NEWS_IMG ['TEXT_READ_MORE'] = 'Leggi altro';
-$MOD_NEWS_IMG ['IMPORT'] = 'importa';
-
+// Variabili per il frontend
+$MOD_NEWS_IMG['PAGE_NOT_FOUND'] = 'Pagina non trovata';
+$MOD_NEWS_IMG['TEXT_AT'] = 'il';
+$MOD_NEWS_IMG['TEXT_BACK'] = 'Indietro';
+$MOD_NEWS_IMG['TEXT_BY'] = 'per';
+$MOD_NEWS_IMG['TEXT_LAST_CHANGED'] = 'Ultima modifica';
+$MOD_NEWS_IMG['TEXT_ON'] = 'il';
+$MOD_NEWS_IMG['TEXT_POSTED_BY'] = 'Inserito da';
+$MOD_NEWS_IMG['TEXT_READ_MORE'] = 'Leggi altro';
+$MOD_NEWS_IMG['IMPORT'] = 'importa';
