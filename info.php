@@ -16,13 +16,17 @@
 $module_directory   = 'news_img';
 $module_name        = 'News with Images';
 $module_function    = 'page';
-$module_version     = '4.0.3';
+$module_version     = '4.0.4';
 $module_platform    = '1.3';
 $module_author      = 'Ryan Djurovich, Rob Smith, Silvia Reins, Martin Hecht, Florian Meerwinck, Bianka Martinovic';
 $module_license     = 'GNU General Public License';
 $module_description = 'This page type is designed for making a news page with Images and Lightboxeffect.';
 
 /**
+ * v4.0.4  - 2020-09-20
+ *         - Colinax
+ *           + Fixed languages files
+ *
  * v4.0.3  - 2020-06-17
  *         - Colinax
  *           + Update version to prevent version conflicts
@@ -39,10 +43,10 @@ $module_description = 'This page type is designed for making a news page with Im
  *           + remove outdated webfont formats
  *			 + update readme.html
  *           + remove translated readme.md files (contents in readme.html)
- * v4.0.0  - 2019-05-28 
+ * v4.0.0  - 2019-05-28
  *         - Martin Hecht
  *           + make drag&drop work again on WB 2.12
- *           + hide the move-up/move-down arrows again when drag&drop works 
+ *           + hide the move-up/move-down arrows again when drag&drop works
  *             (i.e. when js could be loaded)
  *           + handle IDKEYs for recent WB versions (#44)
  *           + reorganize inclusion of framework functions
@@ -59,7 +63,7 @@ $module_description = 'This page type is designed for making a news page with Im
  *           + group actions as select
  *           + fix for update script (#40)
  *
- * v3.7.16 - 2019-05-22 
+ * v3.7.16 - 2019-05-22
  *         - Martin Hecht
  *           + allow importing settings from other nwi sections  (#35)
  *           + activate / deactivate posts with mass actions (#34)
@@ -82,7 +86,7 @@ $module_description = 'This page type is designed for making a news page with Im
  *         - Florian Meerwinck
  *           + Translation/integration of README
  *
- * v3.7.15 - 2019-05-16 
+ * v3.7.15 - 2019-05-16
  *         - Martin Hecht
  *           + add ftan support and use idkeys for get-requests
  *           + sanitize and escape strings, explicitly convert integers
@@ -115,7 +119,7 @@ $module_description = 'This page type is designed for making a news page with Im
  *           + Minor UI improvements
  *           + Added Readme, changed block2 placement in settings
  *
- * v3.7.14 - 2019-05-02 
+ * v3.7.14 - 2019-05-02
  *         - Martin Hecht
  *           + implement importing of topics sections
  *           + add second block in settings which is used if not configured in the post
@@ -125,7 +129,7 @@ $module_description = 'This page type is designed for making a news page with Im
  *           + support importing classical news sections
  *           + bugfixes for the import of nwi sections
  *
- * v3.7.13 - 2019-05-01 
+ * v3.7.13 - 2019-05-01
  *         - Martin Hecht
  *           + implement importing of complete sections (in a first step NWI sections)
  *           + when copying posts do not delete the old access file of the source post
@@ -137,7 +141,7 @@ $module_description = 'This page type is designed for making a news page with Im
  *           + use gmtime(date+TIMEZONE) throughout the module when generating output of time
  *           + delete page - once more fix warnings about images
  *           + fix notice on manage_posts page
- *           + bugfixes for copying posts:    
+ *           + bugfixes for copying posts:
  *             - make sure to copy the link and update it to the new post_id
  *             - disable the copy of the post so that it does not appear immediately in FE
  *             - ensure the new post access file is created
@@ -145,7 +149,7 @@ $module_description = 'This page type is designed for making a news page with Im
  *        - Florian Meerwinck
  *           + Minor UI fixes
  *
- * v3.7.12 - 2019-04-26 
+ * v3.7.12 - 2019-04-26
  *         - Martin Hecht
  *           + implement drag&drop for gallery images
  *           + reflect order of groups in the overview of posts in the frontend
@@ -175,7 +179,7 @@ $module_description = 'This page type is designed for making a news page with Im
  *           + added missing [CONTENT] placeholder
  *           + unified thumb creation in group handling (use module functions)
  *           + fixed install.php
- *     
+ *
  * v3.7.11 - 2019-04-24 Bianka Martinovic
  *          + added "mod_nwi_" prefix to method names in functions.inc.php
  *          + moved language loading and some vars to functions.inc.php
@@ -200,11 +204,11 @@ $module_description = 'This page type is designed for making a news page with Im
  * v3.7.7 - 2019-04-18 Bianka Martinovic
  *          + removed all commenting options / tables / columns / files
  *
- * v3.7.6 - 2019-04-16 
+ * v3.7.6 - 2019-04-16
  *        - Martin Hecht
  *          + copy posts
  *          + display post id in backend
- *        - Bianka Martinovic 
+ *        - Bianka Martinovic
  *          + moved images folder to MEDIA_DIRECTORY/news_img
  *        - Florian Meerwinck
  *          + Changes to frontend display
@@ -214,10 +218,10 @@ $module_description = 'This page type is designed for making a news page with Im
  *          + allow moving posts across section borders
  *          + a few bugfixes
  *
- * v3.7.4 - 2019-04-14 
+ * v3.7.4 - 2019-04-14
  *        - Martin Hecht:
  *          + use news_img throughout the module, especially in the search tables
- *        - Bianka Martinovic: 
+ *        - Bianka Martinovic:
  *          + placeholder [GROUP_IMAGE_URL]
  *          + show group image in group settings
  *          + fixed zebra markup for settings table (table class "striped")
@@ -228,7 +232,7 @@ $module_description = 'This page type is designed for making a news page with Im
  *          + Preparation for Blog Menu
  *          + Remove non-translated language files
  *          + UI tweaks and language support:
- *            Replacing hard coded strings with language vars, 
+ *            Replacing hard coded strings with language vars,
  *            some optimizations on look & feel
  *
  * v3.7.3 - 2019-04-13 Martin Hecht
