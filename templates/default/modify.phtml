@@ -1,25 +1,34 @@
-﻿<div class="mod_news_img">
+﻿<style>
+	
+.mod_news_img #tab1<?php echo  $section_id; ?>:checked~#tab<?php echo  $section_id; ?>-content1,
+.mod_news_img #tab2<?php echo  $section_id; ?>:checked~#tab<?php echo  $section_id; ?>-content2,
+.mod_news_img #tab3<?php echo  $section_id; ?>:checked~#tab<?php echo  $section_id; ?>-content3 {
+    display: block;
+}
+</style>
+
+<div class="mod_news_img">
     <div>
         <input class="mod_news_img_help"  type="button" onclick="window.open('<?php echo WB_URL; ?>/modules/news_img/readme.html','readme','width=800,height=600,top=50,left=50')" name="help" value="Readme" />
         <input class="mod_img_news_options" type="button" value="<?php echo $MOD_NEWS_IMG['OPTIONS']; ?>" onclick="javascript: window.location = '<?php echo WB_URL; ?>/modules/news_img/modify_settings.php?page_id=<?php echo $page_id; ?>&amp;section_id=<?php echo  $section_id; ?>&amp;section_key=<?php echo  $section_key; ?>';"  />
     </div>
     <div class="tabs">
-        <input type="radio" name="tabs" id="tab1"<?php if($curr_tab=='p'): ?> checked="checked"<?php endif; ?> />
-        <label for="tab1" class="tab">
+        <input type="radio" name="tabs" id="tab1<?php echo  $section_id; ?>"<?php if($curr_tab=='p'): ?> checked="checked"<?php endif; ?> />
+        <label for="tab1<?php echo  $section_id; ?>" class="tab">
             <i class="fa fa-fw fa-clone"></i> <span><?php echo $MOD_NEWS_IMG['POSTS'] ?></span>
         </label>
-        <input type="radio" name="tabs" id="tab2"<?php if($curr_tab=='g'): ?> checked="checked"<?php endif; ?> />
-        <label for="tab2" class="tab">
+        <input type="radio" name="tabs" id="tab2<?php echo  $section_id; ?>"<?php if($curr_tab=='g'): ?> checked="checked"<?php endif; ?> />
+        <label for="tab2<?php echo  $section_id; ?>" class="tab">
             <i class="fa fa-fw fa-cubes"></i> <span><?php echo $MOD_NEWS_IMG['GROUPS'] ?></span>
         </label>
 <?php if($settings['mode']=='advanced'): ?>
-        <input type="radio" name="tabs" id="tab3"<?php if($curr_tab=='s'): ?> checked="checked"<?php endif; ?> />
-        <label for="tab3" class="tab">
+        <input type="radio" name="tabs" id="tab3<?php echo  $section_id; ?>"<?php if($curr_tab=='s'): ?> checked="checked"<?php endif; ?> />
+        <label for="tab3<?php echo  $section_id; ?>" class="tab">
             <i class="fa fa-fw fa-tags"></i> <span><?php echo $MOD_NEWS_IMG['TAGS'] ?></span>
         </label>
 <?php endif; ?>
 
-        <div id="tab-content1" class="tab-content">
+        <div id="tab<?php echo  $section_id; ?>-content1" class="tab-content">
 <?php if(count($posts)>0): if(count($posts)>20): ?>
             <input type="button" class="mod_img_news_add" value="<?php echo $MOD_NEWS_IMG['ADD_POST']; ?>" onclick="javascript: window.location = '<?php echo WB_URL; ?>/modules/news_img/add_post.php?page_id=<?php echo $page_id; ?>&amp;section_id=<?php echo  $section_id; ?>&amp;section_key=<?php echo  $section_key; ?>';"  />
 <?php endif; ?>
@@ -197,7 +206,7 @@
 <?php endif; ?>
         </div>
 
-        <div id="tab-content2" class="tab-content">
+        <div id="tab<?php echo  $section_id; ?>-content2" class="tab-content">
             <form name="modify" action="<?php echo WB_URL; ?>/modules/news_img/add_group.php" method="post" enctype="multipart/form-data" style="margin: 0;">
                 <?php echo $FTAN; ?>
                 <input type="hidden" name="section_id" value="<?php echo $section_id; ?>" />
@@ -281,7 +290,7 @@
         </div> <!-- #tab-content2 -->
 
 <?php if($settings['mode']=='advanced'): ?>
-        <div id="tab-content3" class="tab-content">
+        <div id="tab<?php echo  $section_id; ?>-content3" class="tab-content">
             <p><?php echo $MOD_NEWS_IMG['TAGS_INFO'] ?></p>
 
             <form method="post" action="<?php echo WB_URL; ?>/modules/news_img/save_tag.php">

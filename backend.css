@@ -51,12 +51,21 @@
 
 .mod_news_img .mod_news_img_tag {
     padding: 0.2em 0;
+	border: 1px solid #ececec;
+	margin:5px;
+	width:200px;
+	height:30px;
+	overflow:hidden;
+	white-space:nowrap;
+	text-overflow:ellipsis;
+	display:inline-block;
 }
 
 .mod_news_img .mod_news_img_taglist {
-    border: 1px solid #ececec;
+   /* border: 1px solid #ececec;
     max-height: 100px;
-    overflow-y: scroll;
+    overflow-y: scroll; */
+	clear:both;
 }
 
 .mod_news_img .dragdrop_handle {
@@ -333,13 +342,13 @@
     border-bottom: 1px solid #F3F3F3;
     font-weight: 900;
 }
-
+/* removed from here for we need $section_id in IDs
 .mod_news_img #tab1:checked~#tab-content1,
 .mod_news_img #tab2:checked~#tab-content2,
 .mod_news_img #tab3:checked~#tab-content3 {
     display: block;
 }
-
+*/
 @media (min-width: 768px) {
     .tabs i {
         padding: 5px;
