@@ -908,7 +908,7 @@ function mod_nwi_post_move($section_id,$page_id,$with_tags=false)
 
         // Specify the filename
         $filename = WB_PATH.PAGES_DIRECTORY.'/'.$post_link.PAGE_EXTENSION;
-        mod_nwi_create_file($filename, '', $post_id, $section_id);
+        mod_nwi_create_file($filename, '', $post_id, $section_id, $page_id);
     }
     return true;
 }
