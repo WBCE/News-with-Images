@@ -213,55 +213,8 @@ require(WB_PATH."/index.php");
         $database->query(sprintf("ALTER TABLE `%smod_news_img_settings` ADD COLUMN `mode` VARCHAR(50) NULL DEFAULT 'default' AFTER `view`", TABLE_PREFIX));
     } catch(\Exception $e) {}
 
-    // 2019-07-05 Bianka Martinovic
-    //            add new table that links images to posts
-    $database->query(sprintf(
-        "CREATE TABLE IF NOT EXISTS `%smod_news_img_posts_img` (
-          `post_id` int(11) NOT NULL,
-          `pic_id` int(11) NOT NULL,
-          `position` int(11) NOT NULL,
-          UNIQUE KEY `post_id_pic_id` (`post_id`,`pic_id`),
-          KEY `FK_%smod_news_img_posts_img_%smod_news_img_img` (`pic_id`),
-          CONSTRAINT `FK_%smod_news_img_posts_img_%smod_news_img_img` FOREIGN KEY (`pic_id`) REFERENCES `%smod_news_img_img` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-          CONSTRAINT `FK_%smod_news_img_posts_img_%smod_news_img_posts` FOREIGN KEY (`post_id`) REFERENCES `%smod_news_img_posts` (`post_id`) ON DELETE CASCADE ON UPDATE CASCADE
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
-        TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX
-    ));
-
-    // 2019-07-05 Bianka Martinovic
-    //            retrieve old data from img-table
-    $q = $database->query(sprintf(
-        'SELECT `id`, `post_id`, `position` FROM `%smod_news_img_img`',
-        TABLE_PREFIX
-    ));
-    $old_data = array();
-    if (!empty($q) && $q->numRows() > 0) {
-        while($row = $q->fetchRow()) {
-            $old_data[$row['id']] = $row;
-        }
-    }
-
-    // 2019-07-05 Bianka Martinovic
-    //            insert data into new table
-    if(is_array($old_data) && count($old_data)>0) {
-        foreach($old_data as $pic_id => $item) {
-            $database->query(sprintf(
-                "INSERT IGNORE INTO `%smod_news_img_posts_img` ".
-                "( `post_id`, `pic_id`, `position` ) ".
-                "VALUES( %d, %d, %d )",
-                TABLE_PREFIX, intval($item['post_id']), intval($pic_id), intval($item['position'])
-            ));
-        }
-    }
-
-    // 2019-07-05 Bianka Martinovic
-    //            remove (moved) columns from img-table
-    try {
-        $database->query(sprintf(
-            'ALTER TABLE `%smod_news_img_img` DROP COLUMN `post_id`, DROP COLUMN `position`',
-            TABLE_PREFIX
-        ));
-    } catch(\Exception $e) {}
+   
+	
 
     // 2019-07-05 Bianka Martinovic
     //            add database tables for tags
