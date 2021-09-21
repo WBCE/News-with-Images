@@ -21,6 +21,40 @@ $allowed_suffixes = array('jpg','jpeg','gif','png');
 $mod_nwi_file_dir = WB_PATH.MEDIA_DIRECTORY.'/.news_img/';
 $mod_nwi_thumb_dir = WB_PATH.MEDIA_DIRECTORY.'/.news_img/thumb/';
 
+// ========== Tag Sorting helper ===============================================
+ /**
+ * sort an array
+ *
+ * @access public
+ * @param  array   $array          - array to sort
+ * @param  mixed   $index          - key to sort by
+ * @param  string  $order          - 'asc' (default) || 'desc'
+ * @param  boolean $natsort        - default: false
+ * @param  boolean $case_sensitive - sort case sensitive; default: false
+ *
+ **/
+function mod_nwi_tag_sort($array, $index, $order='asc', $natsort=false, $case_sensitive=false)
+{
+	if (is_array($array) && count($array)) {
+		foreach (array_keys($array) as $key) {
+			$temp[$key] = $array[$key][$index];
+		}
+		if (!$natsort) {
+			($order=='asc') ? asort($temp) : arsort($temp);
+		} else {
+			($case_sensitive) ? natsort($temp) : natcasesort($temp);
+			if ($order != 'asc') {
+				$temp = array_reverse($temp, true);
+			}
+		}
+		foreach (array_keys($temp) as $key) {
+			(is_numeric($key)) ? $sorted[]=$array[$key] : $sorted[$key]=$array[$key];
+		}
+		return $sorted;
+	}
+	return $array;
+}   // end function mod_nwi_tag_sort()
+
 // ========== Groups ===========================================================
 
 /**
@@ -209,7 +243,7 @@ function mod_nwi_get_tags_for_post($post_id)
             $tags[$t['tag_id']] = $t;
         }
     }
-
+	$tags = mod_nwi_tag_sort($tags, 'tag', 'asc', true);
     return $tags;
 }   // end function mod_nwi_get_tags_for_post()
 
