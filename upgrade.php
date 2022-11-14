@@ -213,7 +213,10 @@ require(WB_PATH."/index.php");
         $database->query(sprintf("ALTER TABLE `%smod_news_img_settings` ADD COLUMN `mode` VARCHAR(50) NULL DEFAULT 'default' AFTER `view`", TABLE_PREFIX));
     } catch(\Exception $e) {}
 
-   
+    try {
+        $database->query(sprintf("ALTER TABLE `%smod_news_img_settings` ADD COLUMN `show_settings_only_admins` CHAR(1) NOT NULL DEFAULT 'N' AFTER `use_second_block`",TABLE_PREFIX));
+    } catch(\Exception $e) {}
+
 	
 
     // 2019-07-05 Bianka Martinovic
@@ -280,12 +283,12 @@ require(WB_PATH."/index.php");
         try {
             // workaround for problem with global $module_directory overwritten
             // by functions.inc.php here
-            $orig_module_dir = $module_directory;
+            if (isset($module_directory)) { $orig_module_dir = $module_directory; } 
             include WB_PATH.'/modules/droplets/functions.inc.php';
             make_dir(WB_PATH.'/temp/unzip');
             wbce_unpack_and_import(WB_PATH.'/modules/news_img/droplets/droplet_getNewsItems.zip', WB_PATH . '/temp/unzip/');
             rm_full_dir(WB_PATH.'/temp/unzip');
-            $module_directory = $orig_module_dir;
+            if (isset($orig_module_dir)) { $module_directory = $orig_module_dir; }
         } catch ( \Exception $e ) {}
     } else {
         CAT_Helper_Droplet::installDroplet(WB_PATH.'/modules/news_img/droplets/droplet_getNewsItems.zip');
