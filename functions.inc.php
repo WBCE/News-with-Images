@@ -1849,11 +1849,11 @@ function mod_nwi_create_file(string $filename, ?string $filetime=null, ?string $
 
     // We need to create a new file
     // First, delete old file if it exists
-    if (file_exists(WB_PATH.PAGES_DIRECTORY.$filename.PAGE_EXTENSION)) {
-        $filetime = isset($filetime) ? $filetime :  filemtime($filename);
-        unlink(WB_PATH.PAGES_DIRECTORY.$filename.PAGE_EXTENSION);
+    if (file_exists($filename)) {
+        $filetime = !empty($filetime) ? $filetime :  filemtime($filename);
+        unlink($filename);
     } else {
-        $filetime = isset($filetime) ? $filetime : time();
+        $filetime = !empty($filetime) ? $filetime : time();
     }
     // The depth of the page directory in the directory hierarchy
     // '/pages' is at depth 1
