@@ -586,7 +586,7 @@ function mod_nwi_post_activate($value)
 			}
 			
 		} else{
-			$filename = WB_PATH.PAGES_DIRECTORY.'/'.$post['link'].PAGE_EXTENSION;
+			$filename = WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION;
 			mod_nwi_create_file($filename, '', $post_id, $post['section_id'], $page['page_id']);
 		}
 
@@ -1044,7 +1044,7 @@ function mod_nwi_post_show(int $post_id)
         }
 		return false;
 	} else{
-		$filename = WB_PATH.PAGES_DIRECTORY.'/'.$post['link'].PAGE_EXTENSION;
+		$filename = WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION;
         mod_nwi_create_file($filename, '', $post_id, $section_id, $page['page_id']);
 	}
 
@@ -1146,7 +1146,7 @@ function mod_nwi_posts_getall(int $section_id, bool $is_backend, string $query_e
             	$posts[] = $post;
             }			
 			$sectionArray = mod_nwi_get_section_array($post['section_id']);
-			$filename = WB_PATH.PAGES_DIRECTORY.'/'.$post['link'].PAGE_EXTENSION;
+			$filename = WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION;
 			
 			// check if accessfile should be created...
 			$createFile = true;																				// by default: yes.
@@ -1388,7 +1388,7 @@ function mod_nwi_post_process($post,$section_id,$users)
 {
     global $MOD_NEWS_IMG, $TEXT, $admin;
 	
-	$filename = WB_PATH.PAGES_DIRECTORY.'/'.$post['link'].PAGE_EXTENSION;
+	$filename = WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION;
 
     // get groups
     $groups = mod_nwi_get_groups(intval($section_id));
