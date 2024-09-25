@@ -594,6 +594,66 @@ function mod_nwi_post_activate($value)
 	return ( $errors>0 ? false : true );
 }
 
+
+function mod_nwi_post_clear($value)
+{
+    global $database;
+    $posts = array();
+    if(isset($_POST['manage_posts']) && is_array($_POST['manage_posts'])) {
+        $posts = $_POST['manage_posts'];
+    } else {
+        return false;
+    }
+
+    $errors = 0;
+    foreach($posts as $post_id) {
+        // Update row
+	if ((strcmp($value,'published_when')==0) or(strcmp($value,'published_until')==0)){
+        	$database->query(sprintf(
+        	    "UPDATE `%smod_news_img_posts`"
+        	    . " SET `$value` = '0' "
+        	    . " WHERE `post_id` = '$post_id'",
+        	    TABLE_PREFIX
+        	));
+        	if($database->is_error()) {
+        	    $errors++;
+        	}
+	}
+    
+	$postQuery = "SELECT * from `".TABLE_PREFIX."mod_news_img_posts` WHERE `post_id`=".$post_id;	
+	$query_post = $database->query($postQuery);
+	if ($query_post->numRows() > 0) {
+		$post      = $query_post->fetchRow();
+	}
+
+	$pageQuery = "SELECT * from `".TABLE_PREFIX."sections` WHERE `section_id`=".$post['section_id'];	
+	$query_page = $database->query($pageQuery);
+	if ($query_page->numRows() > 0) {
+		$page      = $query_page->fetchRow();
+	}
+
+
+
+	// check if accessfile should be created...
+	$createFile = true;																				// by default: yes.
+	if ($post['published_when'] != 0 && $post['published_when'] > time()) {$createFile = false;}    // no, because the post is not public yet.
+	if ($post['published_until'] != 0 && $post['published_until'] < time()) {$createFile = false;}  // no, because the post is no longer public.
+	if ($post['active'] != 1) {$createFile = false;}						// no, the post is created inactive.
+	$filename = WB_PATH.PAGES_DIRECTORY.'/'.$post_link.PAGE_EXTENSION;
+	if (!file_exists($filename) && $createFile == true) {
+		mod_nwi_create_file($filename, '', $post['post_id'], $post['section_id'], $sectionArray['page_id']);
+	}
+	// remove access file if it exists and it shouldn't - not sure if this can happen at all
+	if (file_exists($filename) && $createFile == false && is_writable($filename)) {
+		unlink(WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION);
+	}
+
+
+    }
+    return ( $errors>0 ? false : true );
+}
+
+
 function mod_nwi_post_copy($section_id,$page_id,$with_tags=false)
 {
     global $mod_nwi_file_dir, $database, $admin;
