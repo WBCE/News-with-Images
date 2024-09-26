@@ -632,20 +632,18 @@ function mod_nwi_post_clear($value)
 		$page      = $query_page->fetchRow();
 	}
 
-
-
 	// check if accessfile should be created...
-	$createFile = true;																				// by default: yes.
+	$createFile = true;										// by default: yes.
 	if ($post['published_when'] != 0 && $post['published_when'] > time()) {$createFile = false;}    // no, because the post is not public yet.
 	if ($post['published_until'] != 0 && $post['published_until'] < time()) {$createFile = false;}  // no, because the post is no longer public.
 	if ($post['active'] != 1) {$createFile = false;}						// no, the post is created inactive.
-	$filename = WB_PATH.PAGES_DIRECTORY.'/'.$post_link.PAGE_EXTENSION;
+	$filename = WB_PATH.PAGES_DIRECTORY.'/'.$post['link'].PAGE_EXTENSION;
 	if (!file_exists($filename) && $createFile == true) {
-		mod_nwi_create_file($filename, '', $post['post_id'], $post['section_id'], $sectionArray['page_id']);
+		mod_nwi_create_file($filename, '', $post['post_id'], $post['section_id'], $page['page_id']);
 	}
 	// remove access file if it exists and it shouldn't - not sure if this can happen at all
 	if (file_exists($filename) && $createFile == false && is_writable($filename)) {
-		unlink(WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION);
+		unlink($filename);
 	}
 
 
