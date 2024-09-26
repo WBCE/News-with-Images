@@ -41,6 +41,7 @@ $MOD_NEWS_IMG['DELETEIMAGE'] = 'Elimina questa immagine?';
 $MOD_NEWS_IMG['DESCENDING'] = 'asteso'; 
 $MOD_NEWS_IMG['EXPERT_MODE'] = 'modalità esperto'; 
 $MOD_NEWS_IMG['EXPIRED_NOTE'] = 'Il post non viene pi&ugrave; visualizzato nel frontend perch&eacute; &egrave; scaduta la data di scadenza.';
+$MOD_NEWS_IMG['FIRST_EXPIRING_FIRST'] = 'il primo scade per primo'; 
 $MOD_NEWS_IMG['FIRST_EXPIRING_LAST'] = 'il primo scade per ultimo'; 
 $MOD_NEWS_IMG['GALLERY_SETTINGS'] = 'Galleria / impostazioni immagine';
 $MOD_NEWS_IMG['GALLERYIMAGES'] = 'Immagini della galleria';

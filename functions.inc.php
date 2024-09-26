@@ -1748,6 +1748,10 @@ function mod_nwi_get_order(int $section_id)
             $order_by = "post_id";
             $direction = 'DESC';
             break;
+        case 5:
+            $order_by = "published_until";
+            $direction = 'ASC';
+            break;
     }
     return array($order_by,$direction);
 }   // end function mod_nwi_get_order()
@@ -2185,15 +2189,15 @@ function mod_nwi_display_news_items(
 			'sort_by'            => $sort_by,
 			'sort_order'         => $sort_order,
 			'not_older_than'     => $not_older_than,
-            'is_not_older_than'  => $is_not_older_than,
+		        'is_not_older_than'  => $is_not_older_than,
 			'lang_id'            => $lang_id,
 			'lang_filter'        => $lang_filter,
-            'skip'               => $skip,
-            'tags'               => $tags,
-			'taglist'			 => $tagList,
-            'groups_on_tags'     => $groups_on_tags,
-            'view'               => $view,
-            'aslist'             => $aslist,
+		        'skip'               => $skip,
+			'tags'               => $tags,
+			'taglist'	     => $tagList,
+            		'groups_on_tags'     => $groups_on_tags,
+            		'view'               => $view,
+            		'aslist'             => $aslist,
 		)
 	);
 	echo $output;
@@ -2212,7 +2216,7 @@ function mod_nwi_get_news_items($options=array())
 		'max_news_length' => -1,          // maximum length of the short news text shown (default:=-1 => full news length)
 		'strip_tags' => true,             // true:=remove tags from short and long text (default:=true); false:=dont strip tags
 		'allowed_tags' => '<p><a><img>',  // tags not striped off (default:='<p><a><img>')
-		'sort_by' => 1,                   // 1:=position (default), 2:=posted_when, 3:=published_when, 4:=random order
+		'sort_by' => 1,                   // 1:=position (default), 2:=posted_when, 3:=published_when, 4:=random order 5:=rand() 6:=published_until
 		'sort_order' => 1,                // 1:=descending (default), 2:=ascending
 		'not_older_than' => 0,            // 0:=disabled (default), 0-999 (only show news `published_when` date <=x days; 12 hours:=0.5)
         'is_not_older_than' => 0,
@@ -2246,7 +2250,7 @@ function mod_nwi_get_news_items($options=array())
 	mod_nwi_sanitize_input($max_news_length, 'i{-1;0;250}');
 	mod_nwi_sanitize_input($strip_tags, 'b');
 	mod_nwi_sanitize_input($allowed_tags, 's{TRIM}');
-	mod_nwi_sanitize_input($sort_by, 'i{1;1;5}');
+	mod_nwi_sanitize_input($sort_by, 'i{1;1;6}');
 	mod_nwi_sanitize_input($sort_order, 'i{1;1;2}');
 	mod_nwi_sanitize_input($not_older_than, 'd{0;0;999}');
     mod_nwi_sanitize_input($is_not_older_than, 'd{0;0;999}');
@@ -2358,7 +2362,7 @@ function mod_nwi_get_news_items($options=array())
     }
 
     // ---------- sort order ---------------------------------------------------
-    $order_by_options = array('t1.`position`', 't1.`posted_when`', 't1.`published_when`', 'RAND()');
+    $order_by_options = array('t1.`position`', 't1.`posted_when`', 't1.`published_when`', 'RAND()', 't1.`published_until`');
 	$sql_order_by = $order_by_options[$sort_by - 1];
 	$sql_sort_order = ($sort_order == 1) ? 'DESC' : 'ASC';
 

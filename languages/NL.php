@@ -41,6 +41,7 @@ $MOD_NEWS_IMG['DELETEIMAGE'] = 'Verwijder deze afbeelding?';
 $MOD_NEWS_IMG['DESCENDING'] = 'afwijzen'; 
 $MOD_NEWS_IMG['EXPERT_MODE'] = 'expertmodus'; 
 $MOD_NEWS_IMG['EXPIRED_NOTE'] = 'Het bericht wordt niet langer weergegeven in de frontend omdat de vervaldatum is verstreken.';
+$MOD_NEWS_IMG['FIRST_EXPIRING_FIRST'] = 'eerste verloopt als eerste'; 
 $MOD_NEWS_IMG['FIRST_EXPIRING_LAST'] = 'eerste verloopt als laatste'; 
 $MOD_NEWS_IMG['GALLERY_SETTINGS'] = 'Galerij / beeldinstellingen';
 $MOD_NEWS_IMG['GALLERYIMAGES'] = 'Galerijafbeeldingen';

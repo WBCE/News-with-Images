@@ -41,6 +41,7 @@ $MOD_NEWS_IMG['DELETEIMAGE'] = 'Supprimer cette image?';
 $MOD_NEWS_IMG['DESCENDING'] = 'absenté';
 $MOD_NEWS_IMG['EXPERT_MODE'] = 'mode expert';
 $MOD_NEWS_IMG['EXPIRED_NOTE'] = "La publication n'est plus affich&eacute;e dans le front-end car la date d'expiration est d&eacute;pass&eacute;e.";
+$MOD_NEWS_IMG['FIRST_EXPIRING_FIRST'] = 'premier expirant en premier';
 $MOD_NEWS_IMG['FIRST_EXPIRING_LAST'] = 'premier expirant en dernier';
 $MOD_NEWS_IMG['GALLERY_SETTINGS'] = "Param&egrave;tres de la galerie / de l'image";
 $MOD_NEWS_IMG['GALLERYIMAGES'] = 'Images de la galerie';

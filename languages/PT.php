@@ -41,6 +41,7 @@ $MOD_NEWS_IMG['DELETEIMAGE'] = 'Excluir esta imagem?';
 $MOD_NEWS_IMG['DESCENDING'] = 'descendente';
 $MOD_NEWS_IMG['EXPERT_MODE'] = 'modo especialista';
 $MOD_NEWS_IMG['EXPIRED_NOTE'] = 'O lançamento não é mais exibido no frontend porque a data de validade expirou.';
+$MOD_NEWS_IMG['FIRST_EXPIRING_LAST'] = 'primeiro a expirar por primeiro';
 $MOD_NEWS_IMG['FIRST_EXPIRING_LAST'] = 'primeiro a expirar por último';
 $MOD_NEWS_IMG['GALLERY_SETTINGS'] = 'Configurações de galeria / imagem';
 $MOD_NEWS_IMG['GALLERYIMAGES'] = 'Imagens da galeria';

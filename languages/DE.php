@@ -41,6 +41,7 @@ $MOD_NEWS_IMG['DELETEIMAGE'] ='Bild l&ouml;schen?';
 $MOD_NEWS_IMG['DESCENDING'] = 'absteigend';
 $MOD_NEWS_IMG['EXPERT_MODE'] = 'Expertenmodus';
 $MOD_NEWS_IMG['EXPIRED_NOTE'] = 'Der Beitrag wird im Frontend nicht mehr angezeigt, da das Ablaufdatum überschritten ist.';
+$MOD_NEWS_IMG['FIRST_EXPIRING_FIRST'] = 'zuerst ablaufende zuerst';
 $MOD_NEWS_IMG['FIRST_EXPIRING_LAST'] = 'zuerst ablaufende zuletzt';
 $MOD_NEWS_IMG['GALLERY_SETTINGS'] ='Galerie-/Bild-Einstellungen';
 $MOD_NEWS_IMG['GALLERYIMAGES'] = 'Galeriebilder';

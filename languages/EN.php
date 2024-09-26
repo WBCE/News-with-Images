@@ -41,6 +41,7 @@ $MOD_NEWS_IMG['DELETEIMAGE'] ='Delete this image?';
 $MOD_NEWS_IMG['DESCENDING'] = 'descending';
 $MOD_NEWS_IMG['EXPERT_MODE'] = 'expert mode';
 $MOD_NEWS_IMG['EXPIRED_NOTE'] = 'The posting is no longer displayed in the frontend because the expiration date has passed.';
+$MOD_NEWS_IMG['FIRST_EXPIRING_FIRST'] = 'first expiring first';
 $MOD_NEWS_IMG['FIRST_EXPIRING_LAST'] = 'first expiring last';
 $MOD_NEWS_IMG['GALLERY_SETTINGS'] ='Gallery / image settings';
 $MOD_NEWS_IMG['GALLERYIMAGES'] = 'Gallery images';
