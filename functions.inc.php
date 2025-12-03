@@ -1266,12 +1266,12 @@ function mod_nwi_posts_render($section_id,$posts,$posts_per_page=0)
 	$tagListArray  = array();
 	
     if(isset($_GET['tags']) && strlen($_GET['tags'])) {
-        $requested_tags = mod_nwi_escape_tags(htmlspecialchars($_GET['tags']));
+        $requested_tags = mod_nwi_escape_tags(mod_nwi_sanitize_input($_GET['tags'],'s{TRIM|STRIP|ENTITIES}'));
         foreach ($requested_tags as $i => $tag) {
             $requested_tags[$i] = "<span class=\"mod_nwi_tag\" id=\"mod_nwi_tag_".$i."\">".$tag."</span>";
         }
         $tags_header = implode("\n",$requested_tags);
-        $tags_append = htmlspecialchars($_GET['tags']);
+        $tags_append = mod_nwi_sanitize_input($_GET['tags'],'s{TRIM|STRIP|ENTITIES}');
     }
 
     // Create previous and next links
