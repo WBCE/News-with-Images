@@ -1962,6 +1962,9 @@ require(WB_PATH."/index.php");
 function mod_nwi_escape_tags($tags)
 {
     global $database;
+	if(empty($tags)) {
+		return "";
+	}
     $tags = explode(",", $tags);
     foreach($tags as $i => $tag) {
         $tags[$i] = mod_nwi_escapeString($tag);
