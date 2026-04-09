@@ -95,16 +95,16 @@ if(isset($_POST['exec']) && isset($_POST['manage_posts'])) {
             }
             // get group
             if(isset($_POST['group']) && !empty($_POST['group'])) {
-                $gid_value = urldecode($_POST['group']);
-                $values = unserialize($gid_value);
-                if (!isset($values['s']) or  !isset($values['g']) or  !isset($values['p'])) {
+                $parts = explode('|', $_POST['group'], 3);
+                if (count($parts) !== 3) {
                     header("Location: ".ADMIN_URL."/pages/index.php");
                     exit(0);
                 }
-                if (intval($values['p'])!=0) {
-                    $group_id = intval($values['g']);
-                    $section_id = intval($values['s']);
-                    $page_id = intval($values['p']);
+                $values = ['g' => intval($parts[0]), 's' => intval($parts[1]), 'p' => intval($parts[2])];
+                if ($values['p'] != 0) {
+                    $group_id = $values['g'];
+                    $section_id = $values['s'];
+                    $page_id = $values['p'];
                     $group = mod_nwi_get_group($group_id);
                 }
             }

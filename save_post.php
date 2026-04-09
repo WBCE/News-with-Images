@@ -88,16 +88,16 @@ $old_section_id = $section_id;
 $old_page_id = $page_id;
 
 if (!empty($group)) {
-    $gid_value = urldecode($group);
-    $values = unserialize($gid_value);
-    if (!isset($values['s']) or  !isset($values['g']) or  !isset($values['p'])) {
+    $parts = explode('|', $group, 3);
+    if (count($parts) !== 3) {
         header("Location: ".ADMIN_URL."/pages/index.php");
         exit(0);
     }
-    if (intval($values['p'])!=0) {
-        $group_id = intval($values['g']);
-        $section_id = intval($values['s']);
-        $page_id = intval($values['p']);
+    $values = ['g' => intval($parts[0]), 's' => intval($parts[1]), 'p' => intval($parts[2])];
+    if ($values['p'] != 0) {
+        $group_id = $values['g'];
+        $section_id = $values['s'];
+        $page_id = $values['p'];
     }
 }
 

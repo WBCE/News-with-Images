@@ -1,5 +1,5 @@
                     <select name="group">
-                        <option value="<?php echo urlencode(serialize(array('g'=>'','s'=>$section_id,'p'=>$page_id))); ?>">
+                        <option value="0|<?php echo intval($section_id).'|'.intval($page_id); ?>">
                             <?php echo $TEXT['NONE']." (".$MOD_NEWS_IMG['CURRENT_SECTION']." #".$section_id ?>)
                         </option>
 <?php
@@ -13,13 +13,13 @@
             endif;
             foreach($sects as $sectionID => $grps):
                 if($sectionID != $section_id):
-                    $id = urlencode(serialize(array('g'=>'','s'=>$sectionID,'p'=> $pageID)));
+                    $id = '0|'.intval($sectionID).'|'.intval($pageID);
 ?>
                         <option value="<?php echo $id ?>"><?php echo $TEXT['NONE']." (".$TEXT['SECTION']." #".$sectionID ?>)</option>
 <?php
                 endif;
                 foreach($grps as $group):
-                    $id = urlencode(serialize(array('g' => intval($group['group_id']), 's' => $sectionID, 'p' => $pageID)));
+                    $id = intval($group['group_id']).'|'.intval($sectionID).'|'.intval($pageID);
 
 ?>
                         <option value="<?php echo $id ?>"<?php if ($post_data['group_id'] == $group['group_id']): ?> selected="selected"<?php endif; ?>><?php echo $group['title'].' ('.$TEXT['SECTION'].' #'.$sectionID ?>)</option>
