@@ -42,19 +42,7 @@ if (isset($_POST['manage_posts']) && is_array($_POST['manage_posts']) && !$admin
     }
 }
 
-$post_id = $admin->checkIDKEY('post_id', 0, 'GET');
-if (defined('WB_VERSION') && (version_compare(WB_VERSION, '2.8.3', '>'))) {
-    $post_id = intval($_GET['post_id']);
-}
-if (!$post_id && isset($_GET['post_id'])) {
-    $admin->print_error(
-        $MESSAGE['GENERIC_SECURITY_ACCESS']
-     .' (IDKEY) '.__FILE__.':'.__LINE__,
-         ADMIN_URL.'/pages/index.php'
-    );
-    $admin->print_footer();
-    exit();
-}
+$post_id = filter_input(INPUT_GET, 'post_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
 $value = 1;
 $filter_value = filter_input(INPUT_GET, 'value', FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 1]]);

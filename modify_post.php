@@ -18,25 +18,15 @@ require_once __DIR__.'/functions.inc.php';
 // Include WB admin wrapper script
 require WB_PATH.'/modules/admin.php';
 
-$post_id = $admin->checkIDKEY('post_id', 0, 'GET', true);
-if (defined('WB_VERSION') && (version_compare(WB_VERSION, '2.8.3', '>'))) {
-    $post_id = intval($_GET['post_id']);
-}
+$post_id = filter_input(INPUT_GET, 'post_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 if (!$post_id) {
-    $admin->print_error(
-        $MESSAGE['GENERIC_SECURITY_ACCESS']
-     .' (IDKEY) '.__FILE__.':'.__LINE__,
-         ADMIN_URL.'/pages/index.php'
-    );
+    $admin->print_error($MESSAGE['GENERIC_SECURITY_ACCESS'], ADMIN_URL.'/pages/index.php');
     $admin->print_footer();
     exit();
 }
 
 $FTAN = $admin->getFTAN();
-$post_id_key = $admin->getIDKEY($post_id);
-if (defined('WB_VERSION') && (version_compare(WB_VERSION, '2.8.3', '>'))) {
-    $post_id_key = intval($_GET['post_id']);
-}
+$post_id_key = $post_id;
 
 // get post
 $post_data = mod_nwi_post_get($post_id);
@@ -163,10 +153,7 @@ $seenimg = array();
 if (count($postimg)>0) {
     $i=1;
     foreach ($postimg as $row) {
-        $row['id_key'] = $admin->getIDKEY($row['id']);
-        if (defined('WB_VERSION') && (version_compare(WB_VERSION, '2.8.3', '>'))) {
-            $row['id_key'] = $row['id'];
-        }
+        $row['id_key'] = $row['id'];
         $row['up'] = '<span style="display:inline-block;width:20px;"></span>';
         $row['down'] = $row['up'];
         if ($i>1) { // not first

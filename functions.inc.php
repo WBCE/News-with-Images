@@ -115,10 +115,7 @@ function mod_nwi_get_groups(int $section_id) : array
     if ($query->numRows() > 0) {
         // Loop through groups
         while ($group = $query->fetchRow()) {
-            $group['id_key'] = $admin->getIDKEY($group['group_id']);
-            if (defined('WB_VERSION') && (version_compare(WB_VERSION, '2.8.3', '>'))) {
-                $group['id_key'] = $group['group_id'];
-            }
+            $group['id_key'] = $group['group_id'];
                 $group['image'] = '';
             foreach(array_values(array('png','jpg','jpeg','gif','webp')) as $suffix) {
                 if (file_exists(WB_PATH.MEDIA_DIRECTORY.'/.news_img/image'.$group['group_id'].'.'.$suffix)) {
@@ -1476,11 +1473,7 @@ function mod_nwi_post_process($post,$section_id,$users)
         $group_map[$g['group_id']] = $g;
     }
 
-    // secure form
-    $post['id_key'] = $admin->getIDKEY($post['post_id']);
-    if (defined('WB_VERSION') && (version_compare(WB_VERSION, '2.8.3', '>'))) {
-        $post['id_key'] = $post['post_id'];
-    }
+    $post['id_key'] = $post['post_id'];
    
     // this is for the backend only
 	$icon = '';

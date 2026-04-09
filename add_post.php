@@ -43,12 +43,7 @@ if ($database->is_error()) {
 } else {
     // Get the id
     $post_id = $database->get_one("SELECT LAST_INSERT_ID()");
-    $post_id_key = $admin->getIDKEY($post_id);
-    if (defined('WB_VERSION') && (version_compare(WB_VERSION, '2.8.3', '>'))) {
-       $post_id_key = $post_id;
-    }
-
-    $admin->print_success($TEXT['SUCCESS'], WB_URL.'/modules/news_img/modify_post.php?page_id='.$page_id.'&section_id='.$section_id.'&post_id='. $post_id_key);
+    $admin->print_success($TEXT['SUCCESS'], WB_URL.'/modules/news_img/modify_post.php?page_id='.$page_id.'&section_id='.$section_id.'&post_id='.$post_id);
 }
 
 // Print admin footer

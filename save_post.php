@@ -57,11 +57,7 @@ $block2 = '';
 
 // Validate all fields
 if ($admin->get_post('title') == '' and $admin->get_post('url') == '') {
-    $post_id_key = $admin->getIDKEY($id);
-    if (defined('WB_VERSION') && (version_compare(WB_VERSION, '2.8.3', '>'))) {
-    	    $post_id_key = $id;
-    }
-    $admin->print_error($MESSAGE['GENERIC_FILL_IN_ALL'], WB_URL.'/modules/news_img/modify_post.php?page_id='.$page_id.'&section_id='.$section_id.'&post_id='.$post_id_key);
+    $admin->print_error($MESSAGE['GENERIC_FILL_IN_ALL'], WB_URL.'/modules/news_img/modify_post.php?page_id='.$page_id.'&section_id='.$section_id.'&post_id='.$id);
 } else {
     $settings = mod_nwi_settings_get($section_id);
     $title = mod_nwi_escapeString($admin->get_post('title'));
@@ -249,27 +245,15 @@ if (is_array($tags) && count($tags)>0) {
 
 // Check result
 if ($database->is_error()) {
-    $post_id_key = $admin->getIDKEY($id);
-    if (defined('WB_VERSION') && (version_compare(WB_VERSION, '2.8.3', '>'))) {
-        $post_id_key = $id;
-    }
-    $admin->print_error($database->get_error(), WB_URL.'/modules/news_img/modify_post.php?page_id='.$page_id.'&section_id='.$section_id.'&post_id='.$post_id_key);
+    $admin->print_error($database->get_error(), WB_URL.'/modules/news_img/modify_post.php?page_id='.$page_id.'&section_id='.$section_id.'&post_id='.$id);
 } else {
     if ($imageErrorMessage!='') {
-        $post_id_key = $admin->getIDKEY($id);
-        if (defined('WB_VERSION') && (version_compare(WB_VERSION, '2.8.3', '>'))) {
-            $post_id_key = $id;
-        }
-        $admin->print_error($MOD_NEWS_IMG['GENERIC_IMAGE_ERROR'].'<br />'.$imageErrorMessage, WB_URL.'/modules/news_img/modify_post.php?page_id='.$page_id.'&section_id='.$section_id.'&post_id='.$post_id_key);
+        $admin->print_error($MOD_NEWS_IMG['GENERIC_IMAGE_ERROR'].'<br />'.$imageErrorMessage, WB_URL.'/modules/news_img/modify_post.php?page_id='.$page_id.'&section_id='.$section_id.'&post_id='.$id);
     } else {
         if (isset($_POST['savegoback']) && $_POST['savegoback']=='1') {
             $admin->print_success($TEXT['SUCCESS'], ADMIN_URL.'/pages/modify.php?page_id='.$page_id);
         } else {
-	    $post_id_key = $admin->getIDKEY($id);
-            if (defined('WB_VERSION') && (version_compare(WB_VERSION, '2.8.3', '>'))) {
-        	$post_id_key = $id;
-            }
-            $admin->print_success($TEXT['SUCCESS'], WB_URL.'/modules/news_img/modify_post.php?page_id='.$page_id.'&section_id='.$section_id.'&post_id='.$post_id_key);
+            $admin->print_success($TEXT['SUCCESS'], WB_URL.'/modules/news_img/modify_post.php?page_id='.$page_id.'&section_id='.$section_id.'&post_id='.$id);
         }
     }
 }

@@ -19,31 +19,18 @@ require_once __DIR__.'/functions.inc.php';
 require WB_PATH.'/modules/admin.php';
 
 // Get id
-if(!isset($_GET['post_id'])) {
-	if(!isset($_GET['group_id'])) {
-		header("Location: index.php");
-		exit(0);
-	} else {
-		$id = $admin->checkIDKEY('group_id', false, 'GET');
-		if(defined('WB_VERSION') && (version_compare(WB_VERSION, '2.8.3', '>'))) 
-    		    $id = $_GET['group_id'];
-		$id_field = 'group_id';
-		$table = TABLE_PREFIX.'mod_news_img_groups';
-	}
+$id = filter_input(INPUT_GET, 'group_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+if ($id) {
+    $id_field = 'group_id';
+    $table    = TABLE_PREFIX.'mod_news_img_groups';
 } else {
-	$id = $admin->checkIDKEY('post_id', false, 'GET');
-	if(defined('WB_VERSION') && (version_compare(WB_VERSION, '2.8.3', '>'))) 
-    	    $id = $_GET['post_id'];
-	$id_field = 'post_id';
-	$table = TABLE_PREFIX.'mod_news_img_posts';
-}
-
-if (!$id){
-    $admin->print_error($MESSAGE['GENERIC_SECURITY_ACCESS']
-	 .' (IDKEY) '.__FILE__.':'.__LINE__,
-         ADMIN_URL.'/pages/index.php');
-    $admin->print_footer();
-    exit();
+    $id = filter_input(INPUT_GET, 'post_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    if (!$id) {
+        header("Location: index.php");
+        exit(0);
+    }
+    $id_field = 'post_id';
+    $table    = TABLE_PREFIX.'mod_news_img_posts';
 }
 
 // Create new order object an reorder
