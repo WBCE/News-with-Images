@@ -21,6 +21,25 @@ $allowed_suffixes = array('jpg','jpeg','gif','png','webp');
 $mod_nwi_file_dir = WB_PATH.MEDIA_DIRECTORY.'/.news_img/';
 $mod_nwi_thumb_dir = WB_PATH.MEDIA_DIRECTORY.'/.news_img/thumb/';
 
+// ========== URL helper =======================================================
+/**
+ * Build a URL by appending query parameters to a base URL.
+ * Handles ?/&amp; delimiter automatically and skips null/false/empty values.
+ *
+ * @param string $base   Base URL (e.g. page URL or '' for relative query-only links)
+ * @param array  $params Associative array of query parameters; null/false/'' values are omitted
+ * @return string
+ **/
+function mod_nwi_build_url(string $base, array $params): string {
+    $filtered = array_filter($params, fn($v) => $v !== null && $v !== false && $v !== '');
+    if (empty($filtered)) {
+        return $base;
+    }
+    $query = http_build_query($filtered, '', '&amp;', PHP_QUERY_RFC3986);
+    $sep = str_contains($base, '?') ? '&amp;' : '?';
+    return $base . $sep . $query;
+}
+
 // ========== Tag Sorting helper ===============================================
  /**
  * sort an array
@@ -1279,12 +1298,9 @@ function mod_nwi_posts_render($section_id,$posts,$posts_per_page=0)
     if ($posts_per_page != 0) { // 0 = unlimited = no paging
         $cnt = mod_nwi_posts_count($section_id); // all posts in this section
         $total_num = $cnt['count'];
+        $filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
         if ($position > 0) {
-            $pl_prepend = '<a href="?p='.($position-$posts_per_page).(empty($tags_append) ? '' : '&amp;tags='.$tags_append).'">';
-            $filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-            if ($filter_g) {
-                $pl_prepend = '<a href="?p='.($position-$posts_per_page).(empty($tags_append) ? '' : '&amp;tags='.$tags_append).'&amp;g='.$filter_g.'">';
-            }
+            $pl_prepend = '<a href="'.mod_nwi_build_url('', ['p' => $position - $posts_per_page, 'tags' => $tags_append ?: null, 'g' => $filter_g]).'">';
             $pl_append = '</a>';
             $previous_link = $pl_prepend.$TEXT['PREVIOUS'].$pl_append;
             $previous_page_link = $pl_prepend.$TEXT['PREVIOUS_PAGE'].$pl_append;
@@ -1296,12 +1312,7 @@ function mod_nwi_posts_render($section_id,$posts,$posts_per_page=0)
             $next_link = '';
             $next_page_link = '';
         } else {
-            $filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-            if ($filter_g) {
-                $nl_prepend = '<a href="?p='.($position+$posts_per_page).(empty($tags_append) ? '' : '&amp;tags='.$tags_append).'&amp;g='.$filter_g.'"> ';
-            } else {
-                $nl_prepend = '<a href="?p='.($position+$posts_per_page).(empty($tags_append) ? '' : '&amp;tags='.$tags_append).'"> ';
-            }
+            $nl_prepend = '<a href="'.mod_nwi_build_url('', ['p' => $position + $posts_per_page, 'tags' => $tags_append ?: null, 'g' => $filter_g]).'"> ';
             $nl_append = '</a>';
             $next_link = $nl_prepend.$TEXT['NEXT'].$nl_append;
             $next_page_link = $nl_prepend.$TEXT['NEXT_PAGE'].$nl_append;
@@ -1336,7 +1347,7 @@ function mod_nwi_posts_render($section_id,$posts,$posts_per_page=0)
 			$tagListArray[$i] = $tag['tag'];
             $tags[$i] = "<span class=\"mod_nwi_tag\" id=\"mod_nwi_tag_".$post['post_id']."_".$i."\""
                   . (strlen($tag['tag_color'])>0 ? " style=\"background-color:".$tag['tag_color']."\"" : "" ) .">"
-                  . "<a href=\"".$wb->page_link($page_id)."?tags=".urlencode($tag['tag'])."\">".htmlspecialchars($tag['tag'], ENT_QUOTES | ENT_HTML5)."</a></span>";
+                  . "<a href=\"".mod_nwi_build_url($wb->page_link($page_id), ['tags' => $tag['tag']])."\">".htmlspecialchars($tag['tag'], ENT_QUOTES | ENT_HTML5)."</a></span>";
         }
         // gallery images - wichtig für link "weiterlesen"  SHOW_READ_MORE
         $images = mod_nwi_img_get_by_post($post['post_id'],false);
@@ -1504,21 +1515,10 @@ function mod_nwi_post_process($post,$section_id,$users)
     $post['prev_link'] = (isset($post['prev_link']) && strlen($post['prev_link'])>0 ? page_link($post['prev_link']) : null);
 
     $filter_p = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-    if ($filter_p) {
-        $post['post_link'] .= '?p='.$filter_p;
-    }
     $filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-    if ($filter_g) {
-        $filter_p = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($filter_p) {
-            $delim = '&amp;';
-        } else {
-            $delim = '?';
-        }
-        $post['post_link'] .= $delim.'g='.$filter_g;
-        $post['next_link'] = (strlen($post['next_link'])>0 ? $post['next_link'].'?g='.$filter_g : null);
-        $post['prev_link'] = (strlen($post['prev_link'])>0 ? $post['prev_link'].'?g='.$filter_g : null);
-    }
+    $post['post_link'] = mod_nwi_build_url($post['post_link'], ['p' => $filter_p, 'g' => $filter_g]);
+    $post['next_link'] = $post['next_link'] ? mod_nwi_build_url($post['next_link'], ['g' => $filter_g]) : null;
+    $post['prev_link'] = $post['prev_link'] ? mod_nwi_build_url($post['prev_link'], ['g' => $filter_g]) : null;
 
     // publishing date
     if ($post['published_when'] === '0') {

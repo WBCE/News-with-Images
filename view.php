@@ -56,18 +56,8 @@ if ($query_page->numRows() > 0) {
         $page_link = WB_URL;
     }
     $filter_p = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-    if ($filter_p) {
-        $page_link .= '?p='.$filter_p;
-    }
     $filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-    if ($filter_g) {
-        if ($filter_p && $position > 0) {
-            $delim = '&amp;';
-        } else {
-            $delim = '?';
-        }
-        $page_link .= $delim.'g='.$filter_g;
-    }
+    $page_link = mod_nwi_build_url($page_link, ['p' => $filter_p, 'g' => $filter_g]);
 }
 
 list($vars,$default_replacements) = mod_nwi_replacements();
@@ -91,7 +81,7 @@ if (defined('POST_ID') && is_numeric(POST_ID)) {
 		$tagListArray[$i] = $tag['tag'];
         $tags[$i] = "<span class=\"mod_nwi_tag\" id=\"mod_nwi_tag_".POST_ID."_".$i."\""
                   . (!empty($tag['tag_color']) ? " style=\"background-color:".$tag['tag_color']."\"" : "" ) .">"
-                  . "<a href=\"".$wb->page_link(PAGE_ID)."?tags=".urlencode($tag['tag'])."\">".htmlspecialchars($tag['tag'], ENT_QUOTES | ENT_HTML5)."</a></span>";
+                  . "<a href=\"".mod_nwi_build_url($wb->page_link(PAGE_ID), ['tags' => $tag['tag']])."\">".htmlspecialchars($tag['tag'], ENT_QUOTES | ENT_HTML5)."</a></span>";
         if(!isset($page_keywords[$tag['tag']])) {
             $page_keywords[] = htmlspecialchars($tag['tag'], ENT_QUOTES | ENT_HTML401);
         }
