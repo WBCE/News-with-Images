@@ -907,8 +907,9 @@ function mod_nwi_post_get($post_id)
 {
     global $database,$section_id;
     list($order_by,$direction) = mod_nwi_get_order($section_id);
-	if (isset($_GET['g'])) {
-		$query_group = ' AND `group_id` = '.intval($_GET['g']).' ';
+	$filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+	if ($filter_g) {
+		$query_group = ' AND `group_id` = '.$filter_g.' ';
 	} else {
 		$query_group = '';
 	}
@@ -1131,8 +1132,9 @@ function mod_nwi_posts_getall(int $section_id, bool $is_backend, string $query_e
 
     $settings = mod_nwi_settings_get($section_id);
     if ($settings['posts_per_page'] != 0) {
-        if (isset($_GET['p']) and is_numeric($_GET['p']) and $_GET['p'] >= 0) {
-            $position = $_GET['p'];
+        $filter_p = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+        if ($filter_p !== null && $filter_p !== false) {
+            $position = $filter_p;
         } else {
             $position = 0;
         }
@@ -1246,8 +1248,9 @@ function mod_nwi_posts_render($section_id,$posts,$posts_per_page=0)
     $settings = mod_nwi_settings_get($section_id);
 
     // position to start off (=offset)
-    if (isset($_GET['p']) and is_numeric($_GET['p']) and $_GET['p'] > 0) {
-        $position = $_GET['p'];
+    $filter_p = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    if ($filter_p) {
+        $position = $filter_p;
     } else {
         $position = 0;
     }
@@ -1281,8 +1284,9 @@ function mod_nwi_posts_render($section_id,$posts,$posts_per_page=0)
         $total_num = $cnt['count'];
         if ($position > 0) {
             $pl_prepend = '<a href="?p='.($position-$posts_per_page).(empty($tags_append) ? '' : '&amp;tags='.$tags_append).'">';
-            if (isset($_GET['g']) and is_numeric($_GET['g'])) {
-                $pl_prepend = '<a href="?p='.($position-$posts_per_page).(empty($tags_append) ? '' : '&amp;tags='.$tags_append).'&amp;g='.$_GET['g'].'">';
+            $filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            if ($filter_g) {
+                $pl_prepend = '<a href="?p='.($position-$posts_per_page).(empty($tags_append) ? '' : '&amp;tags='.$tags_append).'&amp;g='.$filter_g.'">';
             }
             $pl_append = '</a>';
             $previous_link = $pl_prepend.$TEXT['PREVIOUS'].$pl_append;
@@ -1295,8 +1299,9 @@ function mod_nwi_posts_render($section_id,$posts,$posts_per_page=0)
             $next_link = '';
             $next_page_link = '';
         } else {
-            if (isset($_GET['g']) and is_numeric($_GET['g'])) {
-                $nl_prepend = '<a href="?p='.($position+$posts_per_page).(empty($tags_append) ? '' : '&amp;tags='.$tags_append).'&amp;g='.$_GET['g'].'"> ';
+            $filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            if ($filter_g) {
+                $nl_prepend = '<a href="?p='.($position+$posts_per_page).(empty($tags_append) ? '' : '&amp;tags='.$tags_append).'&amp;g='.$filter_g.'"> ';
             } else {
                 $nl_prepend = '<a href="?p='.($position+$posts_per_page).(empty($tags_append) ? '' : '&amp;tags='.$tags_append).'"> ';
             }
@@ -1501,18 +1506,21 @@ function mod_nwi_post_process($post,$section_id,$users)
     $post['next_link'] = (isset($post['next_link']) && strlen($post['next_link'])>0 ? page_link($post['next_link']) : null);
     $post['prev_link'] = (isset($post['prev_link']) && strlen($post['prev_link'])>0 ? page_link($post['prev_link']) : null);
 
-    if (isset($_GET['p']) and intval($_GET['p']) > 0) {
-        $post['post_link'] .= '?p='.intval($_GET['p']);
+    $filter_p = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    if ($filter_p) {
+        $post['post_link'] .= '?p='.$filter_p;
     }
-    if (isset($_GET['g']) and is_numeric($_GET['g'])) {
-        if (isset($_GET['p']) and $position > 0) {
+    $filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    if ($filter_g) {
+        $filter_p = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($filter_p && $position > 0) {
             $delim = '&amp;';
         } else {
             $delim = '?';
         }
-        $post['post_link'] .= $delim.'g='.$_GET['g'];
-        $post['next_link'] = (strlen($post['next_link'])>0 ? $post['next_link'].'?g='.$_GET['g'] : null);
-		$post['prev_link'] = (strlen($post['prev_link'])>0 ? $post['prev_link'].'?g='.$_GET['g'] : null);
+        $post['post_link'] .= $delim.'g='.$filter_g;
+        $post['next_link'] = (strlen($post['next_link'])>0 ? $post['next_link'].'?g='.$filter_g : null);
+        $post['prev_link'] = (strlen($post['prev_link'])>0 ? $post['prev_link'].'?g='.$filter_g : null);
     }
 
     // publishing date
@@ -1767,19 +1775,19 @@ function mod_nwi_get_query_extra()
     $query_extra = '';
 
     // ----- filter by group? --------------------------------------------------
-    if (isset($_GET['g']) and is_numeric($_GET['g'])) {
-        $query_extra = " AND group_id = '".$_GET['g']."'";
+    $filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    if ($filter_g) {
+        $query_extra = " AND group_id = ".$filter_g;
     }
 
     // ----- filter by date?  --------------------------------------------------
-    if(
-           isset($_GET['m'])      && is_numeric($_GET['m'])
-        && isset($_GET['y'])      && is_numeric($_GET['y'])
-        && isset($_GET['method']) && is_numeric($_GET['method'])
-    ) {
-        $startdate = mktime(0, 0, 0, $_GET['m'], 1, $_GET['y']);
-        $enddate   = mktime(0, 0, 0, $_GET['m']+1, 1, $_GET['y']);
-        switch ($_GET['method']) {
+    $filter_m      = filter_input(INPUT_GET, 'm',      FILTER_VALIDATE_INT, ['options' => ['min_range' => 1,    'max_range' => 12]]);
+    $filter_y      = filter_input(INPUT_GET, 'y',      FILTER_VALIDATE_INT, ['options' => ['min_range' => 1970, 'max_range' => 2100]]);
+    $filter_method = filter_input(INPUT_GET, 'method', FILTER_VALIDATE_INT, ['options' => ['min_range' => 0,    'max_range' => 1]]);
+    if ($filter_m && $filter_y && $filter_method !== null && $filter_method !== false) {
+        $startdate = mktime(0, 0, 0, $filter_m, 1, $filter_y);
+        $enddate   = mktime(0, 0, 0, $filter_m + 1, 1, $filter_y);
+        switch ($filter_method) {
         case 0:
             $date_option = "posted_when";
             break;

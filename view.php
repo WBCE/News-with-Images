@@ -55,16 +55,18 @@ if ($query_page->numRows() > 0) {
     } else {
         $page_link = WB_URL;
     }
-    if (isset($_GET['p']) and intval($_GET['p']) > 0) {
-        $page_link .= '?p='.intval($_GET['p']);
+    $filter_p = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    if ($filter_p) {
+        $page_link .= '?p='.$filter_p;
     }
-    if (isset($_GET['g']) and is_numeric($_GET['g'])) {
-        if (isset($_GET['p']) and $position > 0) {
+    $filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    if ($filter_g) {
+        if ($filter_p && $position > 0) {
             $delim = '&amp;';
         } else {
             $delim = '?';
         }
-        $page_link .= $delim.'g='.$_GET['g'];
+        $page_link .= $delim.'g='.$filter_g;
     }
 }
 

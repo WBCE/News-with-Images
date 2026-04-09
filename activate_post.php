@@ -56,9 +56,10 @@ if (!$post_id && isset($_GET['post_id'])) {
     exit();
 }
 
-$value=1;
-if (isset($_GET['value']) && ($_GET['value']==0)) {
-    $value=0;
+$value = 1;
+$filter_value = filter_input(INPUT_GET, 'value', FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 1]]);
+if ($filter_value !== null && $filter_value !== false && $filter_value === 0) {
+    $value = 0;
 }
 
 $_POST['manage_posts'] = array($post_id);
