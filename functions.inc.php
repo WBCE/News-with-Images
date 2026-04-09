@@ -1089,13 +1089,10 @@ function mod_nwi_post_show(int $post_id)
 	}
 
     // get group data
-	$gid = 0;
-	if (is_array($post_id)) {
-		$gid = $post_id['group_id'];
-	}
-    if($gid != 0) {
-        $group = mod_nwi_get_group($post_id['group_id']);
-        if($group['active'] != 1) {
+    $gid = $post['group_id'] ?? 0;
+    if ($gid != 0) {
+        $group = mod_nwi_get_group($gid);
+        if ($group['active'] != 1) {
             return false;
         }
     }
@@ -1513,7 +1510,7 @@ function mod_nwi_post_process($post,$section_id,$users)
     $filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     if ($filter_g) {
         $filter_p = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($filter_p && $position > 0) {
+        if ($filter_p) {
             $delim = '&amp;';
         } else {
             $delim = '?';
@@ -2205,7 +2202,6 @@ function mod_nwi_display_news_items(
 			'lang_filter'        => $lang_filter,
 		        'skip'               => $skip,
 			'tags'               => $tags,
-			'taglist'	     => $tagList,
             		'groups_on_tags'     => $groups_on_tags,
             		'view'               => $view,
             		'aslist'             => $aslist,
@@ -2426,23 +2422,24 @@ function mod_nwi_get_news_items($options=array())
             'display_name' => 'unknown',
             'email' => ''
         );
+        $posts = [];
         while($post = $query_posts->fetchRow()) {
             $post['content_short'] = ($strip_tags) ? strip_tags($post['content_short'], $allowed_tags) : $post['content_short'];
 			$post['content_long'] = ($strip_tags) ? strip_tags($post['content_long'], $allowed_tags) : $post['content_long'];
 			// shorten news text to defined news length (-1 for full text length)
-			if ($max_news_length != -1 && strlen($row['content_short']) > $max_news_length) {
+			if ($max_news_length != -1 && strlen($post['content_short']) > $max_news_length) {
 				// truncate text if user asked for using CakePHP truncate function
 				$post['content_short'] = nia_truncate($post['content_short'], $max_news_length);
 			}
             // tags
-            $tags = mod_nwi_get_tags_for_post($post['post_id']);						
-			$tagListArray = array();
+            $tags = mod_nwi_get_tags_for_post($post['post_id']);
+			$taglistArray = array();
             foreach ($tags as $i => $tag) {
                 $tags[$i] = "<span class=\"mod_nwi_tag\" id=\"mod_nwi_tag_".$post['post_id']."_".$i."\""
                           . (strlen($tag['tag_color'])>0 ? " style=\"background-color:".$tag['tag_color']."\"" : "" ) .">"
-                          . "<a href=\"".$wb->page_link(PAGE_ID)."?tags=".$tag."\">".$tag."</a></span>";				
-				$taglistArray[$i] = $tag['tag'];		  
-            }	
+                          . "<a href=\"".$wb->page_link(PAGE_ID)."?tags=".urlencode($tag['tag'])."\">".htmlspecialchars($tag['tag'], ENT_QUOTES | ENT_HTML5)."</a></span>";
+				$taglistArray[$i] = $tag['tag'];
+            }
 			if (is_array($taglistArray)) { $taglist = implode(',',$taglistArray); } else { $taglist=''; }
             // gallery images - wichtig für link "weiterlesen"  SHOW_READ_MORE
             $images = mod_nwi_img_get_by_post($post['post_id'],false);
