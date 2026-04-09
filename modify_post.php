@@ -46,12 +46,14 @@ $post_data['content_block2']=str_replace('{SYSVAR:MEDIA_REL}',WB_URL.MEDIA_DIREC
 
 // ----- delete previewimage ---------------------------------------------------
 if (isset($_GET['post_img'])) {
-    $post_img = $post_data['image'];
+    $post_img = basename($post_data['image']);
     $database->query(sprintf(
         "UPDATE `%smod_news_img_posts` SET `image`='' WHERE `post_id`=%d",
         TABLE_PREFIX, intval($post_id)
     ));
-    @unlink($mod_nwi_file_dir.$post_img);
+    if ($post_img && file_exists($mod_nwi_file_dir.$post_img)) {
+        unlink($mod_nwi_file_dir.$post_img);
+    }
     $post_data['image'] = null;
 }   //end delete preview image
 
@@ -74,8 +76,15 @@ if (isset($_GET['img_id'])) {
     if (!$row) {
         echo "Datei existiert nicht!";
     } else {
-        unlink($mod_nwi_file_dir.$row['picname']);
-        unlink($mod_nwi_thumb_dir.$row['picname']);
+        $picname = basename($row['picname']);
+        if ($picname) {
+            if (file_exists($mod_nwi_file_dir.$picname)) {
+                unlink($mod_nwi_file_dir.$picname);
+            }
+            if (file_exists($mod_nwi_thumb_dir.$picname)) {
+                unlink($mod_nwi_thumb_dir.$picname);
+            }
+        }
     }
     $database->query(sprintf(
         "DELETE FROM `%smod_news_img_img` WHERE `id` = '%d'",
