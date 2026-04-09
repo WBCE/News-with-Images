@@ -52,7 +52,7 @@ header("Content-type: text/xml; charset=$charset" );
 
 // Header info
 // Required by CSS 2.0
-$t = TIME();
+$t = time();
 echo '<?xml version="1.0" encoding="'.$charset.'"?>';
 ?> 
 <rss version="2.0">
@@ -67,12 +67,12 @@ echo '<?xml version="1.0" encoding="'.$charset.'"?>';
 		<copyright><?php $thedate = date('Y'); $websitetitle = WEBSITE_TITLE; echo "Copyright {$thedate}, {$websitetitle}"; ?></copyright>
 		<category><?php echo WEBSITE_TITLE; ?></category>		
 <?php
-$time_check_str= "(`published_when` = '0' OR `published_when` <= ".$t.") && (`published_until` = 0 OR `published_until` >= ".$t.")";
+$time_check_str = "(`published_when` = '0' OR `published_when` <= ".$t.") AND (`published_until` = 0 OR `published_until` >= ".$t.")";
 //Query
 if(isset($group_id)) {
-	$query = "SELECT * FROM `".TABLE_PREFIX."mod_news_img_posts` WHERE `group_id`=".$group_id." && `section_id` = ".$section_id." && `active`=1 && ".$time_check_str." ORDER BY `posted_when` DESC";
+	$query = "SELECT * FROM `".TABLE_PREFIX."mod_news_img_posts` WHERE `group_id`=".$group_id." AND `section_id`=".$section_id." AND `active`=1 AND ".$time_check_str." ORDER BY `posted_when` DESC";
 } else {
-	$query = "SELECT * FROM `".TABLE_PREFIX."mod_news_img_posts` WHERE `section_id`=".$section_id." && `active`=1 && ".$time_check_str." ORDER BY `posted_when` DESC";
+	$query = "SELECT * FROM `".TABLE_PREFIX."mod_news_img_posts` WHERE `section_id`=".$section_id." AND `active`=1 AND ".$time_check_str." ORDER BY `posted_when` DESC";
 }
 
 $result = $database->query($query);
