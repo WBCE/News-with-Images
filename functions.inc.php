@@ -1339,7 +1339,7 @@ function mod_nwi_posts_render($section_id,$posts,$posts_per_page=0)
 			$tagListArray[$i] = $tag['tag'];
             $tags[$i] = "<span class=\"mod_nwi_tag\" id=\"mod_nwi_tag_".$post['post_id']."_".$i."\""
                   . (strlen($tag['tag_color'])>0 ? " style=\"background-color:".$tag['tag_color']."\"" : "" ) .">"
-                  . "<a href=\"".$wb->page_link($page_id)."?tags=".$tag['tag']."\">".$tag['tag']."</a></span>";
+                  . "<a href=\"".$wb->page_link($page_id)."?tags=".urlencode($tag['tag'])."\">".htmlspecialchars($tag['tag'], ENT_QUOTES | ENT_HTML5)."</a></span>";
         }
         // gallery images - wichtig für link "weiterlesen"  SHOW_READ_MORE
         $images = mod_nwi_img_get_by_post($post['post_id'],false);
