@@ -300,6 +300,42 @@ function mod_nwi_get_tags_for_post($post_id)
     return $tags;
 }   // end function mod_nwi_get_tags_for_post()
 
+/**
+ * Batch-fetch tags for multiple posts in a single query.
+ * Returns an array indexed by post_id, each value is the same format
+ * as mod_nwi_get_tags_for_post() (tag_id => tag row, sorted).
+ */
+function mod_nwi_get_tags_for_posts(array $post_ids): array {
+    global $database;
+    if (empty($post_ids)) {
+        return [];
+    }
+    $ids = array_values(array_filter(array_map('intval', $post_ids), fn($id) => $id > 0));
+    if (empty($ids)) {
+        return [];
+    }
+    $in = implode(',', $ids);
+    $result = [];
+    $query_tags = $database->query(sprintf(
+        "SELECT t1.*, t2.`post_id`, t4.`page_id` " .
+        "FROM `%smod_news_img_tags` AS t1 " .
+        "JOIN `%smod_news_img_tags_posts` AS t2 ON t1.`tag_id`=t2.`tag_id` " .
+        "JOIN `%smod_news_img_posts` AS t3 ON t2.`post_id`=t3.`post_id` " .
+        "JOIN `%ssections` AS t4 ON t3.`section_id`=t4.`section_id` " .
+        "WHERE t2.`post_id` IN (%s)",
+        TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, $in
+    ));
+    if (!empty($query_tags) && $query_tags->numRows() > 0) {
+        while ($t = $query_tags->fetchRow()) {
+            $pid = (int)$t['post_id'];
+            $result[$pid][$t['tag_id']] = $t;
+        }
+    }
+    foreach ($result as $pid => $tags) {
+        $result[$pid] = mod_nwi_tag_sort($tags, 'tag', 'asc', true);
+    }
+    return $result;
+}   // end function mod_nwi_get_tags_for_posts()
 
 /**
  * check if tag is valid for given section
@@ -1372,9 +1408,11 @@ function mod_nwi_posts_render($section_id,$posts,$posts_per_page=0)
 
     list($vars,$default_replacements) = mod_nwi_replacements();
 
+    $tags_by_post = mod_nwi_get_tags_for_posts(array_column($posts, 'post_id'));
+
     foreach($posts as $i => $post) {
         // tags
-        $tags = mod_nwi_get_tags_for_post($post['post_id']);		
+        $tags = $tags_by_post[$post['post_id']] ?? [];
         foreach ($tags as $i => $tag) {
 			$tagListArray[$i] = $tag['tag'];
             $tags[$i] = "<span class=\"mod_nwi_tag\" id=\"mod_nwi_tag_".$post['post_id']."_".$i."\""
@@ -2462,16 +2500,6 @@ function mod_nwi_get_news_items($options=array())
 				// truncate text if user asked for using CakePHP truncate function
 				$post['content_short'] = nia_truncate($post['content_short'], $max_news_length);
 			}
-            // tags
-            $tags = mod_nwi_get_tags_for_post($post['post_id']);
-			$taglistArray = [];
-            foreach ($tags as $i => $tag) {
-                $tags[$i] = "<span class=\"mod_nwi_tag\" id=\"mod_nwi_tag_".$post['post_id']."_".$i."\""
-                          . (strlen($tag['tag_color'])>0 ? " style=\"background-color:".$tag['tag_color']."\"" : "" ) .">"
-                          . "<a href=\"".$wb->page_link(PAGE_ID)."?tags=".urlencode($tag['tag'])."\">".htmlspecialchars($tag['tag'], ENT_QUOTES | ENT_HTML5)."</a></span>";
-				$taglistArray[$i] = $tag['tag'];
-            }
-			if (is_array($taglistArray)) { $taglist = implode(',',$taglistArray); } else { $taglist=''; }
             // gallery images - wichtig für link "weiterlesen"  SHOW_READ_MORE
             $images = mod_nwi_img_get_by_post($post['post_id'],false);
             $anz_post_img = count($images);
