@@ -84,16 +84,15 @@ $old_section_id = $section_id;
 $old_page_id = $page_id;
 
 if (!empty($group)) {
-    $parts = explode('|', $group, 3);
-    if (count($parts) !== 3) {
+    $values = mod_nwi_parse_group_param($group);
+    if ($values === null) {
         header("Location: ".ADMIN_URL."/pages/index.php");
         exit(0);
     }
-    $values = ['g' => intval($parts[0]), 's' => intval($parts[1]), 'p' => intval($parts[2])];
     if ($values['p'] != 0) {
-        $group_id = $values['g'];
+        $group_id   = $values['g'];
         $section_id = $values['s'];
-        $page_id = $values['p'];
+        $page_id    = $values['p'];
     }
 }
 

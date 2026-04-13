@@ -21,6 +21,24 @@ $allowed_suffixes = array('jpg','jpeg','gif','png','webp');
 $mod_nwi_file_dir = WB_PATH.MEDIA_DIRECTORY.'/.news_img/';
 $mod_nwi_thumb_dir = WB_PATH.MEDIA_DIRECTORY.'/.news_img/thumb/';
 
+/**
+ **/
+function mod_nwi_get_slide(int $sectionID, ?string $tpl = 'bs5carousel') {
+    $posts = mod_nwi_posts_getall($sectionID, false, '', true);
+    if(empty($tpl)) {
+        $tpl = 'bs5carousel';
+    }
+    if(!empty($posts)) {
+        ob_start();
+        include __DIR__.'/templates/slides/'.$tpl.'.txt';
+        $content = ob_get_contents();
+        ob_end_clean();
+        return $content;
+    } else {
+        echo "no slides";
+    }
+}
+
 // ========== URL helper =======================================================
 /**
  * Build a URL by appending query parameters to a base URL.
@@ -38,6 +56,25 @@ function mod_nwi_build_url(string $base, array $params): string {
     $query = http_build_query($filtered, '', '&amp;', PHP_QUERY_RFC3986);
     $sep = str_contains($base, '?') ? '&amp;' : '?';
     return $base . $sep . $query;
+}
+
+/**
+ * Parse the pipe-delimited group select value (format: "group_id|section_id|page_id").
+ * Returns an associative array ['g', 's', 'p'] on success, null on invalid format.
+ */
+function mod_nwi_parse_group_param(string $group): ?array {
+    if (empty($group)) {
+        return null;
+    }
+    $parts = explode('|', $group, 3);
+    if (count($parts) !== 3) {
+        return null;
+    }
+    return [
+        'g' => intval($parts[0]),
+        's' => intval($parts[1]),
+        'p' => intval($parts[2]),
+    ];
 }
 
 // ========== Tag Sorting helper ===============================================
@@ -105,7 +142,7 @@ function mod_nwi_get_group(int $group_id) : array
 function mod_nwi_get_groups(int $section_id) : array
 {
     global $database, $admin;
-    $groups = array();
+    $groups = [];
     $query = $database->query(sprintf(
         "SELECT * FROM `%smod_news_img_groups` " .
         "WHERE `section_id`=%d ORDER BY `position` ASC",
@@ -142,12 +179,12 @@ function mod_nwi_get_all_groups($section_id, $page_id)
 {
     global $database, $admin;
 
-    $groups = array();
-    $pages = array();
+    $groups = [];
+    $pages = [];
 
     // get groups for this section
     if($section_id != 0) {
-    $groups[$page_id] = array();
+    $groups[$page_id] = [];
     $groups[$page_id][$section_id] = mod_nwi_get_groups(intval($section_id));
     }
 
@@ -155,7 +192,7 @@ function mod_nwi_get_all_groups($section_id, $page_id)
     $sections = mod_nwi_sections();
     foreach($sections as $sect) {
         if($sect['section_id'] != $section_id) { // skip current
-            $groups[$sect['page_id']] = array();
+            $groups[$sect['page_id']] = [];
             // groups
             $groups[$sect['page_id']][$sect['section_id']] = mod_nwi_get_groups(intval($sect['section_id']));
             // get page details for the dropdown
@@ -208,7 +245,7 @@ function mod_nwi_get_tag($tag_id)
  **/
 function mod_nwi_get_tags($section_id=null,$alltags=false) {
     global $database;
-    $tags = array();
+    $tags = [];
     $where = "WHERE `section_id`=0";
     if(!empty($section_id)) {
         $section_id = intval($section_id);
@@ -239,7 +276,7 @@ function mod_nwi_get_tags($section_id=null,$alltags=false) {
 function mod_nwi_get_tags_for_post($post_id)
 {
     global $database;
-    $tags = array();
+    $tags = [];
 
     $query_tags = $database->query(sprintf(
         "SELECT  t1.*, t4.`page_id` " .
@@ -297,7 +334,7 @@ function mod_nwi_tag_exists(int $section_id, string $tag)
  function mod_nwi_users_get()
 {
     global $database;
-    $users = array();
+    $users = [];
     $query_users = $database->query(sprintf(
         "SELECT `user_id`,`username`,`display_name`,`email` FROM `%susers`",
         TABLE_PREFIX
@@ -563,7 +600,7 @@ function mod_nwi_img_upload($post_id,$is_preview_image=false)
 function mod_nwi_post_activate($value)
 {
     global $database;
-    $posts = array();
+    $posts = [];
     if(isset($_POST['manage_posts']) && is_array($_POST['manage_posts'])) {
         $posts = $_POST['manage_posts'];
     } else {
@@ -614,7 +651,7 @@ function mod_nwi_post_activate($value)
 function mod_nwi_post_clear($value)
 {
     global $database;
-    $posts = array();
+    $posts = [];
     if(isset($_POST['manage_posts']) && is_array($_POST['manage_posts'])) {
         $posts = $_POST['manage_posts'];
     } else {
@@ -672,7 +709,7 @@ function mod_nwi_post_copy($section_id,$page_id,$with_tags=false)
 {
     global $mod_nwi_file_dir, $database, $admin;
 
-    $posts = array();
+    $posts = [];
     if(isset($_POST['manage_posts']) && is_array($_POST['manage_posts'])) {
         $posts = $_POST['manage_posts'];
     } else {
@@ -686,16 +723,15 @@ function mod_nwi_post_copy($section_id,$page_id,$with_tags=false)
     $group = $admin->get_post_escaped('group');
 
     if (!empty($group)) {
-        $parts = explode('|', $group, 3);
-        if (count($parts) !== 3) {
+        $values = mod_nwi_parse_group_param($group);
+        if ($values === null) {
             header("Location: ".ADMIN_URL."/pages/index.php");
             exit(0);
         }
-        $values = ['g' => intval($parts[0]), 's' => intval($parts[1]), 'p' => intval($parts[2])];
         if ($values['p'] != 0) {
-            $group_id = $values['g'];
+            $group_id   = $values['g'];
             $section_id = $values['s'];
-            $page_id = $values['p'];
+            $page_id    = $values['p'];
         }
     }
 
@@ -1001,23 +1037,22 @@ function mod_nwi_post_move($section_id,$page_id,$with_tags=false)
     $group = $admin->get_post_escaped('group');
 
     if (!empty($group)) {
-        $parts = explode('|', $group, 3);
-        if (count($parts) !== 3) {
+        $values = mod_nwi_parse_group_param($group);
+        if ($values === null) {
             header("Location: ".ADMIN_URL."/pages/index.php");
             exit(0);
         }
-        $values = ['g' => intval($parts[0]), 's' => intval($parts[1]), 'p' => intval($parts[2])];
         if ($values['p'] != 0) {
-            $group_id = $values['g'];
+            $group_id   = $values['g'];
             $section_id = $values['s'];
-            $page_id = $values['p'];
+            $page_id    = $values['p'];
         }
     }
 
     //store this one for later use
     $mod_nwi_file_base = $mod_nwi_file_dir;
 
-    $posts = array();
+    $posts = [];
     if(isset($_POST['manage_posts']) && is_array($_POST['manage_posts'])) {
         $posts = $_POST['manage_posts'];
     } else {
@@ -1132,9 +1167,9 @@ function mod_nwi_post_show(int $post_id)
  **/
 function mod_nwi_posts_getall(int $section_id, bool $is_backend, string $query_extra, bool $process=true)
 {
-    global $database, $admin;
+    global $database, $admin, $TEXT;
 
-    $posts    = array();
+    $posts    = [];
     $groups   = mod_nwi_get_groups($section_id);
     $t        = time();
     $limit    = '';
@@ -1164,7 +1199,7 @@ function mod_nwi_posts_getall(int $section_id, bool $is_backend, string $query_e
     }
 
     if(isset($_GET['tags']) && strlen($_GET['tags'])) {
-        $filter_posts = array();
+        $filter_posts = [];
         $tags = mod_nwi_escape_tags($_GET['tags']);
         $r = $database->query(
             "SELECT `t2`.`post_id` FROM `".TABLE_PREFIX."mod_news_img_tags` as `t1` ".
@@ -1202,7 +1237,7 @@ function mod_nwi_posts_getall(int $section_id, bool $is_backend, string $query_e
 
     if(!empty($query_posts) && $query_posts->numRows()>0) {
             // map group index to title
-            $group_map = array();
+            $group_map = [];
             foreach($groups as $i => $g) {
                 $group_map[$g['group_id']] = ( empty($g['title']) ? $TEXT['NONE'] : $g['title'] );
             }
@@ -1257,7 +1292,7 @@ function mod_nwi_posts_render($section_id,$posts,$posts_per_page=0)
         }
     }
 
-    $list  = array();
+    $list  = [];
     $settings = mod_nwi_settings_get($section_id);
 
     // position to start off (=offset)
@@ -1279,7 +1314,7 @@ function mod_nwi_posts_render($section_id,$posts,$posts_per_page=0)
     // filter by tags
     $tags_header = null;
     $tags_append = null;
-	$tagListArray  = array();
+	$tagListArray  = [];
 	
     if(isset($_GET['tags']) && strlen($_GET['tags'])) {
         $requested_tags = mod_nwi_escape_tags(mod_nwi_sanitize_input($_GET['tags'],'s{TRIM|STRIP|ENTITIES}'));		
@@ -1468,7 +1503,7 @@ function mod_nwi_post_process($post,$section_id,$users)
     $groups = mod_nwi_get_groups(intval($section_id));
 
     // map group id to group data for easier handling
-    $group_map = array();
+    $group_map = [];
     foreach($groups as $i => $g) {
         $group_map[$g['group_id']] = $g;
     }
@@ -1612,7 +1647,7 @@ function mod_nwi_img_get_by_post(int $post_id, bool $render)
 	
 	$thumbsizeraw = explode('x',(string)$settings['imgthumbsize']);
 
-    $images = array();
+    $images = [];
     if (!empty($query_img) && $query_img->numRows() > 0) {
         while ($row = $query_img->fetchRow()) {
             if($render===true) {
@@ -1654,7 +1689,7 @@ function mod_nwi_img_get_by_post(int $post_id, bool $render)
 function mod_nwi_sections()
 {
     global $database;
-    $sections = array();
+    $sections = [];
     $query_sections = $database->query(sprintf(
         "SELECT `section_id`,`page_id` FROM `%ssections` " .
         "WHERE `module`='%s' ORDER BY `page_id`,`section_id` ASC",
@@ -1790,7 +1825,7 @@ function mod_nwi_get_query_extra()
 
     // ----- filter by tags? ---------------------------------------------------
     if(isset($_GET['tags']) && strlen($_GET['tags'])) {
-        $filter_posts = array();
+        $filter_posts = [];
         $tags = mod_nwi_escape_tags($_GET['tags']);
         $r = $database->query(
             "SELECT `t2`.`post_id` FROM `".TABLE_PREFIX."mod_news_img_tags` as `t1` ".
@@ -2304,7 +2339,7 @@ function mod_nwi_get_news_items($options=array())
 		    $page_ids = getPageIdsByLanguage($lang_id);
         } else {
             $pages = CAT_Helper_Page::getPagesForLang($lang_id);
-            $page_ids = array();
+            $page_ids = [];
             foreach($pages as $i => $pg) {
                 $pages_ids[] = $pg['page_id'];
             }
@@ -2315,7 +2350,7 @@ function mod_nwi_get_news_items($options=array())
 	}
 
     // ---------- tag filter ---------------------------------------------------
-    $filter_posts = array();
+    $filter_posts = [];
     $sql_filter_posts = null;
     if(!empty($skip)) {
         $skip_tags = explode(",",urldecode($skip));
@@ -2399,7 +2434,7 @@ function mod_nwi_get_news_items($options=array())
     if(!empty($query_posts) && $query_posts->numRows()>0) {
         // map group index to title
         list($groups,$pages) = mod_nwi_get_all_groups(0,0);
-        $group_map = array();
+        $group_map = [];
         foreach($groups as $pg => $sections) {
             foreach($sections as $section_id => $grps) {
                 foreach($grps as $i => $g) {
@@ -2426,7 +2461,7 @@ function mod_nwi_get_news_items($options=array())
 			}
             // tags
             $tags = mod_nwi_get_tags_for_post($post['post_id']);
-			$taglistArray = array();
+			$taglistArray = [];
             foreach ($tags as $i => $tag) {
                 $tags[$i] = "<span class=\"mod_nwi_tag\" id=\"mod_nwi_tag_".$post['post_id']."_".$i."\""
                           . (strlen($tag['tag_color'])>0 ? " style=\"background-color:".$tag['tag_color']."\"" : "" ) .">"
@@ -2582,7 +2617,7 @@ if (!function_exists('mod_nwi_get_section_array')) {
      */
     function mod_nwi_get_section_array($iSectionID)
     {
-        $aSection = array();
+        $aSection = [];
         if (isset($iSectionID) && $iSectionID > 0) {
             global $database;
             $sSql = 'SELECT * FROM `{TP}sections` WHERE `section_id`=%d';
