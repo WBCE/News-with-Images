@@ -741,21 +741,17 @@ function mod_nwi_post_clear($value)
 }
 
 
-function mod_nwi_post_copy($section_id,$page_id,$with_tags=false)
+/**
+ * Resolves the copy target (section, page, group) from the POSTed 'group' parameter.
+ * Redirects and exits if the parameter is malformed.
+ *
+ * @return array{section_id:int, page_id:int, group_id:int}
+ */
+function mod_nwi_post_copy_parse_target(int $section_id, int $page_id): array
 {
-    global $mod_nwi_file_dir, $database, $admin;
-
-    $posts = [];
-    if(isset($_POST['manage_posts']) && is_array($_POST['manage_posts'])) {
-        $posts = $_POST['manage_posts'];
-    } else {
-        return false;
-    }
+    global $admin;
 
     $group_id = 0;
-    $old_section_id = $section_id;
-    $old_page_id = $page_id;
-
     $group = $admin->get_post_escaped('group');
 
     if (!empty($group)) {
@@ -771,145 +767,209 @@ function mod_nwi_post_copy($section_id,$page_id,$with_tags=false)
         }
     }
 
-    // store this one for later use
-    $mod_nwi_file_base = $mod_nwi_file_dir;
+    return ['section_id' => $section_id, 'page_id' => $page_id, 'group_id' => $group_id];
+}
 
-    foreach($posts as $idx=>$pid)
-    {
-        $original_post_id = intval($pid);
-        if($original_post_id != 0)
-        {
-        	// Get new order
-        	$order = new order(TABLE_PREFIX.'mod_news_img_posts', 'position', 'post_id', 'section_id');
-        	$position = $order->get_new($section_id);
 
-        	// Insert new row into database
-        	$sql = "INSERT INTO `%smod_news_img_posts` "
-                 . "(`section_id`,`group_id`,`position`,`link`,`content_short`,`content_long`,`content_block2`,`active`) "
-                 . "VALUES ('$section_id','$group_id','$position','','','','','0')";
-        	$database->query(sprintf($sql,TABLE_PREFIX));
+/**
+ * Computes the new post link from the original link and post ID,
+ * then creates the access file on disk when the post is active.
+ *
+ * @return string  The new relative post link (without extension).
+ */
+function mod_nwi_post_make_link(string $link, int $post_id, int $section_id, int $page_id, string $active): string
+{
+    global $admin, $MESSAGE;
 
-            // get new postID
-        	$post_id = $database->get_one("SELECT LAST_INSERT_ID()");
+    $post_link = '/posts/' . page_filename(
+        preg_replace('/^\/?posts\/?/s', '', preg_replace('/-[0-9]*$/s', '', $link, 1))
+    );
+    if (substr_compare($post_link, (string)$post_id, -(strlen((string)$post_id)), strlen((string)$post_id)) != 0) {
+        $post_link .= PAGE_SPACER . $post_id;
+    }
 
-        	$mod_nwi_file_dir = "$mod_nwi_file_base/$post_id/";
-        	$mod_nwi_thumb_dir = $mod_nwi_file_dir . "thumb/";
+    make_dir(WB_PATH . PAGES_DIRECTORY . '/posts/');
+    if (!is_writable(WB_PATH . PAGES_DIRECTORY . '/posts/')) {
+        $admin->print_error($MESSAGE['PAGES_CANNOT_CREATE_ACCESS_FILE']);
+    } elseif ($active == "1") {
+        $filename = WB_PATH . PAGES_DIRECTORY . '/' . $post_link . PAGE_EXTENSION;
+        mod_nwi_create_file($filename, '', (string)$post_id, (string)$section_id, (string)$page_id);
+    }
 
-            // orig. post
-            $fetch_content = mod_nwi_post_get($original_post_id);
+    return $post_link;
+}
 
-        	$title = mod_nwi_escapeString($fetch_content['title']);
-        	$link = mod_nwi_escapeString($fetch_content['link']);
-        	$short = mod_nwi_escapeString($fetch_content['content_short']);
-        	$long = mod_nwi_escapeString($fetch_content['content_long']);
-        	$block2 = mod_nwi_escapeString($fetch_content['content_block2']);
-        	$image = mod_nwi_escapeString($fetch_content['image']);
-        	$active = mod_nwi_escapeString($fetch_content['active']);
-        	$publishedwhen =  $fetch_content['published_when'];
-        	$publisheduntil =  $fetch_content['published_until'];
 
-        	// Get page link URL
-        	$query_page = $database->query("SELECT `level`,`link` FROM `".TABLE_PREFIX."pages` WHERE `page_id` = '$page_id'");
-        	$page = $query_page->fetchRow();
-        	$page_level = $page['level'];
-        	$page_link = $page['link'];
+/**
+ * Creates the image directory for the new post, copies all images from the
+ * original post, and duplicates the gallery rows in the database.
+ */
+function mod_nwi_post_copy_images(int $original_post_id, int $post_id): void
+{
+    global $mod_nwi_file_dir, $database;
 
-        	// get old link
-        	$old_link = $link;
+    if (!is_dir($mod_nwi_file_dir)) {
+        mod_nwi_img_makedir($mod_nwi_file_dir);
+    }
+    mod_nwi_img_copy(WB_PATH . MEDIA_DIRECTORY . '/.news_img/' . $original_post_id, $mod_nwi_file_dir);
 
-        	// new link
-        	$post_link = '/posts/'.page_filename(preg_replace('/^\/?posts\/?/s', '', preg_replace('/-[0-9]*$/s', '', $link, 1)));
-        	// make sure to have the post_id as suffix; this will make the link unique (hopefully...)
-        	if(substr_compare($post_link,$post_id,-(strlen($post_id)),strlen($post_id))!=0) {
-        	    $post_link .= PAGE_SPACER.$post_id;
-        	}
+    $database->query(sprintf(
+        "INSERT INTO `%smod_news_img_img` (`picname`,`picdesc`,`post_id`,`position`) " .
+        "SELECT `picname`,`picdesc`,%d,`position` " .
+        "FROM `%smod_news_img_img` WHERE `post_id` = %d",
+        TABLE_PREFIX, $post_id, TABLE_PREFIX, $original_post_id
+    ));
+}
 
-        	// Make sure the post link is set and exists
-        	// Make news post access files dir
-        	make_dir(WB_PATH.PAGES_DIRECTORY.'/posts/');
-        	$file_create_time = '';
-        	if (!is_writable(WB_PATH.PAGES_DIRECTORY.'/posts/')) {
-        	    $admin->print_error($MESSAGE['PAGES_CANNOT_CREATE_ACCESS_FILE']);
-        	} else {
-        	    // Specify the filename
-				if ($active == "1") {
-					$filename = WB_PATH.PAGES_DIRECTORY.'/'.$post_link.PAGE_EXTENSION;
-					mod_nwi_create_file($filename, $file_create_time, $post_id, $section_id, $page_id);
-				}
-        	}
 
-            // create image dir and copy images
-        	if(!is_dir($mod_nwi_file_dir)) {
-        	    mod_nwi_img_makedir($mod_nwi_file_dir);
-        	}
-        	mod_nwi_img_copy(WB_PATH.MEDIA_DIRECTORY.'/.news_img/'.$original_post_id,$mod_nwi_file_dir);
+/**
+ * Copies tags from the original post to the new post.
+ * When copying to a different section, missing tags are linked there first.
+ *
+ * Bug fix: the original condition `!$section_id != $old_section_id` was always
+ * evaluating incorrectly; corrected to `$section_id != $old_section_id`.
+ */
+function mod_nwi_post_copy_tags(int $original_post_id, int $post_id, int $section_id, int $old_section_id): void
+{
+    global $database;
 
-        	// Update row
-        	$database->query(
-        	    "UPDATE `".TABLE_PREFIX."mod_news_img_posts`"
-        	        . " SET `section_id` = '$section_id',"
-        	        . " `group_id` = '$group_id',"
-        	        . " `title` = '$title',"
-        	        . " `link` = '$post_link',"
-        	        . " `content_short` = '$short',"
-        	        . " `content_long` = '$long',"
-        	        . " `content_block2` = '$block2',"
-        	        . " `image` = '$image',"
-        	        . " `active` = '$active',"
-        	        . " `published_when` = '$publishedwhen',"
-        	        . " `published_until` = '$publisheduntil',"
-        	        . " `posted_when` = '".time()."',"
-        	        . " `posted_by` = '".$admin->get_user_id()."'"
-        	        . " WHERE `post_id` = '$post_id'"
-            );
+    $tags = mod_nwi_get_tags_for_post($original_post_id);
+    if (empty($tags)) {
+        return;
+    }
 
-        	if(!($database->is_error())){
-        	    // update gallery images
-        	    $database->query(sprintf(
-                    "INSERT INTO `%smod_news_img_img` " .
-                    "(`picname`, `picdesc`, `post_id`, `position`) " .
-                    "SELECT `picname`, `picdesc`, '".$post_id."', `position` " .
-                    "FROM `%smod_news_img_img` WHERE `post_id` = '".$original_post_id."'",
-                    TABLE_PREFIX,TABLE_PREFIX
+    // Different target section: ensure every tag is linked there before assigning it to the post
+    if ($section_id != $old_section_id) {
+        $section_tags = mod_nwi_get_tags($section_id);
+        foreach ($tags as $id => $tag) {
+            if (!isset($section_tags[$id]) || $section_tags[$id]['section_id'] != 0) {
+                $database->query(sprintf(
+                    "INSERT IGNORE INTO `%smod_news_img_tags_sections` (`section_id`,`tag_id`) VALUES (%d,%d)",
+                    TABLE_PREFIX, $section_id, $id
                 ));
+            }
+        }
+    }
 
-                // copy tags (optional)
-                if($with_tags==true) {
-                    $tags = mod_nwi_get_tags_for_post($original_post_id);
-                    if(count($tags)>0) {
-                        // different section: make sure the tags exist
-                        if(!$section_id != $old_section_id) {
-                            $section_tags = mod_nwi_get_tags($section_id);
-                            foreach($tags as $id => $tag) {
-                                // find tag in $section_tags
-                                if(!isset($section_tags[$id]) || $section_tags[$id]['section_id']!=0) {
-                                    // link tag to section
-                                    $database->query(sprintf(
-                                        "INSERT IGNORE INTO `%smod_news_img_tags_sections` " .
-                                        "(`section_id`,`tag_id`) VALUES (%d,%d)",
-                                        TABLE_PREFIX,$section_id,$id
-                                    ));
-                                }
-                            }
-                        }
-                        // link tag to post
-                        foreach($tags as $id => $tag) {
-                            $database->query(sprintf(
-                                "INSERT IGNORE INTO `%smod_news_img_tags_posts` " .
-                                "(`post_id`,`tag_id`) VALUES (%d,%d)",
-                                TABLE_PREFIX,$post_id,$id
-                            ));
-                        }
-                    }
-                }
-        	}
+    foreach ($tags as $id => $tag) {
+        $database->query(sprintf(
+            "INSERT IGNORE INTO `%smod_news_img_tags_posts` (`post_id`,`tag_id`) VALUES (%d,%d)",
+            TABLE_PREFIX, $post_id, $id
+        ));
+    }
+}
+
+
+/**
+ * Copies a single post (identified by $original_post_id) into the target section.
+ *
+ * @return bool  false on database error, true on success.
+ */
+function mod_nwi_post_copy_single(
+    int $original_post_id,
+    int $section_id,
+    int $page_id,
+    int $group_id,
+    int $old_section_id,
+    bool $with_tags,
+    string $file_base
+): bool {
+    global $mod_nwi_file_dir, $database, $admin;
+
+    // Get next position and insert a placeholder row to obtain a new post_id
+    $order    = new order(TABLE_PREFIX . 'mod_news_img_posts', 'position', 'post_id', 'section_id');
+    $position = $order->get_new($section_id);
+
+    $database->query(sprintf(
+        "INSERT INTO `%smod_news_img_posts` " .
+        "(`section_id`,`group_id`,`position`,`link`,`content_short`,`content_long`,`content_block2`,`active`) " .
+        "VALUES ('%d','%d','%d','','','','','0')",
+        TABLE_PREFIX, $section_id, $group_id, $position
+    ));
+    $post_id = (int)$database->get_one("SELECT LAST_INSERT_ID()");
+
+    // Point the global file-dir at the new post's directory (used by mod_nwi_post_copy_images)
+    $mod_nwi_file_dir = "$file_base/$post_id/";
+
+    // Fetch and escape original post content
+    $src    = mod_nwi_post_get($original_post_id);
+    $title  = mod_nwi_escapeString($src['title']);
+    $link   = mod_nwi_escapeString($src['link']);
+    $short  = mod_nwi_escapeString($src['content_short']);
+    $long   = mod_nwi_escapeString($src['content_long']);
+    $block2 = mod_nwi_escapeString($src['content_block2']);
+    $image  = mod_nwi_escapeString($src['image']);
+    $active = mod_nwi_escapeString($src['active']);
+    $publishedwhen  = $src['published_when'];
+    $publisheduntil = $src['published_until'];
+
+    $post_link = mod_nwi_post_make_link($link, $post_id, $section_id, $page_id, $active);
+
+    mod_nwi_post_copy_images($original_post_id, $post_id);
+
+    $database->query(
+        "UPDATE `" . TABLE_PREFIX . "mod_news_img_posts`" .
+        " SET `section_id` = '$section_id'," .
+        " `group_id` = '$group_id'," .
+        " `title` = '$title'," .
+        " `link` = '$post_link'," .
+        " `content_short` = '$short'," .
+        " `content_long` = '$long'," .
+        " `content_block2` = '$block2'," .
+        " `image` = '$image'," .
+        " `active` = '$active'," .
+        " `published_when` = '$publishedwhen'," .
+        " `published_until` = '$publisheduntil'," .
+        " `posted_when` = '" . time() . "'," .
+        " `posted_by` = '" . $admin->get_user_id() . "'" .
+        " WHERE `post_id` = '$post_id'"
+    );
+
+    if ($database->is_error()) {
+        return false;
+    }
+
+    if ($with_tags) {
+        mod_nwi_post_copy_tags($original_post_id, $post_id, $section_id, $old_section_id);
+    }
+
+    return true;
+}
+
+
+function mod_nwi_post_copy(int $section_id, int $page_id, bool $with_tags = false): bool
+{
+    global $mod_nwi_file_dir, $database;
+
+    if (!isset($_POST['manage_posts']) || !is_array($_POST['manage_posts'])) {
+        return false;
+    }
+    $posts = $_POST['manage_posts'];
+
+    $old_section_id = $section_id;
+    $file_base      = $mod_nwi_file_dir;
+
+    $target     = mod_nwi_post_copy_parse_target($section_id, $page_id);
+    $section_id = $target['section_id'];
+    $page_id    = $target['page_id'];
+    $group_id   = $target['group_id'];
+
+    foreach ($posts as $pid) {
+        $original_post_id = (int)$pid;
+        if ($original_post_id === 0) {
+            continue;
         }
 
-        // Clean up ordering (e.g. if we were moving posts across section borders
-        $order = new order(TABLE_PREFIX.'mod_news_img_posts', 'position', 'post_id', 'section_id');
+        mod_nwi_post_copy_single(
+            $original_post_id, $section_id, $page_id,
+            $group_id, $old_section_id, $with_tags, $file_base
+        );
+
+        // Clean up ordering (relevant when moving posts across section borders)
+        $order = new order(TABLE_PREFIX . 'mod_news_img_posts', 'position', 'post_id', 'section_id');
         $order->clean($old_section_id);
 
-        if($database->is_error()) {
+        if ($database->is_error()) {
             return false;
         }
     }
