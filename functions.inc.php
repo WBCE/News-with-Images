@@ -2314,8 +2314,26 @@ function mod_nwi_get_news_items($options=array())
 		}
 	}
 
-	// export variables into function scope
-	extract($settings);
+	// explicit assignment instead of extract()
+	$group_id_type    = $settings['group_id_type'];
+	$group_id         = $settings['group_id'];
+	$start_news_item  = $settings['start_news_item'];
+	$max_news_items   = $settings['max_news_items'];
+	$max_news_length  = $settings['max_news_length'];
+	$strip_tags       = $settings['strip_tags'];
+	$allowed_tags     = $settings['allowed_tags'];
+	$sort_by          = $settings['sort_by'];
+	$sort_order       = $settings['sort_order'];
+	$not_older_than   = $settings['not_older_than'];
+	$is_not_older_than = $settings['is_not_older_than'];
+	$lang_id          = $settings['lang_id'];
+	$lang_filter      = $settings['lang_filter'];
+	$skip             = $settings['skip'];
+	$tags             = $settings['tags'];
+	$taglist          = $settings['taglist'];
+	$groups_on_tags   = $settings['groups_on_tags'];
+	$view             = $settings['view'];
+	$aslist           = $settings['aslist'];
 
 	/**
 	 * Sanitize user specified function parameters
