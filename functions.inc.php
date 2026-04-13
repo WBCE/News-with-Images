@@ -1712,15 +1712,18 @@ function mod_nwi_sections()
  function mod_nwi_settings_get($section_id)
 {
     global $database;
+    static $cache = [];
+    $key = (int)$section_id;
+    if (array_key_exists($key, $cache)) {
+        return $cache[$key];
+    }
     $query_content = $database->query(sprintf(
         "SELECT * FROM `%smod_news_img_settings` WHERE `section_id`=%d",
         TABLE_PREFIX,
-        $section_id
+        $key
     ));
-    if(!empty($query_content)) {
-        return $query_content->fetchRow();
-    }
-    return array();
+    $cache[$key] = (!empty($query_content)) ? $query_content->fetchRow() : [];
+    return $cache[$key];
 }   // end function mod_nwi_settings_get()
 
 /**
