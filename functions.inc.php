@@ -841,20 +841,21 @@ function mod_nwi_post_copy_tags(int $original_post_id, int $post_id, int $sectio
     // Different target section: ensure every tag is linked there before assigning it to the post
     if ($section_id != $old_section_id) {
         $section_tags = mod_nwi_get_tags($section_id);
-        foreach ($tags as $id => $tag) {
-            if (!isset($section_tags[$id]) || $section_tags[$id]['section_id'] != 0) {
+        foreach ($tags as $tag) {
+            $tag_id = (int)$tag['tag_id'];
+            if (!isset($section_tags[$tag_id]) || $section_tags[$tag_id]['section_id'] != 0) {
                 $database->query(sprintf(
                     "INSERT IGNORE INTO `%smod_news_img_tags_sections` (`section_id`,`tag_id`) VALUES (%d,%d)",
-                    TABLE_PREFIX, $section_id, $id
+                    TABLE_PREFIX, $section_id, $tag_id
                 ));
             }
         }
     }
 
-    foreach ($tags as $id => $tag) {
+    foreach ($tags as $tag) {
         $database->query(sprintf(
             "INSERT IGNORE INTO `%smod_news_img_tags_posts` (`post_id`,`tag_id`) VALUES (%d,%d)",
-            TABLE_PREFIX, $post_id, $id
+            TABLE_PREFIX, $post_id, (int)$tag['tag_id']
         ));
     }
 }
