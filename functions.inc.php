@@ -11,7 +11,7 @@ require_once WB_PATH.'/framework/class.order.php';
 // load module language file
 require __DIR__ . '/languages/EN.php';
 $lang = __DIR__ . '/languages/' . LANGUAGE . '.php';
-if(file_exists($lang)) {
+if (file_exists($lang)) {
     require $lang;
 }
 
@@ -23,12 +23,13 @@ $mod_nwi_thumb_dir = WB_PATH.MEDIA_DIRECTORY.'/.news_img/thumb/';
 
 /**
  **/
-function mod_nwi_get_slide(int $sectionID, ?string $tpl = 'bs5carousel') {
+function mod_nwi_get_slide(int $sectionID, ?string $tpl = 'bs5carousel')
+{
     $posts = mod_nwi_posts_getall($sectionID, false, '', true);
-    if(empty($tpl)) {
+    if (empty($tpl)) {
         $tpl = 'bs5carousel';
     }
-    if(!empty($posts)) {
+    if (!empty($posts)) {
         ob_start();
         include __DIR__.'/templates/slides/'.$tpl.'.txt';
         $content = ob_get_contents();
@@ -48,8 +49,9 @@ function mod_nwi_get_slide(int $sectionID, ?string $tpl = 'bs5carousel') {
  * @param array  $params Associative array of query parameters; null/false/'' values are omitted
  * @return string
  **/
-function mod_nwi_build_url(string $base, array $params): string {
-    $filtered = array_filter($params, fn($v) => $v !== null && $v !== false && $v !== '');
+function mod_nwi_build_url(string $base, array $params): string
+{
+    $filtered = array_filter($params, fn ($v) => $v !== null && $v !== false && $v !== '');
     if (empty($filtered)) {
         return $base;
     }
@@ -62,7 +64,8 @@ function mod_nwi_build_url(string $base, array $params): string {
  * Parse the pipe-delimited group select value (format: "group_id|section_id|page_id").
  * Returns an associative array ['g', 's', 'p'] on success, null on invalid format.
  */
-function mod_nwi_parse_group_param(string $group): ?array {
+function mod_nwi_parse_group_param(string $group): ?array
+{
     if (empty($group)) {
         return null;
     }
@@ -78,37 +81,37 @@ function mod_nwi_parse_group_param(string $group): ?array {
 }
 
 // ========== Tag Sorting helper ===============================================
- /**
- * sort an array
- *
- * @access public
- * @param  array   $array          - array to sort
- * @param  mixed   $index          - key to sort by
- * @param  string  $order          - 'asc' (default) || 'desc'
- * @param  boolean $natsort        - default: false
- * @param  boolean $case_sensitive - sort case sensitive; default: false
- *
- **/
-function mod_nwi_tag_sort($array, $index, $order='asc', $natsort=false, $case_sensitive=false)
+/**
+* sort an array
+*
+* @access public
+* @param  array   $array          - array to sort
+* @param  mixed   $index          - key to sort by
+* @param  string  $order          - 'asc' (default) || 'desc'
+* @param  boolean $natsort        - default: false
+* @param  boolean $case_sensitive - sort case sensitive; default: false
+*
+**/
+function mod_nwi_tag_sort($array, $index, $order = 'asc', $natsort = false, $case_sensitive = false)
 {
-	if (is_array($array) && count($array)) {
-		foreach (array_keys($array) as $key) {
-			$temp[$key] = $array[$key][$index];
-		}
-		if (!$natsort) {
-			($order=='asc') ? asort($temp) : arsort($temp);
-		} else {
-			($case_sensitive) ? natsort($temp) : natcasesort($temp);
-			if ($order != 'asc') {
-				$temp = array_reverse($temp, true);
-			}
-		}
-		foreach (array_keys($temp) as $key) {
-			(is_numeric($key)) ? $sorted[]=$array[$key] : $sorted[$key]=$array[$key];
-		}
-		return $sorted;
-	}
-	return $array;
+    if (is_array($array) && count($array)) {
+        foreach (array_keys($array) as $key) {
+            $temp[$key] = $array[$key][$index];
+        }
+        if (!$natsort) {
+            ($order == 'asc') ? asort($temp) : arsort($temp);
+        } else {
+            ($case_sensitive) ? natsort($temp) : natcasesort($temp);
+            if ($order != 'asc') {
+                $temp = array_reverse($temp, true);
+            }
+        }
+        foreach (array_keys($temp) as $key) {
+            (is_numeric($key)) ? $sorted[] = $array[$key] : $sorted[$key] = $array[$key];
+        }
+        return $sorted;
+    }
+    return $array;
 }   // end function mod_nwi_tag_sort()
 
 // ========== Groups ===========================================================
@@ -119,13 +122,14 @@ function mod_nwi_tag_sort($array, $index, $order='asc', $natsort=false, $case_se
  * @param   int   $section_id
  * @return
  **/
-function mod_nwi_get_group(int $group_id) : array
+function mod_nwi_get_group(int $group_id): array
 {
     global $database;
     $query = $database->query(sprintf(
         "SELECT * FROM `%smod_news_img_groups` " .
         "WHERE `group_id`=%d",
-        TABLE_PREFIX,$group_id
+        TABLE_PREFIX,
+        $group_id
     ));
     if ($query->numRows() > 0) {
         return $query->fetchRow();
@@ -139,7 +143,7 @@ function mod_nwi_get_group(int $group_id) : array
  * @param   int   $section_id
  * @return
  **/
-function mod_nwi_get_groups(int $section_id) : array
+function mod_nwi_get_groups(int $section_id): array
 {
     global $database, $admin;
     $groups = [];
@@ -153,8 +157,8 @@ function mod_nwi_get_groups(int $section_id) : array
         // Loop through groups
         while ($group = $query->fetchRow()) {
             $group['id_key'] = $group['group_id'];
-                $group['image'] = '';
-            foreach(array_values(array('png','jpg','jpeg','gif','webp')) as $suffix) {
+            $group['image'] = '';
+            foreach (array_values(array('png','jpg','jpeg','gif','webp')) as $suffix) {
                 if (file_exists(WB_PATH.MEDIA_DIRECTORY.'/.news_img/image'.$group['group_id'].'.'.$suffix)) {
                     $group['image'] = WB_URL.MEDIA_DIRECTORY.'/.news_img/image'.$group['group_id'].'.'.$suffix;
                 }
@@ -183,15 +187,15 @@ function mod_nwi_get_all_groups($section_id, $page_id)
     $pages = [];
 
     // get groups for this section
-    if($section_id != 0) {
-    $groups[$page_id] = [];
-    $groups[$page_id][$section_id] = mod_nwi_get_groups(intval($section_id));
+    if ($section_id != 0) {
+        $groups[$page_id] = [];
+        $groups[$page_id][$section_id] = mod_nwi_get_groups(intval($section_id));
     }
 
     // get all other NWI sections
     $sections = mod_nwi_sections();
-    foreach($sections as $sect) {
-        if($sect['section_id'] != $section_id) { // skip current
+    foreach ($sections as $sect) {
+        if ($sect['section_id'] != $section_id) { // skip current
             $groups[$sect['page_id']] = [];
             // groups
             $groups[$sect['page_id']][$sect['section_id']] = mod_nwi_get_groups(intval($sect['section_id']));
@@ -204,9 +208,9 @@ function mod_nwi_get_all_groups($section_id, $page_id)
                 if (!empty($page_details)) {
                     $page_title = isset($page_details['page_title'])
                                 ? $page_details['page_title']
-                                : ( isset($page_details['menu_title'])
+                                : (isset($page_details['menu_title'])
                                     ? $page_details['menu_title']
-                                    : "" );
+                                    : "");
                 }
                 $pages[$pid] = $page_title;
             }
@@ -219,7 +223,7 @@ function mod_nwi_get_all_groups($section_id, $page_id)
 
 /**
  *
- * @access 
+ * @access
  * @return
  **/
 function mod_nwi_get_tag($tag_id)
@@ -230,7 +234,10 @@ function mod_nwi_get_tag($tag_id)
         "(SELECT GROUP_CONCAT(`section_id`) FROM `%smod_news_img_tags_sections` AS `t2` WHERE `tag_id`=%d) as `sections` " .
         "FROM `%smod_news_img_tags` AS t1 ".
         "WHERE `tag_id`=%d",
-        TABLE_PREFIX,intval($tag_id),TABLE_PREFIX,intval($tag_id)
+        TABLE_PREFIX,
+        intval($tag_id),
+        TABLE_PREFIX,
+        intval($tag_id)
     ));
     if (!empty($query_tags) && $query_tags->numRows() > 0) {
         return $query_tags->fetchRow();
@@ -243,25 +250,28 @@ function mod_nwi_get_tag($tag_id)
  * @param  bool  $alltags
  * @return array
  **/
-function mod_nwi_get_tags($section_id=null,$alltags=false) {
+function mod_nwi_get_tags($section_id = null, $alltags = false)
+{
     global $database;
     $tags = [];
     $where = "WHERE `section_id`=0";
-    if(!empty($section_id)) {
+    if (!empty($section_id)) {
         $section_id = intval($section_id);
         $where .= " OR `section_id` = '$section_id'";
     }
-    if($alltags===true) {
+    if ($alltags === true) {
         $where = null;
     }
     $query_tags = $database->query(sprintf(
         "SELECT * FROM `%smod_news_img_tags` AS t1 " .
         "JOIN `%smod_news_img_tags_sections` AS t2 " .
         "ON t1.tag_id=t2.tag_id ".
-        $where, TABLE_PREFIX, TABLE_PREFIX
+        $where,
+        TABLE_PREFIX,
+        TABLE_PREFIX
     ));
     if (!empty($query_tags) && $query_tags->numRows() > 0) {
-        while($t = $query_tags->fetchRow()) {
+        while ($t = $query_tags->fetchRow()) {
             $tags[$t['tag_id']] = $t;
         }
     }
@@ -288,15 +298,19 @@ function mod_nwi_get_tags_for_post($post_id)
         "JOIN `%ssections` AS t4 ".
         "ON t3.`section_id`=t4.`section_id` ".
         "WHERE t2.`post_id`=%d",
-        TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, $post_id
+        TABLE_PREFIX,
+        TABLE_PREFIX,
+        TABLE_PREFIX,
+        TABLE_PREFIX,
+        $post_id
     ));
 
     if (!empty($query_tags) && $query_tags->numRows() > 0) {
-        while($t = $query_tags->fetchRow()) {
+        while ($t = $query_tags->fetchRow()) {
             $tags[$t['tag_id']] = $t;
         }
     }
-	$tags = mod_nwi_tag_sort($tags, 'tag', 'asc', true);
+    $tags = mod_nwi_tag_sort($tags, 'tag', 'asc', true);
     return $tags;
 }   // end function mod_nwi_get_tags_for_post()
 
@@ -305,12 +319,13 @@ function mod_nwi_get_tags_for_post($post_id)
  * Returns an array indexed by post_id, each value is the same format
  * as mod_nwi_get_tags_for_post() (tag_id => tag row, sorted).
  */
-function mod_nwi_get_tags_for_posts(array $post_ids): array {
+function mod_nwi_get_tags_for_posts(array $post_ids): array
+{
     global $database;
     if (empty($post_ids)) {
         return [];
     }
-    $ids = array_values(array_filter(array_map('intval', $post_ids), fn($id) => $id > 0));
+    $ids = array_values(array_filter(array_map('intval', $post_ids), fn ($id) => $id > 0));
     if (empty($ids)) {
         return [];
     }
@@ -323,7 +338,11 @@ function mod_nwi_get_tags_for_posts(array $post_ids): array {
         "JOIN `%smod_news_img_posts` AS t3 ON t2.`post_id`=t3.`post_id` " .
         "JOIN `%ssections` AS t4 ON t3.`section_id`=t4.`section_id` " .
         "WHERE t2.`post_id` IN (%s)",
-        TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, $in
+        TABLE_PREFIX,
+        TABLE_PREFIX,
+        TABLE_PREFIX,
+        TABLE_PREFIX,
+        $in
     ));
     if (!empty($query_tags) && $query_tags->numRows() > 0) {
         while ($t = $query_tags->fetchRow()) {
@@ -352,7 +371,10 @@ function mod_nwi_tag_exists(int $section_id, string $tag)
         "ON `t1`.`tag_id`=`t2`.`tag_id` " .
         "WHERE `tag`='%s' ".
         "AND (`t2`.`section_id`=%d OR `t2`.`section_id`=0)",
-        TABLE_PREFIX, TABLE_PREFIX, $tag, $section_id
+        TABLE_PREFIX,
+        TABLE_PREFIX,
+        $tag,
+        $section_id
     );
     $query = $database->query($sql);
     if (!empty($query) && $query->numRows() > 0) {
@@ -364,10 +386,10 @@ function mod_nwi_tag_exists(int $section_id, string $tag)
 // ========== Users ============================================================
 /**
  *
- * @access 
+ * @access
  * @return
  **/
- function mod_nwi_users_get()
+function mod_nwi_users_get()
 {
     global $database;
     $users = [];
@@ -375,8 +397,8 @@ function mod_nwi_tag_exists(int $section_id, string $tag)
         "SELECT `user_id`,`username`,`display_name`,`email` FROM `%susers`",
         TABLE_PREFIX
     ));
-    if(!empty($query_users) && $query_users->numRows() > 0) {
-        while($user = $query_users->fetchRow()) {
+    if (!empty($query_users) && $query_users->numRows() > 0) {
+        while ($user = $query_users->fetchRow()) {
             // Insert user info into users array
             $user_id = $user['user_id'];
             $users[$user_id]['username'] = $user['username'];
@@ -390,13 +412,14 @@ function mod_nwi_tag_exists(int $section_id, string $tag)
 
 // ========== Images ===========================================================
 
-function mod_nwi_img_copy($source, $dest){
-    if(is_dir($source)) {
-        $dir_handle=opendir($source);
-        while($file=readdir($dir_handle)){
-            if($file!="." && $file!=".."){
-                if(is_dir($source."/".$file)){
-                    if(!is_dir($dest."/".$file)){
+function mod_nwi_img_copy($source, $dest)
+{
+    if (is_dir($source)) {
+        $dir_handle = opendir($source);
+        while ($file = readdir($dir_handle)) {
+            if ($file != "." && $file != "..") {
+                if (is_dir($source."/".$file)) {
+                    if (!is_dir($dest."/".$file)) {
                         mkdir($dest."/".$file);
                     }
                     mod_nwi_img_copy($source."/".$file, $dest."/".$file);
@@ -407,8 +430,9 @@ function mod_nwi_img_copy($source, $dest){
         }
         closedir($dir_handle);
     } else {
-        if(file_exists($source))
+        if (file_exists($source)) {
             copy($source, $dest);
+        }
     }
 }
 
@@ -418,7 +442,8 @@ function mod_nwi_img_get($pic_id)
     $query_img = $database->query(sprintf(
         "SELECT * FROM `%smod_news_img_img` " .
         "WHERE `id` = %d",
-        TABLE_PREFIX,intval($pic_id)
+        TABLE_PREFIX,
+        intval($pic_id)
     ));
     if (!empty($query_img) && $query_img->numRows() > 0) {
         return $query_img->fetchRow();
@@ -426,7 +451,7 @@ function mod_nwi_img_get($pic_id)
     return array();
 }
 
-function mod_nwi_img_makedir($dir, $with_thumb=true)
+function mod_nwi_img_makedir($dir, $with_thumb = true)
 {
     if (make_dir($dir)) {
         // Add a index.php file to prevent directory spoofing
@@ -485,14 +510,14 @@ header('Location: ../');
     }
 }
 
-function mod_nwi_img_upload($post_id,$is_preview_image=false)
+function mod_nwi_img_upload($post_id, $is_preview_image = false)
 {
     global $database, $mod_nwi_file_dir, $allowed_suffixes;
 
     // upload.php = 'file'
     // modify_post.php (preview image) = 'postfoto'
     $key = 'file';
-    if($is_preview_image) {
+    if ($is_preview_image) {
         $key = 'postfoto';
     } else {
         $mod_nwi_file_dir .= "$post_id/";
@@ -518,7 +543,7 @@ function mod_nwi_img_upload($post_id,$is_preview_image=false)
     ) = mod_nwi_get_sizes($section_id);
 
     // gallery images size
-    $imagemaxsize  = ($settings['imgmaxsize']>0 && $settings['imgmaxsize'] < $iniset)
+    $imagemaxsize  = ($settings['imgmaxsize'] > 0 && $settings['imgmaxsize'] < $iniset)
         ? $settings['imgmaxsize']
         : $iniset;
 
@@ -527,26 +552,24 @@ function mod_nwi_img_upload($post_id,$is_preview_image=false)
     $crop           = ($settings['crop_preview'] == 'Y') ? 1 : 0;
 
     // make sure the folder exists
-    if(!is_dir($mod_nwi_file_dir)) {
+    if (!is_dir($mod_nwi_file_dir)) {
         mod_nwi_img_makedir($mod_nwi_file_dir);
     }
 
     // handle upload
-    if(isset($_FILES[$key]) && is_array($_FILES[$key]))
-    {
+    if (isset($_FILES[$key]) && is_array($_FILES[$key])) {
         $picture = $_FILES[$key];
-        if (isset($picture['name']) && $picture['name'] && (strlen($picture['name']) > 3))
-        {
+        if (isset($picture['name']) && $picture['name'] && (strlen($picture['name']) > 3)) {
             $pic_error = '';
             // change special characters
             $imagename = media_filename($picture['name']);
             // validate suffix
-            $suffix = strtolower(pathinfo($imagename,PATHINFO_EXTENSION));
-            if(!in_array($suffix,$allowed_suffixes)) {
+            $suffix = strtolower(pathinfo($imagename, PATHINFO_EXTENSION));
+            if (!in_array($suffix, $allowed_suffixes)) {
                 $imageErrorMessage = 'invalid file type';
             } else {
                 // lowercase filename and find a free one
-                $imagename = mod_nwi_find_free_filename($mod_nwi_file_dir,strtolower($imagename));
+                $imagename = mod_nwi_find_free_filename($mod_nwi_file_dir, strtolower($imagename));
                 $filepath = $mod_nwi_file_dir.$imagename;
                 // check size limit
                 if (empty($picture['size']) || $picture['size'] > $imagemaxsize) {
@@ -555,36 +578,38 @@ function mod_nwi_img_upload($post_id,$is_preview_image=false)
                     $imageErrorMessage .= $MOD_NEWS_IMG['IMAGE_FILENAME_ERROR'].'<br />';
                 } else {
                     // move to media folder
-                    if (true===move_uploaded_file($picture['tmp_name'], $filepath)) {
+                    if (true === move_uploaded_file($picture['tmp_name'], $filepath)) {
                         // preview images have a different size (smaller in most cases)
-                        if($is_preview_image) {
+                        if ($is_preview_image) {
                             $imagemaxwidth  = $previewwidth;
                             $imagemaxheight = $previewheight;
                         }
                         // fix for empty max values
-                        if(empty($imagemaxwidth)) {
+                        if (empty($imagemaxwidth)) {
                             $imagemaxwidth = 150;
                         }
-                        if(empty($imagemaxheight)) {
+                        if (empty($imagemaxheight)) {
                             $imagemaxheight = 150;
                         }
 
                         // resize image (if larger than max width and height)
                         if (list($w, $h) = getimagesize($mod_nwi_file_dir.$imagename)) {
-                            if ($w>$imagemaxwidth || $h>$imagemaxheight) {
+                            if ($w > $imagemaxwidth || $h > $imagemaxheight) {
                                 if (true !== ($pic_error = @mod_nwi_image_resize($mod_nwi_file_dir.$imagename, $mod_nwi_file_dir.$imagename, $imagemaxwidth, $imagemaxheight, $crop))) {
                                     $imageErrorMessage .= $pic_error.'<br />';
                                     @unlink($mod_nwi_file_dir.$imagename); // delete image (cleanup)
                                 }
                             }
                         }
-                        if($is_preview_image) {
+                        if ($is_preview_image) {
                             $database->query(sprintf(
                                 "UPDATE `%smod_news_img_posts` SET `image`='%s' " .
                                 "WHERE `post_id`=%d",
-                                TABLE_PREFIX, $imagename, $post_id
+                                TABLE_PREFIX,
+                                $imagename,
+                                $post_id
                             ));
-                            if($database->is_error()) {
+                            if ($database->is_error()) {
                                 $imageErrorMessage .= $database->get_error()."<br />";
                             }
                         } else {
@@ -599,9 +624,10 @@ function mod_nwi_img_upload($post_id,$is_preview_image=false)
                                     "INSERT INTO `%smod_news_img_img` " .
                                     "(`picname`) " .
                                     "VALUES ('%s')",
-                                    TABLE_PREFIX,$imagename
+                                    TABLE_PREFIX,
+                                    $imagename
                                 ));
-                                if($database->is_error()) {
+                                if ($database->is_error()) {
                                     $imageErrorMessage .= $database->get_error()."<br />";
                                 } else {
                                     $pic_id = $database->getLastInsertId();
@@ -614,9 +640,12 @@ function mod_nwi_img_upload($post_id,$is_preview_image=false)
                                     "INSERT INTO `%smod_news_img_posts_img` " .
                                     "(`post_id`,`pic_id`,`position`) " .
                                     "VALUES ('%s',%d,%d)",
-                                    TABLE_PREFIX,$post_id,$pic_id,$position
+                                    TABLE_PREFIX,
+                                    $post_id,
+                                    $pic_id,
+                                    $position
                                 ));
-                                if($database->is_error()) {
+                                if ($database->is_error()) {
                                     $imageErrorMessage .= $database->get_error()."<br />";
                                 }
                             }
@@ -637,14 +666,14 @@ function mod_nwi_post_activate($value)
 {
     global $database;
     $posts = [];
-    if(isset($_POST['manage_posts']) && is_array($_POST['manage_posts'])) {
+    if (isset($_POST['manage_posts']) && is_array($_POST['manage_posts'])) {
         $posts = $_POST['manage_posts'];
     } else {
         return false;
     }
 
     $errors = 0;
-    foreach($posts as $post_id) {
+    foreach ($posts as $post_id) {
         // Update row
         $database->query(sprintf(
             "UPDATE `%smod_news_img_posts`"
@@ -652,35 +681,35 @@ function mod_nwi_post_activate($value)
             . " WHERE `post_id` = '$post_id'",
             TABLE_PREFIX
         ));
-        if($database->is_error()) {
+        if ($database->is_error()) {
             $errors++;
         }
-    
-		$postQuery = "SELECT * from `".TABLE_PREFIX."mod_news_img_posts` WHERE `post_id`=".$post_id;	
-		$query_post = $database->query($postQuery);
-		if ($query_post->numRows() > 0) {
-		$post      = $query_post->fetchRow();
-		}
-		
-		$pageQuery = "SELECT * from `".TABLE_PREFIX."sections` WHERE `section_id`=".$post['section_id'];	
-		$query_page = $database->query($pageQuery);
-		if ($query_page->numRows() > 0) {
-		$page      = $query_page->fetchRow();
-		}
-		
-		
-		if ($post['active'] == "0" ) {		
-			if(is_writable(WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION)) {
-					unlink(WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION);
-			}
-			
-		} else{
-			$filename = WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION;
-			mod_nwi_create_file($filename, '', $post_id, $post['section_id'], $page['page_id']);
-		}
 
-	}
-	return ( $errors>0 ? false : true );
+        $postQuery = "SELECT * from `".TABLE_PREFIX."mod_news_img_posts` WHERE `post_id`=".$post_id;
+        $query_post = $database->query($postQuery);
+        if ($query_post->numRows() > 0) {
+            $post      = $query_post->fetchRow();
+        }
+
+        $pageQuery = "SELECT * from `".TABLE_PREFIX."sections` WHERE `section_id`=".$post['section_id'];
+        $query_page = $database->query($pageQuery);
+        if ($query_page->numRows() > 0) {
+            $page      = $query_page->fetchRow();
+        }
+
+
+        if ($post['active'] == "0") {
+            if (is_writable(WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION)) {
+                unlink(WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION);
+            }
+
+        } else {
+            $filename = WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION;
+            mod_nwi_create_file($filename, '', $post_id, $post['section_id'], $page['page_id']);
+        }
+
+    }
+    return ($errors > 0 ? false : true);
 }
 
 
@@ -688,56 +717,62 @@ function mod_nwi_post_clear($value)
 {
     global $database;
     $posts = [];
-    if(isset($_POST['manage_posts']) && is_array($_POST['manage_posts'])) {
+    if (isset($_POST['manage_posts']) && is_array($_POST['manage_posts'])) {
         $posts = $_POST['manage_posts'];
     } else {
         return false;
     }
 
     $errors = 0;
-    foreach($posts as $post_id) {
+    foreach ($posts as $post_id) {
         // Update row
-	if ((strcmp($value,'published_when')==0) or(strcmp($value,'published_until')==0)){
-        	$database->query(sprintf(
-        	    "UPDATE `%smod_news_img_posts`"
-        	    . " SET `$value` = '0' "
-        	    . " WHERE `post_id` = '$post_id'",
-        	    TABLE_PREFIX
-        	));
-        	if($database->is_error()) {
-        	    $errors++;
-        	}
-	}
-    
-	$postQuery = "SELECT * from `".TABLE_PREFIX."mod_news_img_posts` WHERE `post_id`=".$post_id;	
-	$query_post = $database->query($postQuery);
-	if ($query_post->numRows() > 0) {
-		$post      = $query_post->fetchRow();
-	}
+        if ((strcmp($value, 'published_when') == 0) or (strcmp($value, 'published_until') == 0)) {
+            $database->query(sprintf(
+                "UPDATE `%smod_news_img_posts`"
+                . " SET `$value` = '0' "
+                . " WHERE `post_id` = '$post_id'",
+                TABLE_PREFIX
+            ));
+            if ($database->is_error()) {
+                $errors++;
+            }
+        }
 
-	$pageQuery = "SELECT * from `".TABLE_PREFIX."sections` WHERE `section_id`=".$post['section_id'];	
-	$query_page = $database->query($pageQuery);
-	if ($query_page->numRows() > 0) {
-		$page      = $query_page->fetchRow();
-	}
+        $postQuery = "SELECT * from `".TABLE_PREFIX."mod_news_img_posts` WHERE `post_id`=".$post_id;
+        $query_post = $database->query($postQuery);
+        if ($query_post->numRows() > 0) {
+            $post      = $query_post->fetchRow();
+        }
 
-	// check if accessfile should be created...
-	$createFile = true;										// by default: yes.
-	if ($post['published_when'] != 0 && $post['published_when'] > time()) {$createFile = false;}    // no, because the post is not public yet.
-	if ($post['published_until'] != 0 && $post['published_until'] < time()) {$createFile = false;}  // no, because the post is no longer public.
-	if ($post['active'] != 1) {$createFile = false;}						// no, the post is created inactive.
-	$filename = WB_PATH.PAGES_DIRECTORY.'/'.$post['link'].PAGE_EXTENSION;
-	if (!file_exists($filename) && $createFile == true) {
-		mod_nwi_create_file($filename, '', $post['post_id'], $post['section_id'], $page['page_id']);
-	}
-	// remove access file if it exists and it shouldn't - not sure if this can happen at all
-	if (file_exists($filename) && $createFile == false && is_writable($filename)) {
-		unlink($filename);
-	}
+        $pageQuery = "SELECT * from `".TABLE_PREFIX."sections` WHERE `section_id`=".$post['section_id'];
+        $query_page = $database->query($pageQuery);
+        if ($query_page->numRows() > 0) {
+            $page      = $query_page->fetchRow();
+        }
+
+        // check if accessfile should be created...
+        $createFile = true;										// by default: yes.
+        if ($post['published_when'] != 0 && $post['published_when'] > time()) {
+            $createFile = false;
+        }    // no, because the post is not public yet.
+        if ($post['published_until'] != 0 && $post['published_until'] < time()) {
+            $createFile = false;
+        }  // no, because the post is no longer public.
+        if ($post['active'] != 1) {
+            $createFile = false;
+        }						// no, the post is created inactive.
+        $filename = WB_PATH.PAGES_DIRECTORY.'/'.$post['link'].PAGE_EXTENSION;
+        if (!file_exists($filename) && $createFile == true) {
+            mod_nwi_create_file($filename, '', $post['post_id'], $post['section_id'], $page['page_id']);
+        }
+        // remove access file if it exists and it shouldn't - not sure if this can happen at all
+        if (file_exists($filename) && $createFile == false && is_writable($filename)) {
+            unlink($filename);
+        }
 
 
     }
-    return ( $errors>0 ? false : true );
+    return ($errors > 0 ? false : true);
 }
 
 
@@ -817,7 +852,10 @@ function mod_nwi_post_copy_images(int $original_post_id, int $post_id): void
         "INSERT INTO `%smod_news_img_img` (`picname`,`picdesc`,`post_id`,`position`) " .
         "SELECT `picname`,`picdesc`,%d,`position` " .
         "FROM `%smod_news_img_img` WHERE `post_id` = %d",
-        TABLE_PREFIX, $post_id, TABLE_PREFIX, $original_post_id
+        TABLE_PREFIX,
+        $post_id,
+        TABLE_PREFIX,
+        $original_post_id
     ));
 }
 
@@ -846,7 +884,9 @@ function mod_nwi_post_copy_tags(int $original_post_id, int $post_id, int $sectio
             if (!isset($section_tags[$tag_id]) || $section_tags[$tag_id]['section_id'] != 0) {
                 $database->query(sprintf(
                     "INSERT IGNORE INTO `%smod_news_img_tags_sections` (`section_id`,`tag_id`) VALUES (%d,%d)",
-                    TABLE_PREFIX, $section_id, $tag_id
+                    TABLE_PREFIX,
+                    $section_id,
+                    $tag_id
                 ));
             }
         }
@@ -855,7 +895,9 @@ function mod_nwi_post_copy_tags(int $original_post_id, int $post_id, int $sectio
     foreach ($tags as $tag) {
         $database->query(sprintf(
             "INSERT IGNORE INTO `%smod_news_img_tags_posts` (`post_id`,`tag_id`) VALUES (%d,%d)",
-            TABLE_PREFIX, $post_id, (int)$tag['tag_id']
+            TABLE_PREFIX,
+            $post_id,
+            (int)$tag['tag_id']
         ));
     }
 }
@@ -885,7 +927,10 @@ function mod_nwi_post_copy_single(
         "INSERT INTO `%smod_news_img_posts` " .
         "(`section_id`,`group_id`,`position`,`link`,`content_short`,`content_long`,`content_block2`,`active`) " .
         "VALUES ('%d','%d','%d','','','','','0')",
-        TABLE_PREFIX, $section_id, $group_id, $position
+        TABLE_PREFIX,
+        $section_id,
+        $group_id,
+        $position
     ));
     $post_id = (int)$database->get_one("SELECT LAST_INSERT_ID()");
 
@@ -962,8 +1007,13 @@ function mod_nwi_post_copy(int $section_id, int $page_id, bool $with_tags = fals
         }
 
         mod_nwi_post_copy_single(
-            $original_post_id, $section_id, $page_id,
-            $group_id, $old_section_id, $with_tags, $file_base
+            $original_post_id,
+            $section_id,
+            $page_id,
+            $group_id,
+            $old_section_id,
+            $with_tags,
+            $file_base
         );
 
         // Clean up ordering (relevant when moving posts across section borders)
@@ -980,7 +1030,7 @@ function mod_nwi_post_copy(int $section_id, int $page_id, bool $with_tags = fals
 
 /**
  *
- * @access 
+ * @access
  * @return
  **/
 function mod_nwi_posts_count(int $section_id)
@@ -999,7 +1049,7 @@ function mod_nwi_posts_count(int $section_id)
         TABLE_PREFIX
     );
     $query_posts = $database->query($sql);
-    if(!empty($query_posts) && $query_posts->numRows()>0) {
+    if (!empty($query_posts) && $query_posts->numRows() > 0) {
         return $query_posts->fetchRow();
     }
     return 0;
@@ -1015,16 +1065,14 @@ function mod_nwi_post_delete($posts)
 
     $errors = 0;
 
-    foreach($posts as $post_id)
-    {
+    foreach ($posts as $post_id) {
         // Get post details
         $get_details = mod_nwi_post_get($post_id);
 
-        if(is_array($get_details) && count($get_details)>0)
-        {
+        if (is_array($get_details) && count($get_details) > 0) {
             // Unlink post access file
-            if(is_writable(WB_PATH.PAGES_DIRECTORY.$get_details['link'].PAGE_EXTENSION)) {
-        	    unlink(WB_PATH.PAGES_DIRECTORY.$get_details['link'].PAGE_EXTENSION);
+            if (is_writable(WB_PATH.PAGES_DIRECTORY.$get_details['link'].PAGE_EXTENSION)) {
+                unlink(WB_PATH.PAGES_DIRECTORY.$get_details['link'].PAGE_EXTENSION);
             }
 
             // delete images
@@ -1040,7 +1088,7 @@ function mod_nwi_post_delete($posts)
                 "DELETE FROM `%smod_news_img_posts` WHERE `post_id` = '$post_id' LIMIT 1",
                 TABLE_PREFIX
             ));
-            if($database->is_error()) {
+            if ($database->is_error()) {
                 $errors++;
             }
 
@@ -1049,21 +1097,21 @@ function mod_nwi_post_delete($posts)
             $order->clean($section_id);
         }
     }
-    return ( $errors>0 ? false : true );
+    return ($errors > 0 ? false : true);
 }
 
 function mod_nwi_post_get($post_id)
 {
     global $database,$section_id;
-    list($order_by,$direction) = mod_nwi_get_order($section_id);
-	$filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-	if ($filter_g) {
-		$query_group = ' AND `group_id` = '.$filter_g.' ';
-	} else {
-		$query_group = '';
-	}
-	$t = time();	
-    $prev_dir = ($direction=='DESC'?'ASC':'DESC');
+    list($order_by, $direction) = mod_nwi_get_order($section_id);
+    $filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    if ($filter_g) {
+        $query_group = ' AND `group_id` = '.$filter_g.' ';
+    } else {
+        $query_group = '';
+    }
+    $t = time();
+    $prev_dir = ($direction == 'DESC' ? 'ASC' : 'DESC');
     $sql = sprintf(
         "SELECT `t1`.*, " .
         "  (SELECT `link` FROM `%smod_news_img_posts` AS `t2` WHERE `t2`.`$order_by` > `t1`.`$order_by` AND `section_id`=$section_id AND (`published_when` = '0' OR `published_when` <= $t) AND (`published_until` = '0' OR `published_until` >= $t) AND `active`=1 $query_group ORDER BY `$order_by` $prev_dir LIMIT 1 ) as `prev_link`, ".
@@ -1072,26 +1120,31 @@ function mod_nwi_post_get($post_id)
         "  (SELECT `post_id` FROM `%smod_news_img_posts` AS `t3b` WHERE `t3b`.`$order_by` < `t1`.`$order_by` AND `section_id`=$section_id AND (`published_when` = '0' OR `published_when` <= $t) AND (`published_until` = '0' OR `published_until` >= $t) AND `active`=1 $query_group ORDER BY `$order_by` $direction LIMIT 1 ) as `next_id` " .
         "FROM `%smod_news_img_posts` AS `t1` " .
         "WHERE `post_id`=%d",
-        TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, $post_id
+        TABLE_PREFIX,
+        TABLE_PREFIX,
+        TABLE_PREFIX,
+        TABLE_PREFIX,
+        TABLE_PREFIX,
+        $post_id
     );
     $query_content = $database->query($sql);
-    if(!empty($query_content)) {
+    if (!empty($query_content)) {
         $post = $query_content->fetchRow();
-				
-		// create accessfiles of prev/next items if missing
-		// we need the page_id for the access file
-		$sectionArray = mod_nwi_get_section_array($post['section_id']); 
-		$this_page_id = $sectionArray['page_id'];
-		
-		$filename_next = WB_PATH.PAGES_DIRECTORY.'/'.$post['next_link'].PAGE_EXTENSION;
-		if ($post['next_link']!=='' && !file_exists($filename_next)) {
-			mod_nwi_create_file($filename_next, '', $post['next_id'], $post['section_id'], $this_page_id);
-		}
-		$filename_prev = WB_PATH.PAGES_DIRECTORY.'/'.$post['prev_link'].PAGE_EXTENSION;
-		if ($post['prev_link']!=='' && !file_exists($filename_prev)) {
-			mod_nwi_create_file($filename_prev, '', $post['prev_id'], $post['section_id'], $this_page_id);
-		}
-		
+
+        // create accessfiles of prev/next items if missing
+        // we need the page_id for the access file
+        $sectionArray = mod_nwi_get_section_array($post['section_id']);
+        $this_page_id = $sectionArray['page_id'];
+
+        $filename_next = WB_PATH.PAGES_DIRECTORY.'/'.$post['next_link'].PAGE_EXTENSION;
+        if ($post['next_link'] !== '' && !file_exists($filename_next)) {
+            mod_nwi_create_file($filename_next, '', $post['next_id'], $post['section_id'], $this_page_id);
+        }
+        $filename_prev = WB_PATH.PAGES_DIRECTORY.'/'.$post['prev_link'].PAGE_EXTENSION;
+        if ($post['prev_link'] !== '' && !file_exists($filename_prev)) {
+            mod_nwi_create_file($filename_prev, '', $post['prev_id'], $post['section_id'], $this_page_id);
+        }
+
         // get users
         $users = mod_nwi_users_get();
         // add "unknown" user
@@ -1109,10 +1162,10 @@ function mod_nwi_post_get($post_id)
 
 /**
  *
- * @access 
+ * @access
  * @return
  **/
-function mod_nwi_post_list(int $section_id, bool $process=true)
+function mod_nwi_post_list(int $section_id, bool $process = true)
 {
     $query_extra = mod_nwi_get_query_extra();
 
@@ -1123,7 +1176,7 @@ function mod_nwi_post_list(int $section_id, bool $process=true)
 }   // end function mod_nwi_post_list()
 
 
-function mod_nwi_post_move($section_id,$page_id,$with_tags=false)
+function mod_nwi_post_move($section_id, $page_id, $with_tags = false)
 {
     global $database, $mod_nwi_file_dir, $admin;
 
@@ -1150,18 +1203,17 @@ function mod_nwi_post_move($section_id,$page_id,$with_tags=false)
     $mod_nwi_file_base = $mod_nwi_file_dir;
 
     $posts = [];
-    if(isset($_POST['manage_posts']) && is_array($_POST['manage_posts'])) {
+    if (isset($_POST['manage_posts']) && is_array($_POST['manage_posts'])) {
         $posts = $_POST['manage_posts'];
     } else {
         return false;
     }
-    foreach($posts as $idx=>$pid)
-    {
+    foreach ($posts as $idx => $pid) {
         $post_id = intval($pid);
 
-        if($post_id != 0){
-        	// Update row
-        	$database->query(sprintf(
+        if ($post_id != 0) {
+            // Update row
+            $database->query(sprintf(
                 "UPDATE `%smod_news_img_posts` SET ".
                 "`section_id` = '$section_id', `group_id` = '$group_id' ".
                 "WHERE `post_id` = '$post_id'",
@@ -1174,7 +1226,7 @@ function mod_nwi_post_move($section_id,$page_id,$with_tags=false)
         $order->clean($old_section_id);
         $order->clean($section_id);
 
-        if($database->is_error()) {
+        if ($database->is_error()) {
             return false;
         }
 
@@ -1201,7 +1253,7 @@ function mod_nwi_post_move($section_id,$page_id,$with_tags=false)
 
 /**
  *
- * @access 
+ * @access
  * @return
  **/
 function mod_nwi_post_show(int $post_id)
@@ -1229,12 +1281,12 @@ function mod_nwi_post_show(int $post_id)
 
     // get post data
     $post = mod_nwi_post_get($post_id);
-	
-	$pageQuery = "SELECT * from `".TABLE_PREFIX."sections` WHERE `section_id`=".$post['section_id'];	
-	$query_page = $database->query($pageQuery);
-	if ($query_page->numRows() > 0) {
-	$page      = $query_page->fetchRow();
-	}
+
+    $pageQuery = "SELECT * from `".TABLE_PREFIX."sections` WHERE `section_id`=".$post['section_id'];
+    $query_page = $database->query($pageQuery);
+    if ($query_page->numRows() > 0) {
+        $page      = $query_page->fetchRow();
+    }
 
     // get group data
     $gid = $post['group_id'] ?? 0;
@@ -1244,25 +1296,25 @@ function mod_nwi_post_show(int $post_id)
             return false;
         }
     }
-	if ($post['active'] ==0 ) {		
-		if(is_writable(WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION)) {
-        	    unlink(WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION);
+    if ($post['active'] == 0) {
+        if (is_writable(WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION)) {
+            unlink(WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION);
         }
-		return false;
-	} else{
-		$filename = WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION;
+        return false;
+    } else {
+        $filename = WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION;
         mod_nwi_create_file($filename, '', $post_id, $section_id, $page['page_id']);
-	}
+    }
 
     return $post;
 }   // end function mod_nwi_post_show()
 
 /**
  *
- * @access 
+ * @access
  * @return
  **/
-function mod_nwi_posts_getall(int $section_id, bool $is_backend, string $query_extra, bool $process=true)
+function mod_nwi_posts_getall(int $section_id, bool $is_backend, string $query_extra, bool $process = true)
 {
     global $database, $admin, $TEXT;
 
@@ -1273,7 +1325,7 @@ function mod_nwi_posts_getall(int $section_id, bool $is_backend, string $query_e
     $filter   = '';
     $active   = '';
 
-    list($order_by,$direction) = mod_nwi_get_order($section_id);
+    list($order_by, $direction) = mod_nwi_get_order($section_id);
 
     $settings = mod_nwi_settings_get($section_id);
     if ($settings['posts_per_page'] != 0) {
@@ -1283,19 +1335,19 @@ function mod_nwi_posts_getall(int $section_id, bool $is_backend, string $query_e
         } else {
             $position = 0;
         }
-        if(!$is_backend) {
+        if (!$is_backend) {
             $limit = " LIMIT $position,".$settings['posts_per_page'];
         }
     }
 
-    if(!$is_backend) {
+    if (!$is_backend) {
         $query_extra .= " AND `active` = '1' AND `title` != '' "
                      .  "AND (`published_when`  = '0' OR `published_when`  <= $t) "
                      .  "AND (`published_until` = '0' OR `published_until` >= $t) ";
         $active       = 'AND `active`=1';
     }
 
-    if(isset($_GET['tags']) && strlen($_GET['tags'])) {
+    if (isset($_GET['tags']) && strlen($_GET['tags'])) {
         $filter_posts = [];
         $tags = mod_nwi_escape_tags($_GET['tags']);
         $r = $database->query(
@@ -1305,18 +1357,17 @@ function mod_nwi_posts_getall(int $section_id, bool $is_backend, string $query_e
             "WHERE `tag` IN ('".implode("', '", $tags)."') ".
             "GROUP BY `t2`.`post_id`"
         );
-        while ($row=$r->fetchRow()) {
+        while ($row = $r->fetchRow()) {
             $filter_posts[] = $row['post_id'];
         }
-        if (count($filter_posts)>0) {
+        if (count($filter_posts) > 0) {
             $filter = " AND `t1`.`post_id` IN (".implode(',', array_values($filter_posts)).") ";
+        } else {
+            $filter = " AND `t1`.`post_id` = '-999'";
         }
-		 else {
-			$filter = " AND `t1`.`post_id` = '-999'";
-		}
     }
 
-    $prev_dir = ($direction=='DESC'?'ASC':'DESC');
+    $prev_dir = ($direction == 'DESC' ? 'ASC' : 'DESC');
 
     $sql = sprintf(
         "SELECT " .
@@ -1327,45 +1378,55 @@ function mod_nwi_posts_getall(int $section_id, bool $is_backend, string $query_e
         "  (SELECT `post_id` FROM `%smod_news_img_posts` AS `t3` WHERE `t3`.`$order_by` < `t1`.`$order_by` AND `section_id`='$section_id' $active ORDER BY `$order_by` $prev_dir LIMIT 1 ) as `prev` " .
         "FROM `%smod_news_img_posts` AS `t1` WHERE `section_id`='$section_id' $filter ".
         "$query_extra ORDER BY `$order_by` $direction $limit",
-        TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX
+        TABLE_PREFIX,
+        TABLE_PREFIX,
+        TABLE_PREFIX,
+        TABLE_PREFIX,
+        TABLE_PREFIX
     );
 
     $query_posts = $database->query($sql);
 
-    if(!empty($query_posts) && $query_posts->numRows()>0) {
-            // map group index to title
-            $group_map = [];
-            foreach($groups as $i => $g) {
-                $group_map[$g['group_id']] = ( empty($g['title']) ? $TEXT['NONE'] : $g['title'] );
-            }
-            // get users
-            $users = mod_nwi_users_get();
-            // add "unknown" user
-            $users[0] = array(
-                'username' => 'unknown',
-                'display_name' => 'unknown',
-                'email' => ''
-            );
-            while($post = $query_posts->fetchRow()) {
-            if($process === true) {
+    if (!empty($query_posts) && $query_posts->numRows() > 0) {
+        // map group index to title
+        $group_map = [];
+        foreach ($groups as $i => $g) {
+            $group_map[$g['group_id']] = (empty($g['title']) ? $TEXT['NONE'] : $g['title']);
+        }
+        // get users
+        $users = mod_nwi_users_get();
+        // add "unknown" user
+        $users[0] = array(
+            'username' => 'unknown',
+            'display_name' => 'unknown',
+            'email' => ''
+        );
+        while ($post = $query_posts->fetchRow()) {
+            if ($process === true) {
                 $posts[] = mod_nwi_post_process($post, $section_id, $users);
-        	} else {
-            	$posts[] = $post;
-            }			
-			$sectionArray = mod_nwi_get_section_array($post['section_id']);
-			$filename = WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION;
-			
-			// check if accessfile should be created...
-			$createFile = true;																				// by default: yes.
-			if ($post['published_when'] != 0 && $post['published_when'] > time()) {$createFile = false;}    // no, because the post is not public yet.
-			if ($post['published_until'] != 0 && $post['published_until'] < time()) {$createFile = false;}  // no, because the post is no longer public.
-			if ($post['active'] != 1) {$createFile = false;}												// no, the post is created inactive.
-			if (!file_exists($filename) && $createFile == true) {
-				mod_nwi_create_file($filename, '', $post['post_id'], $post['section_id'], $sectionArray['page_id']);
-			}
+            } else {
+                $posts[] = $post;
+            }
+            $sectionArray = mod_nwi_get_section_array($post['section_id']);
+            $filename = WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION;
+
+            // check if accessfile should be created...
+            $createFile = true;																				// by default: yes.
+            if ($post['published_when'] != 0 && $post['published_when'] > time()) {
+                $createFile = false;
+            }    // no, because the post is not public yet.
+            if ($post['published_until'] != 0 && $post['published_until'] < time()) {
+                $createFile = false;
+            }  // no, because the post is no longer public.
+            if ($post['active'] != 1) {
+                $createFile = false;
+            }												// no, the post is created inactive.
+            if (!file_exists($filename) && $createFile == true) {
+                mod_nwi_create_file($filename, '', $post['post_id'], $post['section_id'], $sectionArray['page_id']);
+            }
         }
     }
-	
+
 
 
     return $posts;
@@ -1493,7 +1554,7 @@ function mod_nwi_posts_render($section_id, $posts, $posts_per_page = 0)
     $tags_by_post = mod_nwi_get_tags_for_posts(array_column($posts, 'post_id'));
 
     // Closure to apply pagination placeholders to a template string
-    $apply_pagination = function(string $template) use ($pagination): string {
+    $apply_pagination = function (string $template) use ($pagination): string {
         return str_replace(
             ['[NEXT_PAGE_LINK]', '[NEXT_LINK]', '[PREVIOUS_PAGE_LINK]',
              '[PREVIOUS_LINK]', '[OUT_OF]', '[OF]', '[DISPLAY_PREVIOUS_NEXT_LINKS]'],
@@ -1530,8 +1591,8 @@ function mod_nwi_posts_render($section_id, $posts, $posts_per_page = 0)
         $has_detail = (strlen($post['content_long']) >= 9) || ($anz_post_img >= 1);
 
         $post_href_link   = $has_detail ? 'href="' . $post['post_link'] . '"' : '';
-        $post_a_open_tag  = $has_detail ? '<a ' . $post_href_link . '>'       : '';
-        $post_a_close_tag = $has_detail ? '</a>'                               : '';
+        $post_a_open_tag  = $has_detail ? '<a ' . $post_href_link . '>' : '';
+        $post_a_close_tag = $has_detail ? '</a>' : '';
 
         $post['content_short']  = str_replace('{SYSVAR:MEDIA_REL}', WB_URL . MEDIA_DIRECTORY, $post['content_short']);
         $post['content_long']   = str_replace('{SYSVAR:MEDIA_REL}', WB_URL . MEDIA_DIRECTORY, $post['content_long']);
@@ -1561,7 +1622,7 @@ function mod_nwi_posts_render($section_id, $posts, $posts_per_page = 0)
 
         $list[] = preg_replace_callback(
             '~\[(' . implode('|', $vars) . ')+\]~',
-            function($match) use ($replacements) {
+            function ($match) use ($replacements) {
                 return (isset($match[1]) && isset($replacements[$match[1]]))
                     ? $replacements[$match[1]]
                     : '';
@@ -1584,35 +1645,35 @@ function mod_nwi_posts_render($section_id, $posts, $posts_per_page = 0)
 
 /**
  *
- * @access 
+ * @access
  * @return
  **/
-function mod_nwi_post_process($post,$section_id,$users)
+function mod_nwi_post_process($post, $section_id, $users)
 {
     global $MOD_NEWS_IMG, $TEXT, $admin;
-	
-	$filename = WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION;
+
+    $filename = WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION;
 
     // get groups
     $groups = mod_nwi_get_groups(intval($section_id));
 
     // map group id to group data for easier handling
     $group_map = [];
-    foreach($groups as $i => $g) {
+    foreach ($groups as $i => $g) {
         $group_map[$g['group_id']] = $g;
     }
 
     $post['id_key'] = $post['post_id'];
-   
+
     // this is for the backend only
-	$icon = '';
+    $icon = '';
     $t = time();
-    if ($post['published_when']<=$t && $post['published_until']==0) {
-        $post['icon'] ='<span class="fa fa-fw fa-calendar-o" title="'.$MOD_NEWS_IMG['POST_ACTIVE'].'"></span>';
-    } elseif (($post['published_when']<=$t || $post['published_when']==0) && $post['published_until']>=$t) {
-        $post['icon'] ='<span class="fa fa-fw fa-calendar-check-o nwi-active" title="'.$MOD_NEWS_IMG['POST_ACTIVE'].'"></span>';
+    if ($post['published_when'] <= $t && $post['published_until'] == 0) {
+        $post['icon'] = '<span class="fa fa-fw fa-calendar-o" title="'.$MOD_NEWS_IMG['POST_ACTIVE'].'"></span>';
+    } elseif (($post['published_when'] <= $t || $post['published_when'] == 0) && $post['published_until'] >= $t) {
+        $post['icon'] = '<span class="fa fa-fw fa-calendar-check-o nwi-active" title="'.$MOD_NEWS_IMG['POST_ACTIVE'].'"></span>';
     } else {
-        $post['icon'] ='<span class="fa fa-fw fa-calendar-times-o nwi-inactive" title="'.$MOD_NEWS_IMG['POST_INACTIVE'].'"></span>';
+        $post['icon'] = '<span class="fa fa-fw fa-calendar-times-o nwi-inactive" title="'.$MOD_NEWS_IMG['POST_INACTIVE'].'"></span>';
     }
 
     list($previewwidth,
@@ -1633,8 +1694,8 @@ function mod_nwi_post_process($post,$section_id,$users)
     // post link
     $post['post_link'] = page_link($post['link']);
     $post['post_link_path'] = str_replace(WB_URL, WB_PATH, $post['post_link']);
-    $post['next_link'] = (isset($post['next_link']) && strlen($post['next_link'])>0 ? page_link($post['next_link']) : null);
-    $post['prev_link'] = (isset($post['prev_link']) && strlen($post['prev_link'])>0 ? page_link($post['prev_link']) : null);
+    $post['next_link'] = (isset($post['next_link']) && strlen($post['next_link']) > 0 ? page_link($post['next_link']) : null);
+    $post['prev_link'] = (isset($post['prev_link']) && strlen($post['prev_link']) > 0 ? page_link($post['prev_link']) : null);
 
     $filter_p = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     $filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
@@ -1646,26 +1707,26 @@ function mod_nwi_post_process($post,$section_id,$users)
     if ($post['published_when'] === '0') {
         $post['published_when'] = time();
     }
-    if(!defined('CAT_PATH')) {
+    if (!defined('CAT_PATH')) {
         if ($post['published_when'] > $post['posted_when']) {
-            $post['post_date'] = date(DATE_FORMAT, $post['published_when']+TIMEZONE);
-            $post['post_time'] = date(TIME_FORMAT, $post['published_when']+TIMEZONE);
+            $post['post_date'] = date(DATE_FORMAT, $post['published_when'] + TIMEZONE);
+            $post['post_time'] = date(TIME_FORMAT, $post['published_when'] + TIMEZONE);
         } else {
-            $post['post_date'] = date(DATE_FORMAT, $post['posted_when']+TIMEZONE);
-            $post['post_time'] = date(TIME_FORMAT, $post['posted_when']+TIMEZONE);
+            $post['post_date'] = date(DATE_FORMAT, $post['posted_when'] + TIMEZONE);
+            $post['post_time'] = date(TIME_FORMAT, $post['posted_when'] + TIMEZONE);
         }
-        $post['published_date'] = date(DATE_FORMAT, $post['published_when']+TIMEZONE);
-        $post['published_time'] = date(TIME_FORMAT, $post['published_when']+TIMEZONE);
+        $post['published_date'] = date(DATE_FORMAT, $post['published_when'] + TIMEZONE);
+        $post['published_time'] = date(TIME_FORMAT, $post['published_when'] + TIMEZONE);
 
-        $post['publishing_date'] = date(DATE_FORMAT, ( $post['published_when']==0 ? time()+TIMEZONE : $post['published_when']+TIMEZONE )) . ' ' . $post['published_time'];
-        $post['publishing_end_date'] = ( $post['published_until']!=0 ? date(DATE_FORMAT, $post['published_until']+TIMEZONE) : '' );
-        if(strlen($post['publishing_end_date'])>0) {
-            $post['publishing_end_date'] .= ' ' . date(TIME_FORMAT, $post['published_until']+TIMEZONE);
+        $post['publishing_date'] = date(DATE_FORMAT, ($post['published_when'] == 0 ? time() + TIMEZONE : $post['published_when'] + TIMEZONE)) . ' ' . $post['published_time'];
+        $post['publishing_end_date'] = ($post['published_until'] != 0 ? date(DATE_FORMAT, $post['published_until'] + TIMEZONE) : '');
+        if (strlen($post['publishing_end_date']) > 0) {
+            $post['publishing_end_date'] .= ' ' . date(TIME_FORMAT, $post['published_until'] + TIMEZONE);
         }
 
         if (file_exists($post['post_link_path'])) {
-            $post['create_date'] = date(DATE_FORMAT, filemtime($post['post_link_path'])+TIMEZONE);
-            $post['create_time'] = date(TIME_FORMAT, filemtime($post['post_link_path'])+TIMEZONE);
+            $post['create_date'] = date(DATE_FORMAT, filemtime($post['post_link_path']) + TIMEZONE);
+            $post['create_time'] = date(TIME_FORMAT, filemtime($post['post_link_path']) + TIMEZONE);
         } else {
             $post['create_date'] = $post['published_date'];
             $post['create_time'] = $post['published_time'];
@@ -1680,8 +1741,8 @@ function mod_nwi_post_process($post,$section_id,$users)
         }
         $post['published_date'] = CAT_Helper_DateTime::getDate($post['published_when']);
         $post['published_time'] = CAT_Helper_DateTime::getTime($post['published_when']);
-        $post['publishing_date'] = ( $post['published_when']==0 ? CAT_Helper_Datetime::getDateTime() : CAT_Helper_Datetime::getDateTime($post['published_when']) );
-        $post['publishing_end_date'] = ( $post['published_until']==0 ? '' : CAT_Helper_Datetime::getDateTime($post['published_until']) );
+        $post['publishing_date'] = ($post['published_when'] == 0 ? CAT_Helper_Datetime::getDateTime() : CAT_Helper_Datetime::getDateTime($post['published_when']));
+        $post['publishing_end_date'] = ($post['published_until'] == 0 ? '' : CAT_Helper_Datetime::getDateTime($post['published_until']));
 
         if (file_exists($post['post_link_path'])) {
             $post['create_date'] = CAT_Helper_DateTime::getDate(filemtime($post['post_link_path']));
@@ -1694,8 +1755,8 @@ function mod_nwi_post_process($post,$section_id,$users)
 
     // Get group id, title, and image
     $group_id                = $post['group_id'];
-    $post['group_title']     = ( isset($group_map[$group_id]) ? $group_map[$group_id]['title'] : null );
-    $post['group_image']     = ( isset($group_map[$group_id]) ? $group_map[$group_id]['image'] : null );
+    $post['group_title']     = (isset($group_map[$group_id]) ? $group_map[$group_id]['title'] : null);
+    $post['group_image']     = (isset($group_map[$group_id]) ? $group_map[$group_id]['image'] : null);
     $post['group_image_url'] = WB_URL."/modules/news_img/images/nopic.png";
     $post['display_image']   = ($post['group_image'] == '') ? "none" : "inherit";
     $post['display_group']   = ($group_id == 0) ? 'none' : 'inherit';
@@ -1736,31 +1797,32 @@ function mod_nwi_img_get_by_post(int $post_id, bool $render)
         "SELECT * FROM `%smod_news_img_img` " .
         "WHERE `post_id`=%d " .
         "ORDER BY `position`,`id` ASC",
-        TABLE_PREFIX,intval($post_id)
+        TABLE_PREFIX,
+        intval($post_id)
     ));
-	
-	$thumbsizeraw = explode('x',(string)$settings['imgthumbsize']);
+
+    $thumbsizeraw = explode('x', (string)$settings['imgthumbsize']);
 
     $images = [];
     if (!empty($query_img) && $query_img->numRows() > 0) {
         while ($row = $query_img->fetchRow()) {
-            if($render===true) {
+            if ($render === true) {
                 $images[] = str_replace(
                     array(
                         '[IMAGE]',
                         '[DESCRIPTION]',
-						'[THUMB]',
-						'[THUMBWIDTH]',
-						'[THUMBHEIGHT]',
-						'[WB_URL]'
+                        '[THUMB]',
+                        '[THUMBWIDTH]',
+                        '[THUMBHEIGHT]',
+                        '[WB_URL]'
                     ),
                     array(
                         WB_URL.MEDIA_DIRECTORY.'/.news_img/'.POST_ID.'/'.$row['picname'],
                         $row['picdesc'],
-						WB_URL.MEDIA_DIRECTORY.'/.news_img/'.POST_ID.'/thumb/'.$row['picname'],
-						$thumbsizeraw[0],
-						$thumbsizeraw[1],
-						WB_URL
+                        WB_URL.MEDIA_DIRECTORY.'/.news_img/'.POST_ID.'/thumb/'.$row['picname'],
+                        $thumbsizeraw[0],
+                        $thumbsizeraw[1],
+                        WB_URL
                     ),
                     $settings['image_loop']
                 );
@@ -1769,7 +1831,7 @@ function mod_nwi_img_get_by_post(int $post_id, bool $render)
             }
         }
     }
-    
+
     return $images;
 }
 
@@ -1777,7 +1839,7 @@ function mod_nwi_img_get_by_post(int $post_id, bool $render)
 
 /**
  *
- * @access 
+ * @access
  * @return
  **/
 function mod_nwi_sections()
@@ -1787,7 +1849,8 @@ function mod_nwi_sections()
     $query_sections = $database->query(sprintf(
         "SELECT `section_id`,`page_id` FROM `%ssections` " .
         "WHERE `module`='%s' ORDER BY `page_id`,`section_id` ASC",
-        TABLE_PREFIX, 'news_img'
+        TABLE_PREFIX,
+        'news_img'
     ));
     if ($query_sections->numRows() > 0) {
         while ($sect = $query_sections->fetchRow()) {
@@ -1803,7 +1866,7 @@ function mod_nwi_sections()
  * @access
  * @return
  **/
- function mod_nwi_settings_get($section_id)
+function mod_nwi_settings_get($section_id)
 {
     global $database;
     static $cache = [];
@@ -1822,7 +1885,7 @@ function mod_nwi_sections()
 
 /**
  *
- * @access 
+ * @access
  * @return
  **/
 function mod_nwi_get_dates()
@@ -1832,18 +1895,18 @@ function mod_nwi_get_dates()
     // get publishedwhen and publisheduntil
     $publishedwhen = jscalendar_to_timestamp(mod_nwi_escapeString($admin->get_post('publishdate')));
     if ($publishedwhen == '' || $publishedwhen < 1) {
-        $publishedwhen=0;
+        $publishedwhen = 0;
     } else {
-        if(!defined('CAT_PATH')) {
+        if (!defined('CAT_PATH')) {
             $publishedwhen -= TIMEZONE;
         }
     }
 
     $publisheduntil = jscalendar_to_timestamp(mod_nwi_escapeString($admin->get_post('enddate')), $publishedwhen);
     if ($publisheduntil == '' || $publisheduntil < 1) {
-        $publisheduntil=0;
+        $publisheduntil = 0;
     } else {
-        if(!defined('CAT_PATH')) {
+        if (!defined('CAT_PATH')) {
             $publisheduntil -= TIMEZONE;
         }
     }
@@ -1853,7 +1916,7 @@ function mod_nwi_get_dates()
 
 /**
  *
- * @access 
+ * @access
  * @return
  **/
 function mod_nwi_get_order(int $section_id)
@@ -1861,7 +1924,7 @@ function mod_nwi_get_order(int $section_id)
     $settings = mod_nwi_settings_get($section_id);
     $order_by  = 'position'; // default
     $direction = 'DESC';
-    switch($settings['view_order']) {
+    switch ($settings['view_order']) {
         case 1:
             $order_by = "published_when";
             $direction = 'DESC';
@@ -1888,7 +1951,7 @@ function mod_nwi_get_order(int $section_id)
 
 /**
  *
- * @access 
+ * @access
  * @return
  **/
 function mod_nwi_get_query_extra()
@@ -1903,25 +1966,25 @@ function mod_nwi_get_query_extra()
     }
 
     // ----- filter by date?  --------------------------------------------------
-    $filter_m      = filter_input(INPUT_GET, 'm',      FILTER_VALIDATE_INT, ['options' => ['min_range' => 1,    'max_range' => 12]]);
-    $filter_y      = filter_input(INPUT_GET, 'y',      FILTER_VALIDATE_INT, ['options' => ['min_range' => 1970, 'max_range' => 2100]]);
+    $filter_m      = filter_input(INPUT_GET, 'm', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1,    'max_range' => 12]]);
+    $filter_y      = filter_input(INPUT_GET, 'y', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1970, 'max_range' => 2100]]);
     $filter_method = filter_input(INPUT_GET, 'method', FILTER_VALIDATE_INT, ['options' => ['min_range' => 0,    'max_range' => 1]]);
     if ($filter_m && $filter_y && $filter_method !== null && $filter_method !== false) {
         $startdate = mktime(0, 0, 0, $filter_m, 1, $filter_y);
         $enddate   = mktime(0, 0, 0, $filter_m + 1, 1, $filter_y);
         switch ($filter_method) {
-        case 0:
-            $date_option = "posted_when";
-            break;
-        case 1:
-            $date_option = "published_when";
-            break;
+            case 0:
+                $date_option = "posted_when";
+                break;
+            case 1:
+                $date_option = "published_when";
+                break;
         }
         $query_extra .= " AND ".$date_option." >= '$startdate' AND ".$date_option." < '$enddate'";
     }
 
     // ----- filter by tags? ---------------------------------------------------
-    if(isset($_GET['tags']) && strlen($_GET['tags'])) {
+    if (isset($_GET['tags']) && strlen($_GET['tags'])) {
         $filter_posts = [];
         $tags = mod_nwi_escape_tags($_GET['tags']);
         $r = $database->query(
@@ -1931,11 +1994,11 @@ function mod_nwi_get_query_extra()
             "WHERE `tag` IN ('".implode("', '", $tags)."') ".
             "GROUP BY `t2`.`post_id`"
         );
-        while ($row=$r->fetchRow()) {
+        while ($row = $r->fetchRow()) {
             $filter_posts[] = $row['post_id'];
         }
-        if (count($filter_posts)>0) {
-            $query_extra.= " AND `t1`.`post_id` IN (".implode(',', array_values($filter_posts)).") ";
+        if (count($filter_posts) > 0) {
+            $query_extra .= " AND `t1`.`post_id` IN (".implode(',', array_values($filter_posts)).") ";
         }
     }
 
@@ -1944,7 +2007,7 @@ function mod_nwi_get_query_extra()
 
 /**
  *
- * @access 
+ * @access
  * @return
  **/
 function mod_nwi_get_sizes($section_id)
@@ -1952,10 +2015,10 @@ function mod_nwi_get_sizes($section_id)
     $settings = mod_nwi_settings_get($section_id);
     // preview images size
     $previewwidth = $previewheight = $thumbwidth = $thumbheight = '';
-    if (substr_count($settings['resize_preview'], 'x')>0) {
+    if (substr_count($settings['resize_preview'], 'x') > 0) {
         list($previewwidth, $previewheight) = explode('x', $settings['resize_preview'], 2);
     }
-    if (substr_count($settings['imgthumbsize'], 'x')>0) {
+    if (substr_count($settings['imgthumbsize'], 'x') > 0) {
         list($thumbwidth, $thumbheight) = explode('x', $settings['imgthumbsize'], 2);
     }
     return array(
@@ -1969,7 +2032,7 @@ function mod_nwi_get_sizes($section_id)
 
 
 // if file exists, find new name by adding a number
-function mod_nwi_find_free_filename($mod_nwi_file_dir,$imagename)
+function mod_nwi_find_free_filename($mod_nwi_file_dir, $imagename)
 {
     if (file_exists($mod_nwi_file_dir.$imagename)) {
         $num = 1;
@@ -1998,13 +2061,13 @@ function mod_nwi_byte_convert($bytes)
 function mod_nwi_escapeString($string)
 {
     global $database;
-    if(method_exists($database,'escapeString')) {
+    if (method_exists($database, 'escapeString')) {
         return $database->escapeString($string);
     } else {
-        if(defined('CAT_PATH')) {
+        if (defined('CAT_PATH')) {
             $quoted = $database->conn()->quote($string);
-            $quoted = substr_replace($quoted,'',0,1);
-            $quoted = substr_replace($quoted,'',-1,1);
+            $quoted = substr_replace($quoted, '', 0, 1);
+            $quoted = substr_replace($quoted, '', -1, 1);
             return $quoted;
         }
     }
@@ -2013,7 +2076,7 @@ function mod_nwi_escapeString($string)
 function mod_nwi_return_bytes($val)
 {
     $val  = trim($val);
-    $last = strtolower($val[strlen($val)-1]);
+    $last = strtolower($val[strlen($val) - 1]);
     $val  = intval($val);
     switch ($last) {
         case 'g':
@@ -2029,33 +2092,33 @@ function mod_nwi_return_bytes($val)
     return $val;
 }
 
-function mod_nwi_create_file(string $filename, ?string $filetime=null, ?string $postID=null, ?string $sectionID=null, ?string $pageID=null)
+function mod_nwi_create_file(string $filename, ?string $filetime = null, ?string $postID = null, ?string $sectionID = null, ?string $pageID = null)
 {
     global $page_id, $section_id, $post_id;
 
-    if(!empty($postID)) {
+    if (!empty($postID)) {
         $post_id = $postID;
     }
     // on copy/move, the ID of the new sections is passed; in all other cases
     // we use the ID of the current section
-    if(empty($sectionID)) {
+    if (empty($sectionID)) {
         $sectionID = $section_id;
     }
-    if(empty($pageID)) {
+    if (empty($pageID)) {
         $pageID = $page_id;
     }
 
     // We need to create a new file
     // First, delete old file if it exists
     if (file_exists($filename)) {
-        $filetime = !empty($filetime) ? $filetime :  filemtime($filename);
+        $filetime = !empty($filetime) ? $filetime : filemtime($filename);
         unlink($filename);
     } else {
         $filetime = !empty($filetime) ? $filetime : time();
     }
     // The depth of the page directory in the directory hierarchy
     // '/pages' is at depth 1
-    $pages_dir_depth = count(explode('/', PAGES_DIRECTORY))-1;
+    $pages_dir_depth = count(explode('/', PAGES_DIRECTORY)) - 1;
     // Work-out how many ../'s we need to get to the index page
     $index_location = '../';
     for ($i = 0; $i < $pages_dir_depth; $i++) {
@@ -2086,17 +2149,17 @@ require(WB_PATH."/index.php");
 
 /**
  *
- * @access 
+ * @access
  * @return
  **/
 function mod_nwi_escape_tags($tags)
 {
     global $database;
-    if(empty($tags)) {
+    if (empty($tags)) {
         return array();
     }
     $tags = explode(",", $tags);
-    foreach($tags as $i => $tag) {
+    foreach ($tags as $i => $tag) {
         $tags[$i] = mod_nwi_escapeString($tag);
     }
     return $tags;
@@ -2117,22 +2180,22 @@ function mod_nwi_escape_tags($tags)
  * @param $height - new height
  * @param $crop   - 0=no, 1=yes
  **/
-function mod_nwi_image_resize($src, $dst, $width, $height, $crop=0)
+function mod_nwi_image_resize($src, $dst, $width, $height, $crop = 0)
 {
     //var_dump($src);
     if (!list($w, $h) = getimagesize($src)) {
         return 2;
     }
-    $type = strtolower(pathinfo($src,PATHINFO_EXTENSION));
+    $type = strtolower(pathinfo($src, PATHINFO_EXTENSION));
     if ($type == 'jpeg') {
         $type = 'jpg';
     }
     switch ($type) {
         case 'bmp':
-            if(!function_exists('imagecreatefromwbmp')) {
+            if (!function_exists('imagecreatefromwbmp')) {
                 return 2;
             } else {
-                try{
+                try {
                     $img = imagecreatefromwbmp($src);
                 } catch (\Exception $e) {
                     return 2;
@@ -2140,10 +2203,10 @@ function mod_nwi_image_resize($src, $dst, $width, $height, $crop=0)
             }
             break;
         case 'gif':
-            if(!function_exists('imagecreatefromgif')) {
+            if (!function_exists('imagecreatefromgif')) {
                 return 2;
             } else {
-                try{
+                try {
                     $img = imagecreatefromgif($src);
                 } catch (\Exception $e) {
                     return 2;
@@ -2151,10 +2214,10 @@ function mod_nwi_image_resize($src, $dst, $width, $height, $crop=0)
             }
             break;
         case 'jpg':
-            if(!function_exists('imagecreatefromjpeg')) {
+            if (!function_exists('imagecreatefromjpeg')) {
                 return 2;
             } else {
-                try{
+                try {
                     $img = imagecreatefromjpeg($src);
                 } catch (\Exception $e) {
                     return 2;
@@ -2162,27 +2225,27 @@ function mod_nwi_image_resize($src, $dst, $width, $height, $crop=0)
             }
             break;
         case 'png':
-            if(!function_exists('imagecreatefrompng')) {
+            if (!function_exists('imagecreatefrompng')) {
                 return 2;
             } else {
-                try{
+                try {
                     $img = imagecreatefrompng($src);
                 } catch (\Exception $e) {
                     return 2;
                 }
             }
             break;
-		case 'webp':
-            if(!function_exists('imagecreatefromwebp')) {
+        case 'webp':
+            if (!function_exists('imagecreatefromwebp')) {
                 return 2;
             } else {
-                try{
+                try {
                     $img = imagecreatefromwebp($src);
                 } catch (\Exception $e) {
                     return 2;
                 }
             }
-            break;	
+            break;
         default: return 2;
     }
 
@@ -2191,7 +2254,7 @@ function mod_nwi_image_resize($src, $dst, $width, $height, $crop=0)
         if ($w < $width or $h < $height) {
             return 1;
         }
-        $ratio = max($width/$w, $height/$h);
+        $ratio = max($width / $w, $height / $h);
         $h = $height / $ratio;
         $x = ($w - $width / $ratio) / 2;
         $w = $width / $ratio;
@@ -2199,7 +2262,7 @@ function mod_nwi_image_resize($src, $dst, $width, $height, $crop=0)
         if ($w < $width and $h < $height) {
             return 1;
         }
-        $ratio = min($width/$w, $height/$h);
+        $ratio = min($width / $w, $height / $h);
         $width = $w * $ratio;
         $height = $h * $ratio;
         $x = 0;
@@ -2217,11 +2280,16 @@ function mod_nwi_image_resize($src, $dst, $width, $height, $crop=0)
     imagecopyresampled($new, $img, 0, 0, $x, 0, $width, $height, $w, $h);
 
     switch ($type) {
-        case 'bmp': imagewbmp($new, $dst); break;
-        case 'gif': imagegif($new, $dst); break;
-        case 'jpg': imagejpeg($new, $dst); break;
-        case 'png': imagepng($new, $dst); break;
-		case 'webp': imagewebp($new, $dst); break;
+        case 'bmp': imagewbmp($new, $dst);
+            break;
+        case 'gif': imagegif($new, $dst);
+            break;
+        case 'jpg': imagejpeg($new, $dst);
+            break;
+        case 'png': imagepng($new, $dst);
+            break;
+        case 'webp': imagewebp($new, $dst);
+            break;
     }
     return true;
 }
@@ -2248,12 +2316,12 @@ function mod_nwi_replacements()
         'GROUP_IMAGE_URL',              // image url
         'GROUP_TITLE',                  // group title
         'IMAGE',                        // preview image
-		'IMAGE_URL',					// URL of preview image without <img src>
+        'IMAGE_URL',					// URL of preview image without <img src>
         'IMAGES',                       // gallery images
         'LINK',                         // "read more" link
-		'HREF',							// link to post detail including href=""
-		'AOPEN',						// complete <a href=""> if long text or gallery exists
-		'ACLOSE',						// closing </a> if long text or gallery exists
+        'HREF',							// link to post detail including href=""
+        'AOPEN',						// complete <a href=""> if long text or gallery exists
+        'ACLOSE',						// closing </a> if long text or gallery exists
         'MODI_DATE',                    // post modification date
         'MODI_TIME',                    // post modification time
         'NEXT_LINK',                    // next link
@@ -2269,8 +2337,8 @@ function mod_nwi_replacements()
         'PUBLISHED_TIME',               // published time
         'SHORT',                        // alias for CONTENT_SHORT
         'SHOW_READ_MORE',               // wether to show "read more" link
-        'TAGS',                         // tags		
-		'TAGLIST',						// tags without formatting
+        'TAGS',                         // tags
+        'TAGLIST',						// tags without formatting
         'TEXT_AT',                      // text for "at" ("um")
         'TEXT_BACK',                    // text for "back" ("zurück")
         'TEXT_LAST_CHANGED',            // text for "last changed" ("zuletzt geändert")
@@ -2285,131 +2353,131 @@ function mod_nwi_replacements()
         'USERNAME',                     // user's (who posted) username
     );
     $default_replacements = array(
-        
+
     );
     return array($vars,$default_replacements);
 }
 
 function mod_nwi_display_news_items(
-	$group_id = 0,                  // IDs of news to show, matching defined $group_id_type (default:=0, all news, 0..N, or array(2,4,5,N) to limit news to IDs matching $group_id_type)
-	$max_news_items = 10,           // maximum number of news shown (default:= 10, min:=1, max:= 999)
-	$max_news_length = -1,          // maximum length of the short news text shown (default:=-1 => full news length)
-	$lang_id = 'AUTO',              // language file to load and lang_id used if $lang_filer = true (default:= auto, examples: AUTO, DE, EN)
-	$strip_tags = true,             // true:=remove tags from short and long text (default:=true); false:=don´t strip tags
-	$allowed_tags = '<p><a><img>',  // tags not striped off (default:='<p><a><img>')
-	$custom_placeholder = false,    // false:= none (default), array('MY_VAR_1' => '%TAG%#', ... 'MY_VAR_N' => '#regex_N#' ...)
-	$sort_by = 1,                   // 1:=position (default), 2:=posted_when, 3:=published_when, 4:=random order 5:=published_until
-	$sort_order = 1,                // 1:=descending (default), 2:=ascending
-	$not_older_than = 0,            // 0:=disabled (default), 0-999 (only show news `published_when` date <=x days; 12 hours:=0.5)
+    $group_id = 0,                  // IDs of news to show, matching defined $group_id_type (default:=0, all news, 0..N, or array(2,4,5,N) to limit news to IDs matching $group_id_type)
+    $max_news_items = 10,           // maximum number of news shown (default:= 10, min:=1, max:= 999)
+    $max_news_length = -1,          // maximum length of the short news text shown (default:=-1 => full news length)
+    $lang_id = 'AUTO',              // language file to load and lang_id used if $lang_filer = true (default:= auto, examples: AUTO, DE, EN)
+    $strip_tags = true,             // true:=remove tags from short and long text (default:=true); false:=don´t strip tags
+    $allowed_tags = '<p><a><img>',  // tags not striped off (default:='<p><a><img>')
+    $custom_placeholder = false,    // false:= none (default), array('MY_VAR_1' => '%TAG%#', ... 'MY_VAR_N' => '#regex_N#' ...)
+    $sort_by = 1,                   // 1:=position (default), 2:=posted_when, 3:=published_when, 4:=random order 5:=published_until
+    $sort_order = 1,                // 1:=descending (default), 2:=ascending
+    $not_older_than = 0,            // 0:=disabled (default), 0-999 (only show news `published_when` date <=x days; 12 hours:=0.5)
     $is_not_older_than = 0,         // alias for not_older_than
-	$group_id_type = 'group_id',    // type used by group_id to extract news entries (supported: 'group_id', 'page_id', 'section_id', 'post_id')
-	$lang_filter = false,           // flag to enable language filter (default:= false, show only news from a news page, which language fits $lang_id)
+    $group_id_type = 'group_id',    // type used by group_id to extract news entries (supported: 'group_id', 'page_id', 'section_id', 'post_id')
+    $lang_filter = false,           // flag to enable language filter (default:= false, show only news from a news page, which language fits $lang_id)
     $skip = null,
     $tags = null,
     $groups_on_tags = false,        // wether to use the group_id if $skip or $tags is set
     $view = null,                   // CSS view to use
     $aslist = false
 ) {
-	$output = mod_nwi_get_news_items(
-		$options = array(
-			'group_id_type'      => $group_id_type,
-			'group_id'           => $group_id,
-			'max_news_items'     => $max_news_items,
-			'max_news_length'    => $max_news_length,
-			'strip_tags'         => $strip_tags,
-			'allowed_tags'       => $allowed_tags,
-			'custom_placeholder' => $custom_placeholder,
-			'sort_by'            => $sort_by,
-			'sort_order'         => $sort_order,
-			'not_older_than'     => $not_older_than,
-		        'is_not_older_than'  => $is_not_older_than,
-			'lang_id'            => $lang_id,
-			'lang_filter'        => $lang_filter,
-		        'skip'               => $skip,
-			'tags'               => $tags,
-            		'groups_on_tags'     => $groups_on_tags,
-            		'view'               => $view,
-            		'aslist'             => $aslist,
-		)
-	);
-	echo $output;
+    $output = mod_nwi_get_news_items(
+        $options = array(
+            'group_id_type'      => $group_id_type,
+            'group_id'           => $group_id,
+            'max_news_items'     => $max_news_items,
+            'max_news_length'    => $max_news_length,
+            'strip_tags'         => $strip_tags,
+            'allowed_tags'       => $allowed_tags,
+            'custom_placeholder' => $custom_placeholder,
+            'sort_by'            => $sort_by,
+            'sort_order'         => $sort_order,
+            'not_older_than'     => $not_older_than,
+                'is_not_older_than'  => $is_not_older_than,
+            'lang_id'            => $lang_id,
+            'lang_filter'        => $lang_filter,
+                'skip'               => $skip,
+            'tags'               => $tags,
+                    'groups_on_tags'     => $groups_on_tags,
+                    'view'               => $view,
+                    'aslist'             => $aslist,
+        )
+    );
+    echo $output;
 }
 
-function mod_nwi_get_news_items($options=array())
+function mod_nwi_get_news_items($options = array())
 {
-	global $wb, $database, $LANG;
+    global $wb, $database, $LANG;
 
-	// default settings
-	$defaults = array(
-		'group_id_type' => 'group_id',    // type used by group_id to extract news entries (supported: 'group_id', 'page_id', 'section_id', 'post_id')
-		'group_id' => 0,                  // IDs of news to show, matching defined $group_id_type (default:=0, all news, 0..N, or array(2,4,5,N) to limit news to IDs matching $group_id_type)
-		'start_news_item' => 0,           // start showing news from the Nth news item onwards (default:= 0, min:=-999, max:= 999); Note: -1: last item, -2: 2nd last etc.
-		'max_news_items' => 10,           // maximum number of news shown (default:= 10, min:=1, max:= 999)
-		'max_news_length' => -1,          // maximum length of the short news text shown (default:=-1 => full news length)
-		'strip_tags' => true,             // true:=remove tags from short and long text (default:=true); false:=dont strip tags
-		'allowed_tags' => '<p><a><img>',  // tags not striped off (default:='<p><a><img>')
-		'sort_by' => 1,                   // 1:=position (default), 2:=posted_when, 3:=published_when, 4:=random order 5:=published_until
-		'sort_order' => 1,                // 1:=descending (default), 2:=ascending
-		'not_older_than' => 0,            // 0:=disabled (default), 0-999 (only show news `published_when` date <=x days; 12 hours:=0.5)
+    // default settings
+    $defaults = array(
+        'group_id_type' => 'group_id',    // type used by group_id to extract news entries (supported: 'group_id', 'page_id', 'section_id', 'post_id')
+        'group_id' => 0,                  // IDs of news to show, matching defined $group_id_type (default:=0, all news, 0..N, or array(2,4,5,N) to limit news to IDs matching $group_id_type)
+        'start_news_item' => 0,           // start showing news from the Nth news item onwards (default:= 0, min:=-999, max:= 999); Note: -1: last item, -2: 2nd last etc.
+        'max_news_items' => 10,           // maximum number of news shown (default:= 10, min:=1, max:= 999)
+        'max_news_length' => -1,          // maximum length of the short news text shown (default:=-1 => full news length)
+        'strip_tags' => true,             // true:=remove tags from short and long text (default:=true); false:=dont strip tags
+        'allowed_tags' => '<p><a><img>',  // tags not striped off (default:='<p><a><img>')
+        'sort_by' => 1,                   // 1:=position (default), 2:=posted_when, 3:=published_when, 4:=random order 5:=published_until
+        'sort_order' => 1,                // 1:=descending (default), 2:=ascending
+        'not_older_than' => 0,            // 0:=disabled (default), 0-999 (only show news `published_when` date <=x days; 12 hours:=0.5)
         'is_not_older_than' => 0,
-		'lang_id' => 'AUTO',              // language file to load and lang_id used if $lang_filer = true (default:= auto, examples: AUTO, DE, EN)
-		'lang_filter' => false,	          // flag to enable language filter (default:= false, show only news from a news page, which language fits $lang_id)
+        'lang_id' => 'AUTO',              // language file to load and lang_id used if $lang_filer = true (default:= auto, examples: AUTO, DE, EN)
+        'lang_filter' => false,	          // flag to enable language filter (default:= false, show only news from a news page, which language fits $lang_id)
         'skip' => null,                   // do not show posts with the given list of tags (default:=none)
-        'tags' => null,                   // show posts with only the given list of tags		
-		'taglist' => null,				  // show tags as simple list
+        'tags' => null,                   // show posts with only the given list of tags
+        'taglist' => null,				  // show tags as simple list
         'groups_on_tags' => false,        // wether to use the group_id if $skip or $tags is set
         'view' => 'default',              // use css from subfolder ('default','faq',...)
         'aslist' => false                 // unordered list of titles
-	);
+    );
 
-	// merge defaults and options array and remove unsupported keys
-	$settings = array_merge($defaults, $options);
-	foreach($settings as $key => $value) {
-		if(!array_key_exists($key, $defaults)) {
-			unset($settings[$key]);
-		}
-	}
+    // merge defaults and options array and remove unsupported keys
+    $settings = array_merge($defaults, $options);
+    foreach ($settings as $key => $value) {
+        if (!array_key_exists($key, $defaults)) {
+            unset($settings[$key]);
+        }
+    }
 
-	// explicit assignment instead of extract()
-	$group_id_type    = $settings['group_id_type'];
-	$group_id         = $settings['group_id'];
-	$start_news_item  = $settings['start_news_item'];
-	$max_news_items   = $settings['max_news_items'];
-	$max_news_length  = $settings['max_news_length'];
-	$strip_tags       = $settings['strip_tags'];
-	$allowed_tags     = $settings['allowed_tags'];
-	$sort_by          = $settings['sort_by'];
-	$sort_order       = $settings['sort_order'];
-	$not_older_than   = $settings['not_older_than'];
-	$is_not_older_than = $settings['is_not_older_than'];
-	$lang_id          = $settings['lang_id'];
-	$lang_filter      = $settings['lang_filter'];
-	$skip             = $settings['skip'];
-	$tags             = $settings['tags'];
-	$taglist          = $settings['taglist'];
-	$groups_on_tags   = $settings['groups_on_tags'];
-	$view             = $settings['view'];
-	$aslist           = $settings['aslist'];
+    // explicit assignment instead of extract()
+    $group_id_type    = $settings['group_id_type'];
+    $group_id         = $settings['group_id'];
+    $start_news_item  = $settings['start_news_item'];
+    $max_news_items   = $settings['max_news_items'];
+    $max_news_length  = $settings['max_news_length'];
+    $strip_tags       = $settings['strip_tags'];
+    $allowed_tags     = $settings['allowed_tags'];
+    $sort_by          = $settings['sort_by'];
+    $sort_order       = $settings['sort_order'];
+    $not_older_than   = $settings['not_older_than'];
+    $is_not_older_than = $settings['is_not_older_than'];
+    $lang_id          = $settings['lang_id'];
+    $lang_filter      = $settings['lang_filter'];
+    $skip             = $settings['skip'];
+    $tags             = $settings['tags'];
+    $taglist          = $settings['taglist'];
+    $groups_on_tags   = $settings['groups_on_tags'];
+    $view             = $settings['view'];
+    $aslist           = $settings['aslist'];
 
-	/**
-	 * Sanitize user specified function parameters
-	 */
-	mod_nwi_sanitize_input($group_id, 'i{0;0;999}');
-	mod_nwi_sanitize_input($start_news_item, 'i{0;-999;999}');
-	mod_nwi_sanitize_input($max_news_items, 'i{10;1;999}');
-	mod_nwi_sanitize_input($max_news_length, 'i{-1;0;250}');
-	mod_nwi_sanitize_input($strip_tags, 'b');
-	mod_nwi_sanitize_input($allowed_tags, 's{TRIM}');
-	mod_nwi_sanitize_input($sort_by, 'i{1;1;5}');
-	mod_nwi_sanitize_input($sort_order, 'i{1;1;2}');
-	mod_nwi_sanitize_input($not_older_than, 'd{0;0;999}');
+    /**
+     * Sanitize user specified function parameters
+     */
+    mod_nwi_sanitize_input($group_id, 'i{0;0;999}');
+    mod_nwi_sanitize_input($start_news_item, 'i{0;-999;999}');
+    mod_nwi_sanitize_input($max_news_items, 'i{10;1;999}');
+    mod_nwi_sanitize_input($max_news_length, 'i{-1;0;250}');
+    mod_nwi_sanitize_input($strip_tags, 'b');
+    mod_nwi_sanitize_input($allowed_tags, 's{TRIM}');
+    mod_nwi_sanitize_input($sort_by, 'i{1;1;5}');
+    mod_nwi_sanitize_input($sort_order, 'i{1;1;2}');
+    mod_nwi_sanitize_input($not_older_than, 'd{0;0;999}');
     mod_nwi_sanitize_input($is_not_older_than, 'd{0;0;999}');
-	mod_nwi_sanitize_input($group_id_type, 'l{group_id;group_id;page_id;section_id;post_id}');
-	mod_nwi_sanitize_input($lang_filter, 'b');
-    mod_nwi_sanitize_input($skip,'s{TRIM|STRIP|ENTITIES}');
-    mod_nwi_sanitize_input($tags,'s{TRIM|STRIP|ENTITIES}');
-    mod_nwi_sanitize_input($groups_on_tags,'b');
-    mod_nwi_sanitize_input($view,'s{TRIM|STRIP|ENTITIES}');
+    mod_nwi_sanitize_input($group_id_type, 'l{group_id;group_id;page_id;section_id;post_id}');
+    mod_nwi_sanitize_input($lang_filter, 'b');
+    mod_nwi_sanitize_input($skip, 's{TRIM|STRIP|ENTITIES}');
+    mod_nwi_sanitize_input($tags, 's{TRIM|STRIP|ENTITIES}');
+    mod_nwi_sanitize_input($groups_on_tags, 'b');
+    mod_nwi_sanitize_input($view, 's{TRIM|STRIP|ENTITIES}');
 
     $sql_group_id = null;
     $sql_not_older_than = null;
@@ -2418,58 +2486,60 @@ function mod_nwi_get_news_items($options=array())
     $sql_limit = null;
 
     // the "tags" param may be passend by a page link
-    if(!strlen($tags) && isset($_GET['tags']) ) {
+    if (!strlen($tags) && isset($_GET['tags'])) {
         $tags = htmlspecialchars($_GET['tags']);
-        mod_nwi_sanitize_input($tags,'s{TRIM|STRIP|ENTITIES}');
+        mod_nwi_sanitize_input($tags, 's{TRIM|STRIP|ENTITIES}');
     }
 
     // ---------- group handling -----------------------------------------------
 
     // show all news items if 0 is contained in group_id array
-	if (is_array($group_id) && in_array(0, $group_id)) $group_id = 0;
+    if (is_array($group_id) && in_array(0, $group_id)) {
+        $group_id = 0;
+    }
 
     // check for multiple groups or single group values
-	if (is_array($group_id)) {
-		// SQL query for multiple groups
-		$sql_group_id = "t1.`$group_id_type` IN (" . implode(',', $group_id) . ")";
-	} else {
-		// SQL query for single or empty groups
-		$sql_group_id = ($group_id) ? "t1.`$group_id_type` = '$group_id'" : '1';
-	}
+    if (is_array($group_id)) {
+        // SQL query for multiple groups
+        $sql_group_id = "t1.`$group_id_type` IN (" . implode(',', $group_id) . ")";
+    } else {
+        // SQL query for single or empty groups
+        $sql_group_id = ($group_id) ? "t1.`$group_id_type` = '$group_id'" : '1';
+    }
 
     // ---------- time filter --------------------------------------------------
-	$server_time = time();
-	$sql_not_older_than = '1';
-    if($is_not_older_than > 0) {
+    $server_time = time();
+    $sql_not_older_than = '1';
+    if ($is_not_older_than > 0) {
         $not_older_than = $is_not_older_than;
     }
-	if ($not_older_than > 0) {
-		$sql_not_older_than = ' (t1.`published_when` >= \'' . ($server_time - ($not_older_than * 24 * 60 * 60)) . '\')';
-	}
+    if ($not_older_than > 0) {
+        $sql_not_older_than = ' (t1.`published_when` >= \'' . ($server_time - ($not_older_than * 24 * 60 * 60)) . '\')';
+    }
 
     // ---------- language filter ----------------------------------------------
     $sql_lang_filter = '1';
-	if ($lang_filter) {
-        if(!defined('CAT_PATH')) {
-		    $page_ids = getPageIdsByLanguage($lang_id);
+    if ($lang_filter) {
+        if (!defined('CAT_PATH')) {
+            $page_ids = getPageIdsByLanguage($lang_id);
         } else {
             $pages = CAT_Helper_Page::getPagesForLang($lang_id);
             $page_ids = [];
-            foreach($pages as $i => $pg) {
+            foreach ($pages as $i => $pg) {
                 $pages_ids[] = $pg['page_id'];
             }
         }
-		if (count($page_ids) > 0) {
-			$sql_lang_filter = 't1.`page_id` in (' . implode(',', $page_ids) . ')';
-		}
-	}
+        if (count($page_ids) > 0) {
+            $sql_lang_filter = 't1.`page_id` in (' . implode(',', $page_ids) . ')';
+        }
+    }
 
     // ---------- tag filter ---------------------------------------------------
     $filter_posts = [];
     $sql_filter_posts = null;
-    if(!empty($skip)) {
-        $skip_tags = explode(",",urldecode($skip));
-        foreach($skip_tags as $i => $t) {
+    if (!empty($skip)) {
+        $skip_tags = explode(",", urldecode($skip));
+        foreach ($skip_tags as $i => $t) {
             $skip_tags[$i] = mod_nwi_escapeString($t);
         }
         $r = $database->query(
@@ -2479,16 +2549,16 @@ function mod_nwi_get_news_items($options=array())
             "WHERE `tag` IN ('".implode("', '", $skip_tags)."') ".
             "GROUP BY `t2`.`post_id`"
         );
-        while($row=$r->fetchRow()) {
+        while ($row = $r->fetchRow()) {
             $filter_posts[] = $row['post_id'];
         }
-        if(count($filter_posts)>0) {
-            $sql_filter_posts = " AND `t1`.`post_id` NOT IN (".implode(',',array_values($filter_posts)).") ";
+        if (count($filter_posts) > 0) {
+            $sql_filter_posts = " AND `t1`.`post_id` NOT IN (".implode(',', array_values($filter_posts)).") ";
         }
     }
-    if(!empty($tags)) {
-        $tags = explode(",",urldecode($tags));
-        foreach($tags as $i => $t) {
+    if (!empty($tags)) {
+        $tags = explode(",", urldecode($tags));
+        foreach ($tags as $i => $t) {
             $tags[$i] = mod_nwi_escapeString($t);
         }
         $r = $database->query(
@@ -2498,23 +2568,23 @@ function mod_nwi_get_news_items($options=array())
             "WHERE `tag` IN ('".implode("', '", $tags)."') ".
             "GROUP BY `t2`.`post_id`"
         );
-        while($row=$r->fetchRow()) {
+        while ($row = $r->fetchRow()) {
             $filter_posts[] = $row['post_id'];
         }
-        if(count($filter_posts)>0) {
-            $sql_filter_posts = " AND `t1`.`post_id` IN (".implode(',',array_values($filter_posts)).") ";
+        if (count($filter_posts) > 0) {
+            $sql_filter_posts = " AND `t1`.`post_id` IN (".implode(',', array_values($filter_posts)).") ";
         } else { // no posts for any tag
             $sql_filter_posts = " AND `t1`.`post_id`='-1'";
         }
-        if($groups_on_tags == false) {
+        if ($groups_on_tags == false) {
             $sql_group_id = '1';
         }
     }
 
     // ---------- sort order ---------------------------------------------------
-    $order_by_options = array('t1.`position`', 't1.`posted_when`', 't1.`published_when`', 'RAND()', 't1.`published_until`'); 
-	$sql_order_by = $order_by_options[$sort_by - 1];
-	$sql_sort_order = ($sort_order == 1) ? 'DESC' : 'ASC';
+    $order_by_options = array('t1.`position`', 't1.`posted_when`', 't1.`published_when`', 'RAND()', 't1.`published_until`');
+    $sql_order_by = $order_by_options[$sort_by - 1];
+    $sql_sort_order = ($sort_order == 1) ? 'DESC' : 'ASC';
 
     $sql = "SELECT t1.*
 		FROM `%smod_news_img_posts` as t1
@@ -2531,29 +2601,31 @@ function mod_nwi_get_news_items($options=array())
 
     // ---------- limit --------------------------------------------------------
     // start from N-th last news item if $start_news_items is negative
-	if ($start_news_item < 0) {
-		// find total news items matching SQL query
-		$results = $database->query(sprintf($sql,TABLE_PREFIX));
-		$total_news = ($results) ? $results->numRows() : 0;
-		// adjust start_news_item to the N-th last news item
-		$start_news_item = $total_news + $start_news_item;
-		if ($start_news_item < 0) $start_news_item = 0;
-	}
+    if ($start_news_item < 0) {
+        // find total news items matching SQL query
+        $results = $database->query(sprintf($sql, TABLE_PREFIX));
+        $total_news = ($results) ? $results->numRows() : 0;
+        // adjust start_news_item to the N-th last news item
+        $start_news_item = $total_news + $start_news_item;
+        if ($start_news_item < 0) {
+            $start_news_item = 0;
+        }
+    }
 
     $sql .= "
 		LIMIT $start_news_item, $max_news_items
 	";
 
-    $query_posts = $database->query(sprintf($sql,TABLE_PREFIX));
+    $query_posts = $database->query(sprintf($sql, TABLE_PREFIX));
 
-    if(!empty($query_posts) && $query_posts->numRows()>0) {
+    if (!empty($query_posts) && $query_posts->numRows() > 0) {
         // map group index to title
-        list($groups,$pages) = mod_nwi_get_all_groups(0,0);
+        list($groups, $pages) = mod_nwi_get_all_groups(0, 0);
         $group_map = [];
-        foreach($groups as $pg => $sections) {
-            foreach($sections as $section_id => $grps) {
-                foreach($grps as $i => $g) {
-                    $group_map[$g['group_id']] = ( empty($g['title']) ? $TEXT['NONE'] : $g['title'] );
+        foreach ($groups as $pg => $sections) {
+            foreach ($sections as $section_id => $grps) {
+                foreach ($grps as $i => $g) {
+                    $group_map[$g['group_id']] = (empty($g['title']) ? $TEXT['NONE'] : $g['title']);
                 }
             }
         }
@@ -2566,64 +2638,64 @@ function mod_nwi_get_news_items($options=array())
             'email' => ''
         );
         $posts = [];
-        while($post = $query_posts->fetchRow()) {
+        while ($post = $query_posts->fetchRow()) {
             $post['content_short'] = ($strip_tags) ? strip_tags($post['content_short'], $allowed_tags) : $post['content_short'];
-			$post['content_long'] = ($strip_tags) ? strip_tags($post['content_long'], $allowed_tags) : $post['content_long'];
-			// shorten news text to defined news length (-1 for full text length)
-			if ($max_news_length != -1 && strlen($post['content_short']) > $max_news_length) {
-				// truncate text if user asked for using CakePHP truncate function
-				$post['content_short'] = nia_truncate($post['content_short'], $max_news_length);
-			}
+            $post['content_long'] = ($strip_tags) ? strip_tags($post['content_long'], $allowed_tags) : $post['content_long'];
+            // shorten news text to defined news length (-1 for full text length)
+            if ($max_news_length != -1 && strlen($post['content_short']) > $max_news_length) {
+                // truncate text if user asked for using CakePHP truncate function
+                $post['content_short'] = nia_truncate($post['content_short'], $max_news_length);
+            }
             // gallery images - wichtig für link "weiterlesen"  SHOW_READ_MORE
-            $images = mod_nwi_img_get_by_post($post['post_id'],false);
+            $images = mod_nwi_img_get_by_post($post['post_id'], false);
             $anz_post_img = count($images);
-			$post_href_link = 'href="'. $post['post_link'].'"';
-			$post_a_open_tag = '<a '.$post_href_link.'>';
-			$post_a_close_tag = '</a>';
+            $post_href_link = 'href="'. $post['post_link'].'"';
+            $post_a_open_tag = '<a '.$post_href_link.'>';
+            $post_a_close_tag = '</a>';
             // no "read more" link if no long content
-            if ( (strlen($post['content_long']) < 9) && ($anz_post_img < 1)) {
+            if ((strlen($post['content_long']) < 9) && ($anz_post_img < 1)) {
                 $post['post_link'] = '#" onclick="javascript:void(0);return false;" style="cursor:no-drop;';
-				$post_href_link = '';
-				$post_a_open_tag ='';
-				$post_a_close_tag ='';
+                $post_href_link = '';
+                $post_a_open_tag = '';
+                $post_a_close_tag = '';
             }
             $posts[] = mod_nwi_post_process($post, $post['section_id'], $users);
         }
     }
 
-    if(!empty($settings['aslist']) && $settings['aslist']==true) {
+    if (!empty($settings['aslist']) && $settings['aslist'] == true) {
         $output = array('<ul class="nia_posts">');
-        foreach($posts as $p) {
+        foreach ($posts as $p) {
             $output[] = '<li class="nia_post"><a href="'.WB_URL.PAGES_DIRECTORY.$p['link'].PAGE_EXTENSION.'">'.$p['title'].'</a></li>';
         }
         $output[] = '</ul>';
-        return implode("\n",$output);
+        return implode("\n", $output);
     }
 
     $tpl = '/templates/default/view.phtml';
 
-    $tpl_data = mod_nwi_posts_render($section_id,$posts,0);
+    $tpl_data = mod_nwi_posts_render($section_id, $posts, 0);
 
     ob_start();
-        include __DIR__.$tpl;
-        $content = ob_get_contents();
+    include __DIR__.$tpl;
+    $content = ob_get_contents();
     ob_end_clean();
 
-    if(defined('CAT_PATH')) {
+    if (defined('CAT_PATH')) {
         $sql = 'SELECT `drop_file` FROM `%smod_droplets_extension` WHERE  `drop_droplet_name`="%s" AND `drop_page_id`=%d';
-        $stmt = $database->query(sprintf($sql,TABLE_PREFIX,'getnewsitems',PAGE_ID));
+        $stmt = $database->query(sprintf($sql, TABLE_PREFIX, 'getnewsitems', PAGE_ID));
         $data = $stmt->fetchAll();
-        if(is_array($data)) {
-            foreach($data as $i => $d) {
-                if(pathinfo($d['drop_file'],PATHINFO_BASENAME)=='frontend.css') {
-                    if(pathinfo(pathinfo($d['drop_file'],PATHINFO_DIRNAME),PATHINFO_BASENAME) != $view) {
-                        CAT_Helper_Droplet::unregister_droplet_css('getNewsItems',PAGE_ID);
+        if (is_array($data)) {
+            foreach ($data as $i => $d) {
+                if (pathinfo($d['drop_file'], PATHINFO_BASENAME) == 'frontend.css') {
+                    if (pathinfo(pathinfo($d['drop_file'], PATHINFO_DIRNAME), PATHINFO_BASENAME) != $view) {
+                        CAT_Helper_Droplet::unregister_droplet_css('getNewsItems', PAGE_ID);
                     }
                 }
             }
         }
-        if(!CAT_Helper_Droplet::is_registered_droplet_css('getNewsItems',PAGE_ID)) {
-            CAT_Helper_Droplet::register_droplet_css('getNewsItems',PAGE_ID,'news_img','views/'.$view.'/frontend.css');
+        if (!CAT_Helper_Droplet::is_registered_droplet_css('getNewsItems', PAGE_ID)) {
+            CAT_Helper_Droplet::register_droplet_css('getNewsItems', PAGE_ID, 'news_img', 'views/'.$view.'/frontend.css');
         }
     }
 
@@ -2635,81 +2707,93 @@ function mod_nwi_get_news_items($options=array())
 */
 function mod_nwi_sanitize_input(&$input, $filter)
 {
-	// $input...        input variable to filter
-	// $filter...       filter to apply for input variable
-	//	Numeric filter: b|i¦d{default;min;max}
-	//	List filter:    l{default;string1;string2;..;stringN}
-	//	String filter:  s{TRIM|STRIP|ENTITIES}
+    // $input...        input variable to filter
+    // $filter...       filter to apply for input variable
+    //	Numeric filter: b|i¦d{default;min;max}
+    //	List filter:    l{default;string1;string2;..;stringN}
+    //	String filter:  s{TRIM|STRIP|ENTITIES}
 
-	// check if a valid filter was supplied
-	if (!preg_match('#(b|i|d|s|l)#i', $filter, $match)) {
-		echo 'Filter: <b>' . htmlentities($filter) . '</b> is no valid filter expression.';
-		die;
-	}
+    // check if a valid filter was supplied
+    if (!preg_match('#(b|i|d|s|l)#i', $filter, $match)) {
+        echo 'Filter: <b>' . htmlentities($filter) . '</b> is no valid filter expression.';
+        die;
+    }
 
-	// convert user input to array (allows to handle single values and array identical)
-	$temp = is_array($input) ? $input : array($input);
+    // convert user input to array (allows to handle single values and array identical)
+    $temp = is_array($input) ? $input : array($input);
 
-	// evaluate filter expressions
-	$filter_type = strtolower($match[1]);
-	switch ($filter_type) {
-		case 'b': case 'i': case 'd': // numeric filter ($input can be single value or array)
-			// check if optional filter values are supplied (default, min, max)
-			$advanced_filter = (preg_match('#(i|d)\{([-.0-9]+);([-.0-9]+);([-.0-9]+)\}#i', $filter, $match));
+    // evaluate filter expressions
+    $filter_type = strtolower($match[1]);
+    switch ($filter_type) {
+        case 'b': case 'i': case 'd': // numeric filter ($input can be single value or array)
+            // check if optional filter values are supplied (default, min, max)
+            $advanced_filter = (preg_match('#(i|d)\{([-.0-9]+);([-.0-9]+);([-.0-9]+)\}#i', $filter, $match));
 
-			// loop over input values
-			foreach($temp as $key => $value) {
-				// force type casting to either integer or double
-				if ($filter_type == 'b') $temp[$key] = (boolean) $temp[$key];
-				if ($filter_type == 'i') $temp[$key] = (int) $temp[$key];
-				if ($filter_type == 'd') $temp[$key] = (double) $temp[$key];
+            // loop over input values
+            foreach ($temp as $key => $value) {
+                // force type casting to either integer or double
+                if ($filter_type == 'b') {
+                    $temp[$key] = (bool) $temp[$key];
+                }
+                if ($filter_type == 'i') {
+                    $temp[$key] = (int) $temp[$key];
+                }
+                if ($filter_type == 'd') {
+                    $temp[$key] = (float) $temp[$key];
+                }
 
-				// check if value is within min/max range, if not use default value
-				if ($advanced_filter) {
-					$temp[$key] = ($temp[$key] >= $match[3] && $temp[$key] <= $match[4] ) ? $temp[$key] : $match[2];
-				}
-			}
-			break;
+                // check if value is within min/max range, if not use default value
+                if ($advanced_filter) {
+                    $temp[$key] = ($temp[$key] >= $match[3] && $temp[$key] <= $match[4]) ? $temp[$key] : $match[2];
+                }
+            }
+            break;
 
-		case 'l': // list filter
-			// check for correct list filter: l{default;list1;list2;..;listN}
-			if (!preg_match('#(l)\{([^;]+?);(.+)\}#i', $filter, $match)) {
-				echo 'List filter: <b>' . htmlentities($filter) . '</b> invalid. Usage: <b>l{default;list1;list2;..listN}</b>.';
-				die;
-			}
+        case 'l': // list filter
+            // check for correct list filter: l{default;list1;list2;..;listN}
+            if (!preg_match('#(l)\{([^;]+?);(.+)\}#i', $filter, $match)) {
+                echo 'List filter: <b>' . htmlentities($filter) . '</b> invalid. Usage: <b>l{default;list1;list2;..listN}</b>.';
+                die;
+            }
 
-			// create array with list values from regular expression
-			$list_values = explode(';', $match[3]);
+            // create array with list values from regular expression
+            $list_values = explode(';', $match[3]);
 
-			// loop over input values
-			foreach($temp as $key => $value) {
-				// check if value is in list (return default value if not in list)
-				$temp[$key] = (in_array($value, $list_values) ? $value : $match[2]);
-			}
-			break;
+            // loop over input values
+            foreach ($temp as $key => $value) {
+                // check if value is in list (return default value if not in list)
+                $temp[$key] = (in_array($value, $list_values) ? $value : $match[2]);
+            }
+            break;
 
-		case 's': // string filter
-			// check for correct string filter: s{TRIM|STRIP|ENTITIES}
-			if (!preg_match('#(s)\{(.+)\}#i', $filter, $match)) {
-				echo 'String filter: <b>' . htmlentities($filter) . '</b> invalid. Usage: <b>s{STRIP;TRIM;ENTITIES}</b>.';
-				die;
-			}
+        case 's': // string filter
+            // check for correct string filter: s{TRIM|STRIP|ENTITIES}
+            if (!preg_match('#(s)\{(.+)\}#i', $filter, $match)) {
+                echo 'String filter: <b>' . htmlentities($filter) . '</b> invalid. Usage: <b>s{STRIP;TRIM;ENTITIES}</b>.';
+                die;
+            }
 
-			// get filter options from regular expression
-			$filter_options = strtoupper($match[2]);
+            // get filter options from regular expression
+            $filter_options = strtoupper($match[2]);
 
-			// loop over input values
-			foreach($temp as $key => $value) {
-				// check if value is in list (return default value if not in list)
-				if (strpos($filter_options, 'STRIP') !== false) $temp[$key] = strip_tags($temp[$key]);
-				if (strpos($filter_options, 'TRIM') !== false) $temp[$key] = trim($temp[$key]);
-				if (strpos($filter_options, 'ENTITIES') !== false) $temp[$key] = htmlentities($temp[$key]);
-			}
-			break;
-	}
+            // loop over input values
+            foreach ($temp as $key => $value) {
+                // check if value is in list (return default value if not in list)
+                if (strpos($filter_options, 'STRIP') !== false) {
+                    $temp[$key] = strip_tags($temp[$key]);
+                }
+                if (strpos($filter_options, 'TRIM') !== false) {
+                    $temp[$key] = trim($temp[$key]);
+                }
+                if (strpos($filter_options, 'ENTITIES') !== false) {
+                    $temp[$key] = htmlentities($temp[$key]);
+                }
+            }
+            break;
+    }
 
-	// revert user input back to array or single value
-	$input = is_array($input) ? $temp : $temp[0];
+    // revert user input back to array or single value
+    $input = is_array($input) ? $temp : $temp[0];
 }
 
 
