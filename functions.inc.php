@@ -1376,154 +1376,148 @@ function mod_nwi_posts_getall(int $section_id, bool $is_backend, string $query_e
  * @access 
  * @return
  **/
-function mod_nwi_posts_render($section_id,$posts,$posts_per_page=0)
+function mod_nwi_posts_render($section_id, $posts, $posts_per_page = 0)
 {
     global $TEXT, $MOD_NEWS_IMG, $wb, $page_id;
 
     // if called by droplet
-    if(!is_array($MOD_NEWS_IMG)) {
+    if (!is_array($MOD_NEWS_IMG)) {
         require __DIR__ . '/languages/EN.php';
         $lang = __DIR__ . '/languages/' . LANGUAGE . '.php';
-        if(file_exists($lang)) {
+        if (file_exists($lang)) {
             require $lang;
         }
     }
 
-    $list  = [];
+    $list     = [];
     $settings = mod_nwi_settings_get($section_id);
 
     // position to start off (=offset)
     $filter_p = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-    if ($filter_p) {
-        $position = $filter_p;
-    } else {
-        $position = 0;
-    }
+    $position = $filter_p ?: 0;
 
     // image sizes
-    list(
-        $previewwidth,
-        $previewheight,
-        $thumbwidth,
-        $thumbheight
-    ) = mod_nwi_get_sizes($section_id);
+    [$previewwidth, $previewheight, $thumbwidth, $thumbheight] = mod_nwi_get_sizes($section_id);
 
     // filter by tags
     $tags_header = null;
     $tags_append = null;
-	$tagListArray  = [];
-	
-    if(isset($_GET['tags']) && strlen($_GET['tags'])) {
-        $requested_tags = mod_nwi_escape_tags(mod_nwi_sanitize_input($_GET['tags'],'s{TRIM|STRIP|ENTITIES}'));		
-        foreach ($requested_tags as $i => $tag) {
-            $requested_tags[$i] = "<span class=\"mod_nwi_tag\" id=\"mod_nwi_tag_".$i."\">".$tag."</span>";
+
+    if (isset($_GET['tags']) && strlen($_GET['tags'])) {
+        $requested_tags = mod_nwi_escape_tags(mod_nwi_sanitize_input($_GET['tags'], 's{TRIM|STRIP|ENTITIES}'));
+        foreach ($requested_tags as $tag_idx => $tag) {
+            $requested_tags[$tag_idx] = "<span class=\"mod_nwi_tag\" id=\"mod_nwi_tag_" . $tag_idx . "\">" . $tag . "</span>";
         }
-        $tags_header = implode("\n",$requested_tags);
-        $tags_append = mod_nwi_sanitize_input($_GET['tags'],'s{TRIM|STRIP|ENTITIES}');
+        $tags_header = implode("\n", $requested_tags);
+        $tags_append = mod_nwi_sanitize_input($_GET['tags'], 's{TRIM|STRIP|ENTITIES}');
     }
 
     // Create previous and next links
     $display_previous_next_links = 'hidden';
     if ($posts_per_page != 0) { // 0 = unlimited = no paging
-        $cnt = mod_nwi_posts_count($section_id); // all posts in this section
+        $cnt       = mod_nwi_posts_count($section_id); // all posts in this section
         $total_num = $cnt['count'];
-        $filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $filter_g  = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
         if ($position > 0) {
-            $pl_prepend = '<a href="'.mod_nwi_build_url('', ['p' => $position - $posts_per_page, 'tags' => $tags_append ?: null, 'g' => $filter_g]).'">';
-            $pl_append = '</a>';
-            $previous_link = $pl_prepend.$TEXT['PREVIOUS'].$pl_append;
-            $previous_page_link = $pl_prepend.$TEXT['PREVIOUS_PAGE'].$pl_append;
+            $pl_prepend         = '<a href="' . mod_nwi_build_url('', ['p' => $position - $posts_per_page, 'tags' => $tags_append ?: null, 'g' => $filter_g]) . '">';
+            $pl_append          = '</a>';
+            $previous_link      = $pl_prepend . $TEXT['PREVIOUS'] . $pl_append;
+            $previous_page_link = $pl_prepend . $TEXT['PREVIOUS_PAGE'] . $pl_append;
         } else {
-            $previous_link = '';
+            $previous_link      = '';
             $previous_page_link = '';
         }
         if ($position + $posts_per_page >= $total_num) {
-            $next_link = '';
+            $next_link      = '';
             $next_page_link = '';
         } else {
-            $nl_prepend = '<a href="'.mod_nwi_build_url('', ['p' => $position + $posts_per_page, 'tags' => $tags_append ?: null, 'g' => $filter_g]).'"> ';
-            $nl_append = '</a>';
-            $next_link = $nl_prepend.$TEXT['NEXT'].$nl_append;
-            $next_page_link = $nl_prepend.$TEXT['NEXT_PAGE'].$nl_append;
+            $nl_prepend     = '<a href="' . mod_nwi_build_url('', ['p' => $position + $posts_per_page, 'tags' => $tags_append ?: null, 'g' => $filter_g]) . '"> ';
+            $nl_append      = '</a>';
+            $next_link      = $nl_prepend . $TEXT['NEXT'] . $nl_append;
+            $next_page_link = $nl_prepend . $TEXT['NEXT_PAGE'] . $nl_append;
         }
-        if ($position+$posts_per_page > $total_num) {
-            $num_of = $position+$total_num;
-        } else {
-            $num_of = $position+$posts_per_page;
-        }
+        $num_of = min($position + $posts_per_page, $total_num);
 
-        if($num_of>$total_num) {
-            $num_of=$total_num;
-        }
+        $out_of = ($position + 1) . '-' . $num_of . ' ' . strtolower($TEXT['OUT_OF']) . ' ' . $total_num;
+        $of     = ($position + 1) . '-' . $num_of . ' ' . strtolower($TEXT['OF']) . ' ' . $total_num;
 
-        $out_of = ($position+1).'-'.$num_of.' '.strtolower($TEXT['OUT_OF']).' '.$total_num;
-        $of = ($position+1).'-'.$num_of.' '.strtolower($TEXT['OF']).' '.$total_num;
-
-        if($previous_link || $next_link) {
+        if ($previous_link || $next_link) {
             $display_previous_next_links = 'visible';
         }
-
     } else {
         $next_page_link = $next_link = $previous_page_link = $previous_link = $out_of = $of = '';
     }
 
-    list($vars,$default_replacements) = mod_nwi_replacements();
+    [$vars, $default_replacements] = mod_nwi_replacements();
 
     $tags_by_post = mod_nwi_get_tags_for_posts(array_column($posts, 'post_id'));
 
-    foreach($posts as $i => $post) {
-        // tags
-        $tags = $tags_by_post[$post['post_id']] ?? [];
-        foreach ($tags as $i => $tag) {
-			$tagListArray[$i] = $tag['tag'];
-            $tags[$i] = "<span class=\"mod_nwi_tag\" id=\"mod_nwi_tag_".$post['post_id']."_".$i."\""
-                  . (strlen($tag['tag_color'])>0 ? " style=\"background-color:".$tag['tag_color']."\"" : "" ) .">"
-                  . "<a href=\"".mod_nwi_build_url($wb->page_link($page_id), ['tags' => $tag['tag']])."\">".htmlspecialchars($tag['tag'], ENT_QUOTES | ENT_HTML5)."</a></span>";
-        }
-        // gallery images - wichtig für link "weiterlesen"  SHOW_READ_MORE
-        $images = mod_nwi_img_get_by_post($post['post_id'],false);
-        $anz_post_img = count($images);
-		$post_href_link = 'href="'. $post['post_link'].'"';
-		$post_a_open_tag = '<a '.$post_href_link.'>';
-		$post_a_close_tag = '</a>';
-        // no "read more" link if no long content
-        if ( (strlen($post['content_long']) < 9) && ($anz_post_img < 1)) {
-            $post['post_link'] = '#" onclick="javascript:void(0);return false;" style="cursor:no-drop;';
-			$post_href_link ='';
-			$post_a_open_tag ='';
-			$post_a_close_tag ='';
-        }
-		$post['content_short']=str_replace('{SYSVAR:MEDIA_REL}',WB_URL.MEDIA_DIRECTORY,$post['content_short']);
-		$post['content_long']=str_replace('{SYSVAR:MEDIA_REL}',WB_URL.MEDIA_DIRECTORY,$post['content_long']);	
-		$post['content_block2']=str_replace('{SYSVAR:MEDIA_REL}',WB_URL.MEDIA_DIRECTORY,$post['content_block2']);	
+    // Closure to apply pagination placeholders to a template string
+    $apply_pagination = function(string $template) use (
+        $next_page_link, $next_link, $previous_page_link,
+        $previous_link, $out_of, $of, $display_previous_next_links
+    ): string {
+        return str_replace(
+            ['[NEXT_PAGE_LINK]', '[NEXT_LINK]', '[PREVIOUS_PAGE_LINK]',
+             '[PREVIOUS_LINK]', '[OUT_OF]', '[OF]', '[DISPLAY_PREVIOUS_NEXT_LINKS]'],
+            [$next_page_link, $next_link, $previous_page_link,
+             $previous_link, $out_of, $of, $display_previous_next_links],
+            $template
+        );
+    };
 
-        // set replacements for current line
+    foreach ($posts as $post_idx => $post) {
+        // tags
+        $tags         = $tags_by_post[$post['post_id']] ?? [];
+        $tagListArray = [];
+        foreach ($tags as $tag_idx => $tag) {
+            $tagListArray[] = $tag['tag'];
+            $tags[$tag_idx] = "<span class=\"mod_nwi_tag\" id=\"mod_nwi_tag_" . $post['post_id'] . "_" . $tag_idx . "\""
+                . (strlen($tag['tag_color']) > 0 ? " style=\"background-color:" . $tag['tag_color'] . "\"" : "")
+                . "><a href=\"" . mod_nwi_build_url($wb->page_link($page_id), ['tags' => $tag['tag']]) . "\">"
+                . htmlspecialchars($tag['tag'], ENT_QUOTES | ENT_HTML5) . "</a></span>";
+        }
+
+        // gallery images — relevant for "read more" link (SHOW_READ_MORE)
+        $images       = mod_nwi_img_get_by_post($post['post_id'], false);
+        $anz_post_img = count($images);
+
+        // no "read more" link if neither long content nor gallery images exist
+        $has_detail = (strlen($post['content_long']) >= 9) || ($anz_post_img >= 1);
+
+        $post_href_link   = $has_detail ? 'href="' . $post['post_link'] . '"' : '';
+        $post_a_open_tag  = $has_detail ? '<a ' . $post_href_link . '>'       : '';
+        $post_a_close_tag = $has_detail ? '</a>'                               : '';
+
+        $post['content_short']  = str_replace('{SYSVAR:MEDIA_REL}', WB_URL . MEDIA_DIRECTORY, $post['content_short']);
+        $post['content_long']   = str_replace('{SYSVAR:MEDIA_REL}', WB_URL . MEDIA_DIRECTORY, $post['content_long']);
+        $post['content_block2'] = str_replace('{SYSVAR:MEDIA_REL}', WB_URL . MEDIA_DIRECTORY, $post['content_block2']);
+
+        // set replacements for current post
         $replacements = array_merge(
             $default_replacements,
             $TEXT,
             $MOD_NEWS_IMG,
-            array_change_key_case($post,CASE_UPPER),
-            array(
-                'IMAGE'           => $post['post_img'],
-                'SHORT'           => $post['content_short'],
-                'LINK'            => $post['post_link'],
-				'HREF'			  => $post_href_link,
-				'AOPEN'			  => $post_a_open_tag,
-				'ACLOSE'		  => $post_a_close_tag,	
-                'MODI_DATE'       => $post['post_date'],
-                'MODI_TIME'       => $post['post_time'],
-                'TAGS'            => implode(" ", $tags),
-				'TAGLIST'		  => implode(',',$tagListArray),
-                'SHOW_READ_MORE'  => (strlen($post['content_long'])<1 && ($anz_post_img<1))
-                                     ? 'hidden' : 'visible',
-                'DISPLAY_PREVIOUS_NEXT_LINKS'
-                                  => $display_previous_next_links,
-            )
+            array_change_key_case($post, CASE_UPPER),
+            [
+                'IMAGE'                        => $post['post_img'],
+                'SHORT'                        => $post['content_short'],
+                'LINK'                         => $post['post_link'],
+                'HREF'                         => $post_href_link,
+                'AOPEN'                        => $post_a_open_tag,
+                'ACLOSE'                       => $post_a_close_tag,
+                'MODI_DATE'                    => $post['post_date'],
+                'MODI_TIME'                    => $post['post_time'],
+                'TAGS'                         => implode(' ', $tags),
+                'TAGLIST'                      => implode(',', $tagListArray),
+                'SHOW_READ_MORE'               => $has_detail ? 'visible' : 'hidden',
+                'DISPLAY_PREVIOUS_NEXT_LINKS'  => $display_previous_next_links,
+            ]
         );
 
         $list[] = preg_replace_callback(
-            '~\[('.implode('|',$vars).')+\]~',
-            function($match) use($replacements) {
+            '~\[(' . implode('|', $vars) . ')+\]~',
+            function($match) use ($replacements) {
                 return (isset($match[1]) && isset($replacements[$match[1]]))
                     ? $replacements[$match[1]]
                     : '';
@@ -1532,58 +1526,15 @@ function mod_nwi_posts_render($section_id,$posts,$posts_per_page=0)
         );
     }
 
-    // overall header
-    $prev_next_header = str_replace(
-        array(
-            '[NEXT_PAGE_LINK]',
-            '[NEXT_LINK]',
-            '[PREVIOUS_PAGE_LINK]',
-            '[PREVIOUS_LINK]',
-            '[OUT_OF]',
-            '[OF]',
-            '[DISPLAY_PREVIOUS_NEXT_LINKS]'
-        ),
-        array(
-            $next_page_link,
-            $next_link,
-            $previous_page_link,
-            $previous_link,
-            $out_of,
-            $of,
-            $display_previous_next_links
-        ),
-        $settings['header']
-    );
+    if (empty($list)) {
+        $list[] = $TEXT['NONE_FOUND'];
+    }
 
-    // footer
-    $prev_next_footer = str_replace(
-        array(
-            '[NEXT_PAGE_LINK]',
-            '[NEXT_LINK]',
-            '[PREVIOUS_PAGE_LINK]',
-            '[PREVIOUS_LINK]',
-            '[OUT_OF]',
-            '[OF]',
-            '[DISPLAY_PREVIOUS_NEXT_LINKS]'
-        ),
-        array(
-            $next_page_link,
-            $next_link,
-            $previous_page_link,
-            $previous_link,
-            $out_of,
-            $of,
-            $display_previous_next_links
-        ),
-        $settings['footer']
-    );
-
-	if (empty($list)) {$list[]=$TEXT['NONE_FOUND'];}
-    return array(
-        'rendered_posts' => $list,
-        'prev_next_footer' => $prev_next_footer,
-        'prev_next_header' => $prev_next_header
-    );
+    return [
+        'rendered_posts'  => $list,
+        'prev_next_footer' => $apply_pagination($settings['footer']),
+        'prev_next_header' => $apply_pagination($settings['header']),
+    ];
 }   // end function mod_nwi_posts_render()
 
 
