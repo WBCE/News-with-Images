@@ -1372,8 +1372,81 @@ function mod_nwi_posts_getall(int $section_id, bool $is_backend, string $query_e
 }   // end function mod_nwi_posts_getall()
 
 /**
+ * Build pagination data (previous/next links, range labels) for a post list.
  *
- * @access 
+ * @param  int         $section_id
+ * @param  int         $position       Current offset (0-based start index)
+ * @param  int         $posts_per_page 0 = unlimited / no paging
+ * @param  string|null $tags_append    Active tag filter value for URL building
+ * @return array{
+ *     previous_link:               string,
+ *     previous_page_link:          string,
+ *     next_link:                   string,
+ *     next_page_link:              string,
+ *     out_of:                      string,
+ *     of:                          string,
+ *     display_previous_next_links: string
+ * }
+ **/
+function mod_nwi_build_pagination(int $section_id, int $position, int $posts_per_page, ?string $tags_append): array
+{
+    global $TEXT;
+
+    // No paging requested — return empty placeholders
+    if ($posts_per_page === 0) {
+        return [
+            'previous_link'               => '',
+            'previous_page_link'          => '',
+            'next_link'                   => '',
+            'next_page_link'              => '',
+            'out_of'                      => '',
+            'of'                          => '',
+            'display_previous_next_links' => 'hidden',
+        ];
+    }
+
+    $cnt       = mod_nwi_posts_count($section_id);
+    $total_num = $cnt['count'];
+    $filter_g  = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+    if ($position > 0) {
+        $pl_prepend         = '<a href="' . mod_nwi_build_url('', ['p' => $position - $posts_per_page, 'tags' => $tags_append ?: null, 'g' => $filter_g]) . '">';
+        $pl_append          = '</a>';
+        $previous_link      = $pl_prepend . $TEXT['PREVIOUS'] . $pl_append;
+        $previous_page_link = $pl_prepend . $TEXT['PREVIOUS_PAGE'] . $pl_append;
+    } else {
+        $previous_link      = '';
+        $previous_page_link = '';
+    }
+
+    if ($position + $posts_per_page >= $total_num) {
+        $next_link      = '';
+        $next_page_link = '';
+    } else {
+        $nl_prepend     = '<a href="' . mod_nwi_build_url('', ['p' => $position + $posts_per_page, 'tags' => $tags_append ?: null, 'g' => $filter_g]) . '"> ';
+        $nl_append      = '</a>';
+        $next_link      = $nl_prepend . $TEXT['NEXT'] . $nl_append;
+        $next_page_link = $nl_prepend . $TEXT['NEXT_PAGE'] . $nl_append;
+    }
+
+    $num_of = min($position + $posts_per_page, $total_num);
+    $range  = ($position + 1) . '-' . $num_of;
+
+    return [
+        'previous_link'               => $previous_link,
+        'previous_page_link'          => $previous_page_link,
+        'next_link'                   => $next_link,
+        'next_page_link'              => $next_page_link,
+        'out_of'                      => $range . ' ' . strtolower($TEXT['OUT_OF']) . ' ' . $total_num,
+        'of'                          => $range . ' ' . strtolower($TEXT['OF'])     . ' ' . $total_num,
+        'display_previous_next_links' => ($previous_link || $next_link) ? 'visible' : 'hidden',
+    ];
+}   // end function mod_nwi_build_pagination()
+
+
+/**
+ *
+ * @access
  * @return
  **/
 function mod_nwi_posts_render($section_id, $posts, $posts_per_page = 0)
@@ -1412,56 +1485,27 @@ function mod_nwi_posts_render($section_id, $posts, $posts_per_page = 0)
         $tags_append = mod_nwi_sanitize_input($_GET['tags'], 's{TRIM|STRIP|ENTITIES}');
     }
 
-    // Create previous and next links
-    $display_previous_next_links = 'hidden';
-    if ($posts_per_page != 0) { // 0 = unlimited = no paging
-        $cnt       = mod_nwi_posts_count($section_id); // all posts in this section
-        $total_num = $cnt['count'];
-        $filter_g  = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        if ($position > 0) {
-            $pl_prepend         = '<a href="' . mod_nwi_build_url('', ['p' => $position - $posts_per_page, 'tags' => $tags_append ?: null, 'g' => $filter_g]) . '">';
-            $pl_append          = '</a>';
-            $previous_link      = $pl_prepend . $TEXT['PREVIOUS'] . $pl_append;
-            $previous_page_link = $pl_prepend . $TEXT['PREVIOUS_PAGE'] . $pl_append;
-        } else {
-            $previous_link      = '';
-            $previous_page_link = '';
-        }
-        if ($position + $posts_per_page >= $total_num) {
-            $next_link      = '';
-            $next_page_link = '';
-        } else {
-            $nl_prepend     = '<a href="' . mod_nwi_build_url('', ['p' => $position + $posts_per_page, 'tags' => $tags_append ?: null, 'g' => $filter_g]) . '"> ';
-            $nl_append      = '</a>';
-            $next_link      = $nl_prepend . $TEXT['NEXT'] . $nl_append;
-            $next_page_link = $nl_prepend . $TEXT['NEXT_PAGE'] . $nl_append;
-        }
-        $num_of = min($position + $posts_per_page, $total_num);
-
-        $out_of = ($position + 1) . '-' . $num_of . ' ' . strtolower($TEXT['OUT_OF']) . ' ' . $total_num;
-        $of     = ($position + 1) . '-' . $num_of . ' ' . strtolower($TEXT['OF']) . ' ' . $total_num;
-
-        if ($previous_link || $next_link) {
-            $display_previous_next_links = 'visible';
-        }
-    } else {
-        $next_page_link = $next_link = $previous_page_link = $previous_link = $out_of = $of = '';
-    }
+    // Build pagination links and range labels
+    $pagination = mod_nwi_build_pagination($section_id, $position, $posts_per_page, $tags_append);
 
     [$vars, $default_replacements] = mod_nwi_replacements();
 
     $tags_by_post = mod_nwi_get_tags_for_posts(array_column($posts, 'post_id'));
 
     // Closure to apply pagination placeholders to a template string
-    $apply_pagination = function(string $template) use (
-        $next_page_link, $next_link, $previous_page_link,
-        $previous_link, $out_of, $of, $display_previous_next_links
-    ): string {
+    $apply_pagination = function(string $template) use ($pagination): string {
         return str_replace(
             ['[NEXT_PAGE_LINK]', '[NEXT_LINK]', '[PREVIOUS_PAGE_LINK]',
              '[PREVIOUS_LINK]', '[OUT_OF]', '[OF]', '[DISPLAY_PREVIOUS_NEXT_LINKS]'],
-            [$next_page_link, $next_link, $previous_page_link,
-             $previous_link, $out_of, $of, $display_previous_next_links],
+            [
+                $pagination['next_page_link'],
+                $pagination['next_link'],
+                $pagination['previous_page_link'],
+                $pagination['previous_link'],
+                $pagination['out_of'],
+                $pagination['of'],
+                $pagination['display_previous_next_links'],
+            ],
             $template
         );
     };
@@ -1511,7 +1555,7 @@ function mod_nwi_posts_render($section_id, $posts, $posts_per_page = 0)
                 'TAGS'                         => implode(' ', $tags),
                 'TAGLIST'                      => implode(',', $tagListArray),
                 'SHOW_READ_MORE'               => $has_detail ? 'visible' : 'hidden',
-                'DISPLAY_PREVIOUS_NEXT_LINKS'  => $display_previous_next_links,
+                'DISPLAY_PREVIOUS_NEXT_LINKS'  => $pagination['display_previous_next_links'],
             ]
         );
 
