@@ -3,39 +3,41 @@
 @import url(css/datetimepickers/nehakadam/DateTimePicker.min.css);
 @import url(js/spectrum.css);
 
+.mod_news_img div.mod_news_img_header {
+    display: grid;
+    grid-template-columns: 5fr 1fr;
+    background-color: #ddd;
+}
+
+/* ----- tables ----- */
 .mod_news_img table {
     width: 100%
 }
-
 .mod_news_img th,
 .mod_news_img td {
     padding: 2px 5px;
     text-align: left;
 }
-
 .mod_news_img table.striped tr:nth-child(odd),
 .mod_news_img_tag:nth-of-type(odd) {
     background-color: #ececec
 }
-
 .mod_news_img table.striped tr:nth-child(even) {
     background-color: #fff
 }
-
 .mod_news_img table img.preview {
     height: 50px;
     max-height: 50px;
 }
-
 .mod_news_img th {
     background-color: #ccc;
 }
 
+/* ----- scrollable div ----- */
 .mod_news_img div.scrollable {
     height: 300px;
     overflow: auto
 }
-
 .mod_news_img div.scrollable table th {
     position: sticky;
     top: 0
@@ -303,7 +305,6 @@
 .mod_news_img .tabs label.tab {
     display: block;
     float: left;
-    width: 20%;
     color: #ccc;
     font-size: 1.3em;
     font-weight: normal;
@@ -313,7 +314,7 @@
     cursor: pointer;
     transition: all 0.5s;
     margin-right: 0 !important;
-    padding: 5px;
+    padding: .5rem 1rem;
     border: 1px solid #ccc;
     border-bottom-color: #3498db;
 }
