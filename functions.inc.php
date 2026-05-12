@@ -242,6 +242,7 @@ function mod_nwi_get_tag($tag_id)
     if (!empty($query_tags) && $query_tags->numRows() > 0) {
         return $query_tags->fetchRow();
     }
+    return array();
 }   // end function mod_nwi_get_tag()
 
 /**
@@ -373,7 +374,7 @@ function mod_nwi_tag_exists(int $section_id, string $tag)
         "AND (`t2`.`section_id`=%d OR `t2`.`section_id`=0)",
         TABLE_PREFIX,
         TABLE_PREFIX,
-        $tag,
+        mod_nwi_escapeString($tag),
         $section_id
     );
     $query = $database->query($sql);
@@ -672,31 +673,49 @@ function mod_nwi_post_activate($value)
         return false;
     }
 
+    $value = (int)$value;
+
     $errors = 0;
     foreach ($posts as $post_id) {
+        $post_id = (int)$post_id;
+        if ($post_id <= 0) {
+            continue;
+        }
+
         // Update row
         $database->query(sprintf(
             "UPDATE `%smod_news_img_posts`"
-            . " SET `active` = '$value' "
-            . " WHERE `post_id` = '$post_id'",
-            TABLE_PREFIX
+            . " SET `active` = '%d' "
+            . " WHERE `post_id` = %d",
+            TABLE_PREFIX,
+            $value,
+            $post_id
         ));
         if ($database->is_error()) {
             $errors++;
         }
 
-        $postQuery = "SELECT * from `".TABLE_PREFIX."mod_news_img_posts` WHERE `post_id`=".$post_id;
+        $post = [];
+        $page = [];
+        $postQuery = sprintf("SELECT * from `%smod_news_img_posts` WHERE `post_id`=%d", TABLE_PREFIX, $post_id);
         $query_post = $database->query($postQuery);
-        if ($query_post->numRows() > 0) {
-            $post      = $query_post->fetchRow();
+        if ($query_post && $query_post->numRows() > 0) {
+            $post = $query_post->fetchRow();
+        }
+        if (empty($post)) {
+            $errors++;
+            continue;
         }
 
-        $pageQuery = "SELECT * from `".TABLE_PREFIX."sections` WHERE `section_id`=".$post['section_id'];
+        $pageQuery = sprintf("SELECT * from `%ssections` WHERE `section_id`=%d", TABLE_PREFIX, (int)$post['section_id']);
         $query_page = $database->query($pageQuery);
-        if ($query_page->numRows() > 0) {
-            $page      = $query_page->fetchRow();
+        if ($query_page && $query_page->numRows() > 0) {
+            $page = $query_page->fetchRow();
         }
-
+        if (empty($page)) {
+            $errors++;
+            continue;
+        }
 
         if ($post['active'] == "0") {
             if (is_writable(WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION)) {
@@ -723,31 +742,51 @@ function mod_nwi_post_clear($value)
         return false;
     }
 
+    // hard whitelist of allowed column names
+    if (!in_array($value, ['published_when', 'published_until'], true)) {
+        return false;
+    }
+
     $errors = 0;
     foreach ($posts as $post_id) {
+        $post_id = (int)$post_id;
+        if ($post_id <= 0) {
+            continue;
+        }
+
         // Update row
-        if ((strcmp($value, 'published_when') == 0) or (strcmp($value, 'published_until') == 0)) {
-            $database->query(sprintf(
-                "UPDATE `%smod_news_img_posts`"
-                . " SET `$value` = '0' "
-                . " WHERE `post_id` = '$post_id'",
-                TABLE_PREFIX
-            ));
-            if ($database->is_error()) {
-                $errors++;
-            }
+        $database->query(sprintf(
+            "UPDATE `%smod_news_img_posts`"
+            . " SET `%s` = '0' "
+            . " WHERE `post_id` = %d",
+            TABLE_PREFIX,
+            $value,
+            $post_id
+        ));
+        if ($database->is_error()) {
+            $errors++;
         }
 
-        $postQuery = "SELECT * from `".TABLE_PREFIX."mod_news_img_posts` WHERE `post_id`=".$post_id;
+        $post = [];
+        $page = [];
+        $postQuery = sprintf("SELECT * from `%smod_news_img_posts` WHERE `post_id`=%d", TABLE_PREFIX, $post_id);
         $query_post = $database->query($postQuery);
-        if ($query_post->numRows() > 0) {
-            $post      = $query_post->fetchRow();
+        if ($query_post && $query_post->numRows() > 0) {
+            $post = $query_post->fetchRow();
+        }
+        if (empty($post)) {
+            $errors++;
+            continue;
         }
 
-        $pageQuery = "SELECT * from `".TABLE_PREFIX."sections` WHERE `section_id`=".$post['section_id'];
+        $pageQuery = sprintf("SELECT * from `%ssections` WHERE `section_id`=%d", TABLE_PREFIX, (int)$post['section_id']);
         $query_page = $database->query($pageQuery);
-        if ($query_page->numRows() > 0) {
-            $page      = $query_page->fetchRow();
+        if ($query_page && $query_page->numRows() > 0) {
+            $page = $query_page->fetchRow();
+        }
+        if (empty($page)) {
+            $errors++;
+            continue;
         }
 
         // check if accessfile should be created...
@@ -1060,12 +1099,21 @@ function mod_nwi_post_delete($posts)
 {
     global $database, $mod_nwi_file_dir, $section_id;
 
+    if (!is_array($posts)) {
+        return false;
+    }
+
     //store this one for later use
     $mod_nwi_file_base = $mod_nwi_file_dir;
 
     $errors = 0;
 
     foreach ($posts as $post_id) {
+        $post_id = (int)$post_id;
+        if ($post_id <= 0) {
+            continue;
+        }
+
         // Get post details
         $get_details = mod_nwi_post_get($post_id);
 
@@ -1075,18 +1123,21 @@ function mod_nwi_post_delete($posts)
                 unlink(WB_PATH.PAGES_DIRECTORY.$get_details['link'].PAGE_EXTENSION);
             }
 
-            // delete images
-            $mod_nwi_file_base .= "$post_id";
-            rm_full_dir($mod_nwi_file_base);
+            // delete images — build path from base each iteration (fixes
+            // accumulating-path bug that occurred with '.=')
+            $post_image_dir = $mod_nwi_file_base . $post_id;
+            rm_full_dir($post_image_dir);
             $database->query(sprintf(
-                "DELETE FROM `%smod_news_img_img` WHERE `post_id` = ".$post_id,
-                TABLE_PREFIX
+                "DELETE FROM `%smod_news_img_img` WHERE `post_id` = %d",
+                TABLE_PREFIX,
+                $post_id
             ));
 
             // Delete post
             $database->query(sprintf(
-                "DELETE FROM `%smod_news_img_posts` WHERE `post_id` = '$post_id' LIMIT 1",
-                TABLE_PREFIX
+                "DELETE FROM `%smod_news_img_posts` WHERE `post_id` = %d LIMIT 1",
+                TABLE_PREFIX,
+                $post_id
             ));
             if ($database->is_error()) {
                 $errors++;
@@ -2061,16 +2112,20 @@ function mod_nwi_byte_convert($bytes)
 function mod_nwi_escapeString($string)
 {
     global $database;
+    if ($string === null) {
+        return '';
+    }
     if (method_exists($database, 'escapeString')) {
         return $database->escapeString($string);
-    } else {
-        if (defined('CAT_PATH')) {
-            $quoted = $database->conn()->quote($string);
-            $quoted = substr_replace($quoted, '', 0, 1);
-            $quoted = substr_replace($quoted, '', -1, 1);
-            return $quoted;
-        }
     }
+    if (defined('CAT_PATH')) {
+        $quoted = $database->conn()->quote($string);
+        $quoted = substr_replace($quoted, '', 0, 1);
+        $quoted = substr_replace($quoted, '', -1, 1);
+        return $quoted;
+    }
+    // Last-resort fallback so we never return null and corrupt a query.
+    return addslashes((string)$string);
 }
 
 function mod_nwi_return_bytes($val)
@@ -2108,6 +2163,13 @@ function mod_nwi_create_file(string $filename, ?string $filetime = null, ?string
         $pageID = $page_id;
     }
 
+    // Hard cast all values that will be written into PHP source — these
+    // come from many callers (some passing strings from DB rows), and any
+    // non-numeric value here would be a PHP code injection.
+    $safe_page_id    = (int)$pageID;
+    $safe_section_id = (int)$sectionID;
+    $safe_post_id    = (int)$post_id;
+
     // We need to create a new file
     // First, delete old file if it exists
     if (file_exists($filename)) {
@@ -2126,17 +2188,22 @@ function mod_nwi_create_file(string $filename, ?string $filetime = null, ?string
     }
 
     // Write to the filename
-    $content = ''.
+    $content = sprintf(
 '<?php
-$page_id = '.$pageID.';
-$section_id = '.$sectionID.';
-$post_id = '.$post_id.';
+$page_id = %d;
+$section_id = %d;
+$post_id = %d;
 
 define("POST_SECTION", $section_id);
 define("POST_ID", $post_id);
-require("'.$index_location.'config.php");
+require("%sconfig.php");
 require(WB_PATH."/index.php");
-?>';
+?>',
+        $safe_page_id,
+        $safe_section_id,
+        $safe_post_id,
+        addslashes($index_location)
+    );
     if ($handle = fopen($filename, 'w+')) {
         fwrite($handle, $content);
         fclose($handle);
@@ -2526,7 +2593,7 @@ function mod_nwi_get_news_items($options = array())
             $pages = CAT_Helper_Page::getPagesForLang($lang_id);
             $page_ids = [];
             foreach ($pages as $i => $pg) {
-                $pages_ids[] = $pg['page_id'];
+                $page_ids[] = $pg['page_id'];
             }
         }
         if (count($page_ids) > 0) {
