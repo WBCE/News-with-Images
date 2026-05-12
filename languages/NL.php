@@ -36,6 +36,7 @@ $MOD_NEWS_IMG['COPY_POST'] = 'Post kopi&euml;ren';
 $MOD_NEWS_IMG['CURRENT_SECTION'] = 'Huidige sectie'; 
 $MOD_NEWS_IMG['DEACTIVATE'] = "deactiveren";
 $MOD_NEWS_IMG['DEACTIVATE_POST'] = "deactiveren bericht";
+$MOD_NEWS_IMG['DEFAULT_PREVIEW_IMAGE'] = 'Standardbilde';
 $MOD_NEWS_IMG['DELETE'] = "verwijderen";
 $MOD_NEWS_IMG['DELETEIMAGE'] = 'Verwijder deze afbeelding?';
 $MOD_NEWS_IMG['DESCENDING'] = 'afwijzen'; 

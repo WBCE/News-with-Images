@@ -36,6 +36,7 @@ $MOD_NEWS_IMG['COPY_POST'] = 'Copy post';
 $MOD_NEWS_IMG['CURRENT_SECTION'] = 'Current section';
 $MOD_NEWS_IMG['DEACTIVATE'] = "deactivate";
 $MOD_NEWS_IMG['DEACTIVATE_POST'] = "deactivate post";
+$MOD_NEWS_IMG['DEFAULT_PREVIEW_IMAGE'] = 'Default image';
 $MOD_NEWS_IMG['DELETE'] = "delete";
 $MOD_NEWS_IMG['DELETEIMAGE'] ='Delete this image?';
 $MOD_NEWS_IMG['DESCENDING'] = 'descending';

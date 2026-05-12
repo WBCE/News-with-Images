@@ -36,6 +36,7 @@ $MOD_NEWS_IMG['COPY_WITH_TAGS'] = 'kopieren (inkl. Stichworte)';
 $MOD_NEWS_IMG['CURRENT_SECTION'] = 'Aktueller Abschnitt';
 $MOD_NEWS_IMG['DEACTIVATE'] = "deaktivieren";
 $MOD_NEWS_IMG['DEACTIVATE_POST'] = "Beitrag deaktivieren";
+$MOD_NEWS_IMG['DEFAULT_PREVIEW_IMAGE'] = 'Standardbild';
 $MOD_NEWS_IMG['DELETE'] = "l&ouml;schen";
 $MOD_NEWS_IMG['DELETEIMAGE'] ='Bild l&ouml;schen?';
 $MOD_NEWS_IMG['DESCENDING'] = 'absteigend';
