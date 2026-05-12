@@ -2309,17 +2309,6 @@ function mod_nwi_image_resize($src, $dst, $width, $height, $crop = 0)
         $type = 'jpg';
     }
     switch ($type) {
-        case 'bmp':
-            if (!function_exists('imagecreatefromwbmp')) {
-                return 2;
-            } else {
-                try {
-                    $img = imagecreatefromwbmp($src);
-                } catch (\Exception $e) {
-                    return 2;
-                }
-            }
-            break;
         case 'gif':
             if (!function_exists('imagecreatefromgif')) {
                 return 2;
@@ -2398,8 +2387,6 @@ function mod_nwi_image_resize($src, $dst, $width, $height, $crop = 0)
     imagecopyresampled($new, $img, 0, 0, $x, 0, $width, $height, $w, $h);
 
     switch ($type) {
-        case 'bmp': imagewbmp($new, $dst);
-            break;
         case 'gif': imagegif($new, $dst);
             break;
         case 'jpg': imagejpeg($new, $dst);
