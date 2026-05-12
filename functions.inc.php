@@ -1628,10 +1628,16 @@ function mod_nwi_posts_render($section_id, $posts, $posts_per_page = 0)
         $tagListArray = [];
         foreach ($tags as $tag_idx => $tag) {
             $tagListArray[] = $tag['tag'];
-            $tags[$tag_idx] = "<span class=\"mod_nwi_tag\" id=\"mod_nwi_tag_" . $post['post_id'] . "_" . $tag_idx . "\""
-                . (strlen($tag['tag_color']) > 0 ? " style=\"background-color:" . $tag['tag_color'] . "\"" : "")
-                . "><a href=\"" . mod_nwi_build_url($wb->page_link($page_id), ['tags' => $tag['tag']]) . "\">"
-                . htmlspecialchars($tag['tag'], ENT_QUOTES | ENT_HTML5) . "</a></span>";
+            $safe_color = mod_nwi_safe_css_color($tag['tag_color'] ?? '');
+            $style_attr = $safe_color !== ''
+                ? ' style="background-color:' . htmlspecialchars($safe_color, ENT_QUOTES | ENT_HTML5) . '"'
+                : '';
+            $tag_id_attr = htmlspecialchars('mod_nwi_tag_' . (int)$post['post_id'] . '_' . (int)$tag_idx, ENT_QUOTES | ENT_HTML5);
+            $tag_href    = htmlspecialchars(mod_nwi_build_url($wb->page_link($page_id), ['tags' => $tag['tag']]), ENT_QUOTES | ENT_HTML5);
+            $tags[$tag_idx] = '<span class="mod_nwi_tag" id="' . $tag_id_attr . '"' . $style_attr . '>'
+                . '<a href="' . $tag_href . '">'
+                . htmlspecialchars($tag['tag'], ENT_QUOTES | ENT_HTML5)
+                . '</a></span>';
         }
 
         // gallery images — relevant for "read more" link (SHOW_READ_MORE)
@@ -2126,6 +2132,40 @@ function mod_nwi_escapeString($string)
     }
     // Last-resort fallback so we never return null and corrupt a query.
     return addslashes((string)$string);
+}
+
+/**
+ * Allow only well-formed CSS color values for inline use in a style attribute.
+ * Returns '' for anything that doesn't match a known-safe pattern, so callers
+ * can simply skip emitting the style="…" entirely when the value is unsafe.
+ *
+ * Accepted formats:
+ *   - hex:           #rgb, #rgba, #rrggbb, #rrggbbaa
+ *   - functional:    rgb()/rgba()/hsl()/hsla() with only digits, commas,
+ *                    dots, spaces, percent signs and slashes
+ *   - keyword:       plain letter sequences up to 32 chars (e.g. "red",
+ *                    "transparent"); we do not enumerate the full CSS list,
+ *                    but the character class blocks any quote/angle break
+ */
+function mod_nwi_safe_css_color(?string $color): string
+{
+    if ($color === null) {
+        return '';
+    }
+    $color = trim($color);
+    if ($color === '') {
+        return '';
+    }
+    if (preg_match('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/', $color)) {
+        return $color;
+    }
+    if (preg_match('/^(rgb|rgba|hsl|hsla)\(\s*[0-9,.\s%\/]+\)$/', $color)) {
+        return $color;
+    }
+    if (preg_match('/^[a-zA-Z]{3,32}$/', $color)) {
+        return $color;
+    }
+    return '';
 }
 
 function mod_nwi_return_bytes($val)
