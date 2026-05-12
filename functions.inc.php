@@ -43,7 +43,12 @@ function mod_nwi_get_slide(int $sectionID, ?string $tpl = 'bs5carousel')
 // ========== URL helper =======================================================
 /**
  * Build a URL by appending query parameters to a base URL.
- * Handles ?/&amp; delimiter automatically and skips null/false/empty values.
+ * Handles ?/& delimiter automatically and skips null/false/empty values.
+ *
+ * Returns a raw URL with '&' as the parameter separator (RFC 3986). Callers
+ * that embed the result into an HTML attribute MUST run it through
+ * htmlspecialchars() themselves. This keeps the URL usable for HTTP
+ * Location headers and JavaScript redirects without literal "&amp;".
  *
  * @param string $base   Base URL (e.g. page URL or '' for relative query-only links)
  * @param array  $params Associative array of query parameters; null/false/'' values are omitted
@@ -55,8 +60,8 @@ function mod_nwi_build_url(string $base, array $params): string
     if (empty($filtered)) {
         return $base;
     }
-    $query = http_build_query($filtered, '', '&amp;', PHP_QUERY_RFC3986);
-    $sep = str_contains($base, '?') ? '&amp;' : '?';
+    $query = http_build_query($filtered, '', '&', PHP_QUERY_RFC3986);
+    $sep = str_contains($base, '?') ? '&' : '?';
     return $base . $sep . $query;
 }
 
@@ -1522,7 +1527,8 @@ function mod_nwi_build_pagination(int $section_id, int $position, int $posts_per
     $filter_g  = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
     if ($position > 0) {
-        $pl_prepend         = '<a href="' . mod_nwi_build_url('', ['p' => $position - $posts_per_page, 'tags' => $tags_append ?: null, 'g' => $filter_g]) . '">';
+        $prev_url           = mod_nwi_build_url('', ['p' => $position - $posts_per_page, 'tags' => $tags_append ?: null, 'g' => $filter_g]);
+        $pl_prepend         = '<a href="' . htmlspecialchars($prev_url, ENT_QUOTES | ENT_HTML5) . '">';
         $pl_append          = '</a>';
         $previous_link      = $pl_prepend . $TEXT['PREVIOUS'] . $pl_append;
         $previous_page_link = $pl_prepend . $TEXT['PREVIOUS_PAGE'] . $pl_append;
@@ -1535,7 +1541,8 @@ function mod_nwi_build_pagination(int $section_id, int $position, int $posts_per
         $next_link      = '';
         $next_page_link = '';
     } else {
-        $nl_prepend     = '<a href="' . mod_nwi_build_url('', ['p' => $position + $posts_per_page, 'tags' => $tags_append ?: null, 'g' => $filter_g]) . '"> ';
+        $next_url       = mod_nwi_build_url('', ['p' => $position + $posts_per_page, 'tags' => $tags_append ?: null, 'g' => $filter_g]);
+        $nl_prepend     = '<a href="' . htmlspecialchars($next_url, ENT_QUOTES | ENT_HTML5) . '"> ';
         $nl_append      = '</a>';
         $next_link      = $nl_prepend . $TEXT['NEXT'] . $nl_append;
         $next_page_link = $nl_prepend . $TEXT['NEXT_PAGE'] . $nl_append;
@@ -1756,9 +1763,13 @@ function mod_nwi_post_process($post, $section_id, $users)
 
     $filter_p = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     $filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-    $post['post_link'] = mod_nwi_build_url($post['post_link'], ['p' => $filter_p, 'g' => $filter_g]);
-    $post['next_link'] = $post['next_link'] ? mod_nwi_build_url($post['next_link'], ['g' => $filter_g]) : null;
-    $post['prev_link'] = $post['prev_link'] ? mod_nwi_build_url($post['prev_link'], ['g' => $filter_g]) : null;
+    // mod_nwi_build_url returns raw '&'-separated URLs (RFC 3986). These
+    // values are substituted into HTML templates as [LINK]/[NEXT_LINK]/
+    // [PREVIOUS_LINK] without any further encoding, so we HTML-encode them
+    // here once.
+    $post['post_link'] = htmlspecialchars(mod_nwi_build_url($post['post_link'], ['p' => $filter_p, 'g' => $filter_g]), ENT_QUOTES | ENT_HTML5);
+    $post['next_link'] = $post['next_link'] ? htmlspecialchars(mod_nwi_build_url($post['next_link'], ['g' => $filter_g]), ENT_QUOTES | ENT_HTML5) : null;
+    $post['prev_link'] = $post['prev_link'] ? htmlspecialchars(mod_nwi_build_url($post['prev_link'], ['g' => $filter_g]), ENT_QUOTES | ENT_HTML5) : null;
 
     // publishing date
     if ($post['published_when'] === '0') {

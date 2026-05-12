@@ -57,7 +57,10 @@ if ($query_page->numRows() > 0) {
     }
     $filter_p = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     $filter_g = filter_input(INPUT_GET, 'g', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-    $page_link = mod_nwi_build_url($page_link, ['p' => $filter_p, 'g' => $filter_g]);
+    // mod_nwi_build_url returns raw '&'-separated URLs; $page_link is used
+    // as the [BACK] placeholder which is substituted into HTML templates
+    // without encoding, so we HTML-encode it once here.
+    $page_link = htmlspecialchars(mod_nwi_build_url($page_link, ['p' => $filter_p, 'g' => $filter_g]), ENT_QUOTES | ENT_HTML5);
 }
 
 list($vars,$default_replacements) = mod_nwi_replacements();
@@ -77,15 +80,20 @@ if (defined('POST_ID') && is_numeric(POST_ID)) {
     // for functions that use global $section_id
     $section_id = $post_section;
     $tags = mod_nwi_get_tags_for_post(POST_ID);	
-    foreach ($tags as $i => $tag) {		
+    foreach ($tags as $i => $tag) {
 		$tagListArray[$i] = $tag['tag'];
-        $tags[$i] = "<span class=\"mod_nwi_tag\" id=\"mod_nwi_tag_".POST_ID."_".$i."\""
-                  . (!empty($tag['tag_color']) ? " style=\"background-color:".$tag['tag_color']."\"" : "" ) .">"
-                  . "<a href=\"".mod_nwi_build_url($wb->page_link(PAGE_ID), ['tags' => $tag['tag']])."\">".htmlspecialchars($tag['tag'], ENT_QUOTES | ENT_HTML5)."</a></span>";
+        $safe_color  = mod_nwi_safe_css_color($tag['tag_color'] ?? '');
+        $style_attr  = $safe_color !== ''
+            ? ' style="background-color:' . htmlspecialchars($safe_color, ENT_QUOTES | ENT_HTML5) . '"'
+            : '';
+        $tag_id_attr = htmlspecialchars('mod_nwi_tag_' . (int)POST_ID . '_' . (int)$i, ENT_QUOTES | ENT_HTML5);
+        $tag_href    = htmlspecialchars(mod_nwi_build_url($wb->page_link(PAGE_ID), ['tags' => $tag['tag']]), ENT_QUOTES | ENT_HTML5);
+        $tags[$i] = '<span class="mod_nwi_tag" id="' . $tag_id_attr . '"' . $style_attr . '>'
+                  . '<a href="' . $tag_href . '">' . htmlspecialchars($tag['tag'], ENT_QUOTES | ENT_HTML5) . '</a></span>';
         if(!isset($page_keywords[$tag['tag']])) {
             $page_keywords[] = htmlspecialchars($tag['tag'], ENT_QUOTES | ENT_HTML401);
         }
-    }		
+    }
     $post = mod_nwi_post_show(intval(POST_ID));
 	if($post !== false) {
 	
