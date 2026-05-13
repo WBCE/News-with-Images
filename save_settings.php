@@ -71,6 +71,22 @@ $gallery = mod_nwi_escapeString($_POST['gallery']);
 $use_second_block = ( (isset($_POST['use_second_block']) && $_POST['use_second_block']=='Y') ? 'Y' : 'N');
 $show_settings_only_admins = ( (isset($_POST['show_settings_only_admins']) && $_POST['show_settings_only_admins']=='Y') ? 'Y' : 'N');
 
+// default preview image: pic_id from mod_news_img_img. Verify the chosen image
+// actually belongs to a post in this section so a forged POST can't link to a
+// foreign image.
+$default_preview_image = isset($_POST['default_preview_image']) ? (int)$_POST['default_preview_image'] : 0;
+if ($default_preview_image > 0) {
+    $check = $database->query(sprintf(
+        "SELECT i.`id` FROM `%smod_news_img_img` i "
+        . "INNER JOIN `%smod_news_img_posts` p ON p.`post_id` = i.`post_id` "
+        . "WHERE i.`id` = %d AND p.`section_id` = %d",
+        TABLE_PREFIX, TABLE_PREFIX, $default_preview_image, (int)$section_id
+    ));
+    if (!$check || $check->numRows() === 0) {
+        $default_preview_image = 0;
+    }
+}
+
 // expert mode
 if(isset($settings['mode']) && $settings['mode']=='advanced') {
     $image_loop = mod_nwi_escapeString(str_replace($friendly, $raw, $_POST['image_loop']));
@@ -172,6 +188,7 @@ $database->query(
     . " `imgthumbsize`='$thumbsize',"
     . " `use_second_block`='$use_second_block',"
 	. " `show_settings_only_admins`='$show_settings_only_admins',"
+    . " `default_preview_image`='$default_preview_image',"
     . " `view`='$view'"
     . " WHERE `section_id` = '$section_id'"
 );

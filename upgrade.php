@@ -249,12 +249,21 @@ require(WB_PATH."/index.php");
 		
 	}
 	
-	if (!$database->field_exists('{TP}mod_news_img_settings','show_settings_only_admins')) { 
+	if (!$database->field_exists('{TP}mod_news_img_settings','show_settings_only_admins')) {
 		try {
 			$database->query(sprintf("ALTER TABLE `%smod_news_img_settings` ADD COLUMN `show_settings_only_admins` CHAR(1) NOT NULL DEFAULT 'N' AFTER `use_second_block`",TABLE_PREFIX));
 			} catch(\Exception $e) {}
 	}
-	
+
+    // 2026-05-13 Bianka Martinovic
+    //            section-wide default preview image (pic_id from mod_news_img_img,
+    //            used when a post has no own preview image)
+	if (!$database->field_exists('{TP}mod_news_img_settings','default_preview_image')) {
+		try {
+			$database->query(sprintf("ALTER TABLE `%smod_news_img_settings` ADD COLUMN `default_preview_image` INT NOT NULL DEFAULT '0' AFTER `show_settings_only_admins`",TABLE_PREFIX));
+		} catch(\Exception $e) {}
+	}
+
 
     // 2019-07-05 Bianka Martinovic
     //            add database tables for tags

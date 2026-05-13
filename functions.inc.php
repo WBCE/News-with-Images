@@ -1775,7 +1775,20 @@ function mod_nwi_post_process($post, $section_id, $users)
         $imgdata = mod_nwi_img_get($post['image']);
         $post_img = "<img src='".WB_URL.MEDIA_DIRECTORY.'/.news_img/'.$post['image']."' alt='".htmlspecialchars($post['title'], ENT_QUOTES | ENT_HTML401)."' />";
     } else {
-        $post_img = "<img src='".WB_URL."/modules/news_img/images/nopic.png' alt='empty placeholder' style='width:".$previewwidth."px;' />";
+        // no per-post image: fall back to the section-wide default if configured
+        $settings_section = mod_nwi_settings_get($section_id);
+        $default_pic_id = isset($settings_section['default_preview_image']) ? (int)$settings_section['default_preview_image'] : 0;
+        $post_img = '';
+        if ($default_pic_id > 0) {
+            $default_img = mod_nwi_img_get($default_pic_id);
+            if (!empty($default_img) && !empty($default_img['picname'])) {
+                $default_url = WB_URL.MEDIA_DIRECTORY.'/.news_img/'.(int)$default_img['post_id'].'/'.$default_img['picname'];
+                $post_img = "<img src='".$default_url."' alt='".htmlspecialchars($post['title'], ENT_QUOTES | ENT_HTML401)."' />";
+            }
+        }
+        if ($post_img === '') {
+            $post_img = "<img src='".WB_URL."/modules/news_img/images/nopic.png' alt='empty placeholder' style='width:".$previewwidth."px;' />";
+        }
     }
     $post['post_img'] = $post_img;
 
@@ -1924,6 +1937,37 @@ function mod_nwi_img_get_by_post(int $post_id, bool $render)
         }
     }
 
+    return $images;
+}
+
+/**
+ * Return all gallery images uploaded for any post in the given section.
+ * Used e.g. by the "default preview image" picker in the section settings.
+ *
+ * @param  int $section_id
+ * @return array  rows with: id, picname, picdesc, post_id, position, post_title
+ */
+function mod_nwi_img_get_by_section(int $section_id): array
+{
+    global $database;
+
+    $images = [];
+    $query = $database->query(sprintf(
+        "SELECT i.`id`, i.`picname`, i.`picdesc`, i.`post_id`, i.`position`, "
+        . "p.`title` AS `post_title` "
+        . "FROM `%smod_news_img_img` i "
+        . "INNER JOIN `%smod_news_img_posts` p ON p.`post_id` = i.`post_id` "
+        . "WHERE p.`section_id` = %d "
+        . "ORDER BY p.`post_id` ASC, i.`position` ASC, i.`id` ASC",
+        TABLE_PREFIX,
+        TABLE_PREFIX,
+        $section_id
+    ));
+    if (!empty($query) && $query->numRows() > 0) {
+        while ($row = $query->fetchRow()) {
+            $images[] = $row;
+        }
+    }
     return $images;
 }
 

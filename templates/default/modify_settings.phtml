@@ -87,7 +87,89 @@
                 <tr>
                     <td class="setting_name"><?= $MOD_NEWS_IMG['DEFAULT_PREVIEW_IMAGE']; ?>:</td>
                     <td class="setting_value">
-                        xxx
+<?php
+                        $default_images = mod_nwi_img_get_by_section((int)$section_id);
+                        $current_default = isset($settings['default_preview_image']) ? (int)$settings['default_preview_image'] : 0;
+                        if (empty($default_images)):
+?>
+                        <i><?= $MOD_NEWS_IMG['NO_IMAGES_AVAILABLE'] ?? 'keine Bilder vorhanden'; ?></i>
+                        <input type="hidden" name="default_preview_image" value="0" />
+<?php
+                        else:
+                            // resolve summary content for the currently selected image
+                            $current_thumb_src = WB_URL.'/modules/news_img/images/nopic.png';
+                            $current_label_text = $MOD_NEWS_IMG['NONE'];
+                            if ($current_default > 0) {
+                                foreach ($default_images as $img) {
+                                    if ((int)$img['id'] === $current_default) {
+                                        $current_thumb_src = WB_URL.MEDIA_DIRECTORY.'/.news_img/'.(int)$img['post_id'].'/thumb/'.$img['picname'];
+                                        $current_label_text = $img['picname'];
+                                        break;
+                                    }
+                                }
+                            }
+?>
+                        <details class="nwi_default_image_details" style="border:1px solid #ddd;border-radius:3px;">
+                            <summary class="nwi_default_image_summary" style="list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:4px 8px;user-select:none;">
+                                <img class="nwi_current_thumb" src="<?= htmlspecialchars($current_thumb_src, ENT_QUOTES | ENT_HTML5); ?>" alt="" style="width:40px;height:40px;object-fit:cover;border:1px solid #ccc;" />
+                                <span class="nwi_current_label" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><?= htmlspecialchars($current_label_text, ENT_QUOTES | ENT_HTML5); ?></span>
+                                <span class="nwi_picker_toggle" style="font-size:11px;color:#06c;">&#9662; <?= $MOD_NEWS_IMG['DEFAULT_PREVIEW_IMAGE_CHANGE'] ?? 'Bild w&auml;hlen'; ?></span>
+                            </summary>
+                            <div class="nwi_picker_body" style="padding:6px;border-top:1px solid #eee;">
+                                <input type="search" class="nwi_picker_search" placeholder="<?= $MOD_NEWS_IMG['DEFAULT_PREVIEW_IMAGE_SEARCH'] ?? 'suchen...'; ?>" style="width:100%;box-sizing:border-box;margin-bottom:6px;padding:4px;" onkeydown="if(event.key==='Enter'){event.preventDefault();}" />
+                                <div class="nwi_default_image_picker" style="display:flex;flex-wrap:wrap;gap:6px;max-height:260px;overflow:auto;padding:4px;">
+                                    <label class="nwi_default_image_thumb" data-search="<?= htmlspecialchars(strtolower($MOD_NEWS_IMG['NONE']), ENT_QUOTES | ENT_HTML5); ?>" data-thumb-src="<?= WB_URL; ?>/modules/news_img/images/nopic.png" data-label="<?= htmlspecialchars($MOD_NEWS_IMG['NONE'], ENT_QUOTES | ENT_HTML5); ?>" style="display:inline-block;padding:3px;cursor:pointer;border:2px solid <?= ($current_default===0) ? '#06c' : 'transparent'; ?>;text-align:center;width:90px;" title="<?= $MOD_NEWS_IMG['NONE']; ?>">
+                                        <input type="radio" name="default_preview_image" value="0" style="display:none;"<?php if($current_default===0): ?> checked="checked"<?php endif; ?> />
+                                        <img src="<?= WB_URL; ?>/modules/news_img/images/nopic.png" alt="<?= $MOD_NEWS_IMG['NONE']; ?>" loading="lazy" style="width:80px;height:80px;object-fit:cover;" />
+                                        <div style="font-size:11px;"><?= $MOD_NEWS_IMG['NONE']; ?></div>
+                                    </label>
+<?php
+                                    foreach($default_images as $img):
+                                        $caption = $img['picdesc'] !== '' ? $img['picdesc'] : $img['picname'];
+                                        $thumb_url = WB_URL.MEDIA_DIRECTORY.'/.news_img/'.(int)$img['post_id'].'/thumb/'.$img['picname'];
+                                        $is_selected = ($current_default === (int)$img['id']);
+                                        $search_blob = strtolower($img['picname'].' '.$img['picdesc'].' '.$img['post_title']);
+?>
+                                    <label class="nwi_default_image_thumb" data-search="<?= htmlspecialchars($search_blob, ENT_QUOTES | ENT_HTML5); ?>" data-thumb-src="<?= htmlspecialchars($thumb_url, ENT_QUOTES | ENT_HTML5); ?>" data-label="<?= htmlspecialchars($img['picname'], ENT_QUOTES | ENT_HTML5); ?>" style="display:inline-block;padding:3px;cursor:pointer;border:2px solid <?= $is_selected ? '#06c' : 'transparent'; ?>;text-align:center;width:90px;" title="<?= htmlspecialchars($caption, ENT_QUOTES | ENT_HTML5); ?> (<?= htmlspecialchars($img['post_title'], ENT_QUOTES | ENT_HTML5); ?>)">
+                                        <input type="radio" name="default_preview_image" value="<?= (int)$img['id']; ?>" style="display:none;"<?php if($is_selected): ?> checked="checked"<?php endif; ?> />
+                                        <img src="<?= $thumb_url; ?>" alt="<?= htmlspecialchars($img['picname'], ENT_QUOTES | ENT_HTML5); ?>" loading="lazy" style="width:80px;height:80px;object-fit:cover;" />
+                                        <div style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><?= htmlspecialchars($img['picname'], ENT_QUOTES | ENT_HTML5); ?></div>
+                                    </label>
+<?php endforeach; ?>
+                                </div>
+                            </div>
+                        </details>
+                        <script>
+                        (function(){
+                            var root = document.currentScript.previousElementSibling;
+                            if (!root || root.tagName !== 'DETAILS') return;
+                            var search = root.querySelector('.nwi_picker_search');
+                            var thumbs = root.querySelectorAll('.nwi_default_image_thumb');
+                            var currentThumb = root.querySelector('.nwi_current_thumb');
+                            var currentLabel = root.querySelector('.nwi_current_label');
+                            if (search) {
+                                search.addEventListener('input', function(){
+                                    var q = this.value.trim().toLowerCase();
+                                    thumbs.forEach(function(el){
+                                        var s = el.getAttribute('data-search') || '';
+                                        el.style.display = (q === '' || s.indexOf(q) !== -1) ? '' : 'none';
+                                    });
+                                });
+                            }
+                            thumbs.forEach(function(el){
+                                var radio = el.querySelector('input[type=radio]');
+                                if (!radio) return;
+                                radio.addEventListener('change', function(){
+                                    thumbs.forEach(function(o){ o.style.borderColor = 'transparent'; });
+                                    el.style.borderColor = '#06c';
+                                    if (currentThumb) currentThumb.src = el.getAttribute('data-thumb-src') || '';
+                                    if (currentLabel) currentLabel.textContent = el.getAttribute('data-label') || '';
+                                    root.open = false;
+                                });
+                            });
+                        })();
+                        </script>
+<?php endif; ?>
                     </td>
                 </tr>
 <?php if(extension_loaded('gd') AND function_exists('imageCreateFromJpeg')): ?>
