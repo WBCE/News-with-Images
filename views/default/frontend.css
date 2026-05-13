@@ -46,15 +46,29 @@ td.mod_nwi_table_center,
 
 .mod_nwi_default .mod_nwi_teaserpic {
   float: left;
+  width: clamp(120px, 22%, 180px);
+  aspect-ratio: 1 / 1;
+  margin: 0 15px 5px 0;
+  overflow: hidden;
+  background: #f4f4f4;
+  border-radius: 3px;
+}
+
+.mod_nwi_default .mod_nwi_teaserpic a {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .mod_nwi_default .mod_nwi_teaserpic img {
-  max-width: 80%;
-  height: auto;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .mod_nwi_default .mod_nwi_teasertext {
-  display: table;
+  overflow: hidden;
 }
 
 .mod_nwi_default .mod_nwi_teasertext h3 {

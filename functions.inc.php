@@ -1770,27 +1770,45 @@ function mod_nwi_post_process($post, $section_id, $users)
         $thumbheight
     ) = mod_nwi_get_sizes($section_id);
 
-    // posting (preview) image
-    if ($post['image'] != "") {
-        $imgdata = mod_nwi_img_get($post['image']);
-        $post_img = "<img src='".WB_URL.MEDIA_DIRECTORY.'/.news_img/'.$post['image']."' alt='".htmlspecialchars($post['title'], ENT_QUOTES | ENT_HTML401)."' />";
-    } else {
-        // no per-post image: fall back to the section-wide default if configured
-        $settings_section = mod_nwi_settings_get($section_id);
-        $default_pic_id = isset($settings_section['default_preview_image']) ? (int)$settings_section['default_preview_image'] : 0;
-        $post_img = '';
-        if ($default_pic_id > 0) {
-            $default_img = mod_nwi_img_get($default_pic_id);
-            if (!empty($default_img) && !empty($default_img['picname'])) {
-                $default_url = WB_URL.MEDIA_DIRECTORY.'/.news_img/'.(int)$default_img['post_id'].'/'.$default_img['picname'];
-                $post_img = "<img src='".$default_url."' alt='".htmlspecialchars($post['title'], ENT_QUOTES | ENT_HTML401)."' />";
+    // posting (preview) image — Kaskade: post → group → default → nopic.
+    // Alle Varianten werden in Preview-Größe ausgeliefert, damit das Layout
+    // (Bild links, Teaser rechts) für alle vier Quellen identisch bleibt.
+    $post_img_src = '';
+
+    // 1) Beitragsbild
+    if (!empty($post['image'])) {
+        $post_img_src = WB_URL.MEDIA_DIRECTORY.'/.news_img/'.$post['image'];
+    }
+
+    // 2) Gruppenbild — Datei `image<group_id>.<ext>` durchprobieren
+    if ($post_img_src === '' && !empty($post['group_id'])) {
+        foreach (['png','jpg','jpeg','gif','webp'] as $ext) {
+            $group_file = WB_PATH.MEDIA_DIRECTORY.'/.news_img/image'.(int)$post['group_id'].'.'.$ext;
+            if (file_exists($group_file)) {
+                $post_img_src = WB_URL.MEDIA_DIRECTORY.'/.news_img/image'.(int)$post['group_id'].'.'.$ext;
+                break;
             }
         }
-        if ($post_img === '') {
-            $post_img = "<img src='".WB_URL."/modules/news_img/images/nopic.png' alt='empty placeholder' style='width:".$previewwidth."px;' />";
+    }
+
+    // 3) Section-Default — Thumb-Variante des Galeriebilds, nicht Vollbild
+    if ($post_img_src === '') {
+        $settings_section = mod_nwi_settings_get($section_id);
+        $default_pic_id = (int)($settings_section['default_preview_image'] ?? 0);
+        if ($default_pic_id > 0) {
+            $default_img = mod_nwi_img_get($default_pic_id);
+            if (!empty($default_img['picname'])) {
+                $post_img_src = WB_URL.MEDIA_DIRECTORY.'/.news_img/'.(int)$default_img['post_id'].'/thumb/'.$default_img['picname'];
+            }
         }
     }
-    $post['post_img'] = $post_img;
+
+    // 4) Fallback
+    if ($post_img_src === '') {
+        $post_img_src = WB_URL.'/modules/news_img/images/nopic.png';
+    }
+
+    $post['post_img'] = "<img src='".$post_img_src."' alt='".htmlspecialchars($post['title'], ENT_QUOTES | ENT_HTML401)."' />";
 
     // post link
     $post['post_link'] = page_link($post['link']);
@@ -1870,12 +1888,10 @@ function mod_nwi_post_process($post, $section_id, $users)
         $post['group_image'] = "<img class='mod_nwi_grouppic' src='".$post['group_image_url']."' alt='".htmlspecialchars($post['group_title'], ENT_QUOTES | ENT_HTML401)."' title='".htmlspecialchars($TEXT['GROUP'].": ".$post['group_title'], ENT_QUOTES | ENT_HTML401)."' />";
     }
 
-    // fallback to group image if there's no preview image
-    $post['post_or_group_image'] = (
-        ($post['image'] != "")
-        ? $post['post_img']
-        : $post['group_image']
-    );
+    // Die volle Bild-Kaskade (post → group → default → nopic) sitzt jetzt
+    // bereits in $post['post_img']; das Alt-Placeholder [POST_OR_GROUP_IMAGE]
+    // bekommt dasselbe Resultat, damit Custom-Templates nicht hängenbleiben.
+    $post['post_or_group_image'] = $post['post_img'];
 
     // user
     $post['display_name'] = isset($users[$post['posted_by']]) ? $users[$post['posted_by']]['display_name'] : '<i>'.$users[0]['display_name'] .'</i>';
@@ -2513,7 +2529,7 @@ function mod_nwi_replacements()
         'OUT_OF',                       // text "out of" ("von")
         'PAGE_TITLE',                   // page title
         'POST_ID',                      // ID of the post
-        'POST_OR_GROUP_IMAGE',          // use group image if there's no preview image
+        'POST_OR_GROUP_IMAGE',          // alias for IMAGE — full cascade post→group→default→nopic
         'PREVIOUS_LINK',                // prev link
         'PREVIOUS_PAGE_LINK',           // prev page link
         'PUBLISHED_DATE',               // published date
