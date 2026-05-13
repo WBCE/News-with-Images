@@ -420,17 +420,28 @@ function mod_nwi_users_get()
 
 function mod_nwi_img_copy($source, $dest)
 {
+    // Refuse to follow symlinks — copying via a symlink could escape the
+    // intended media directory (e.g. a symlink pointing at /etc).
+    if (is_link($source)) {
+        return;
+    }
     if (is_dir($source)) {
         $dir_handle = opendir($source);
         while ($file = readdir($dir_handle)) {
             if ($file != "." && $file != "..") {
-                if (is_dir($source."/".$file)) {
-                    if (!is_dir($dest."/".$file)) {
-                        mkdir($dest."/".$file);
+                $src_path = $source."/".$file;
+                $dst_path = $dest."/".$file;
+                // Skip any symlinks encountered while traversing.
+                if (is_link($src_path)) {
+                    continue;
+                }
+                if (is_dir($src_path)) {
+                    if (!is_dir($dst_path)) {
+                        mkdir($dst_path);
                     }
-                    mod_nwi_img_copy($source."/".$file, $dest."/".$file);
+                    mod_nwi_img_copy($src_path, $dst_path);
                 } else {
-                    copy($source."/".$file, $dest."/".$file);
+                    copy($src_path, $dst_path);
                 }
             }
         }
@@ -1337,18 +1348,26 @@ function mod_nwi_post_show(int $post_id)
 
     // get post data
     $post = mod_nwi_post_get($post_id);
+    if (empty($post) || !isset($post['section_id'])) {
+        return false;
+    }
 
-    $pageQuery = "SELECT * from `".TABLE_PREFIX."sections` WHERE `section_id`=".$post['section_id'];
+    $page = [];
+    $pageQuery = sprintf(
+        "SELECT * from `%ssections` WHERE `section_id`=%d",
+        TABLE_PREFIX,
+        (int)$post['section_id']
+    );
     $query_page = $database->query($pageQuery);
-    if ($query_page->numRows() > 0) {
-        $page      = $query_page->fetchRow();
+    if ($query_page && $query_page->numRows() > 0) {
+        $page = $query_page->fetchRow();
     }
 
     // get group data
     $gid = $post['group_id'] ?? 0;
     if ($gid != 0) {
         $group = mod_nwi_get_group($gid);
-        if ($group['active'] != 1) {
+        if (empty($group) || $group['active'] != 1) {
             return false;
         }
     }
@@ -1358,6 +1377,11 @@ function mod_nwi_post_show(int $post_id)
         }
         return false;
     } else {
+        if (empty($page)) {
+            // No matching section row — cannot safely build the access
+            // file (page_id missing); skip silently.
+            return $post;
+        }
         $filename = WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION;
         mod_nwi_create_file($filename, '', $post_id, $section_id, $page['page_id']);
     }
@@ -1947,8 +1971,14 @@ function mod_nwi_settings_get($section_id)
         TABLE_PREFIX,
         $key
     ));
-    $cache[$key] = (!empty($query_content)) ? $query_content->fetchRow() : [];
-    return $cache[$key];
+    // Only cache rows we actually retrieved. Caching '[]' on a failed
+    // query or a missing row would lock subsequent calls into a broken
+    // state and spam notices on every field access.
+    if ($query_content && $query_content->numRows() > 0) {
+        $cache[$key] = $query_content->fetchRow();
+        return $cache[$key];
+    }
+    return [];
 }   // end function mod_nwi_settings_get()
 
 /**
@@ -2119,9 +2149,13 @@ function mod_nwi_byte_convert($bytes)
     $symbol = array(' bytes', ' KB', ' MB', ' GB', ' TB');
     $exp = 0;
     $converted_value = 0;
+    // log(0) is -INF and log() of a negative number is NaN; guard against
+    // both. Negative input is clamped to 0 so the function returns
+    // "0.00 bytes" rather than producing a fatal/warning.
+    $bytes = (float)$bytes;
     if ($bytes > 0) {
-        $exp = floor(log($bytes) / log(1024));
-        $converted_value = ($bytes / pow(1024, floor($exp)));
+        $exp = (int)min(floor(log($bytes) / log(1024)), count($symbol) - 1);
+        $converted_value = $bytes / pow(1024, $exp);
     }
     return sprintf('%.2f '.$symbol[$exp], $converted_value);
 }   // end function mod_nwi_byte_convert()
