@@ -17,10 +17,10 @@ require_once __DIR__.'/functions.inc.php';
 
 // Include WB admin wrapper script
 require(WB_PATH.'/modules/admin.php');
-$group_id = $admin->checkIDKEY('group_id', 0, 'GET');
-if (!$group_id){
+$group_id = filter_input(INPUT_GET, 'group_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+if (!$group_id) {
     $admin->print_error($MESSAGE['GENERIC_SECURITY_ACCESS']
-	 .' (IDKEY) '.__FILE__.':'.__LINE__,
+	 .' (group_id) '.__FILE__.':'.__LINE__,
          ADMIN_URL.'/pages/index.php');
     $admin->print_footer();
     exit();

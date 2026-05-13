@@ -17,10 +17,10 @@ require_once __DIR__.'/functions.inc.php';
 
 // Include WB admin wrapper script
 require(WB_PATH.'/modules/admin.php');
-$tag_id = $admin->checkIDKEY('tag_id', 0, 'GET');
-if (!$tag_id){
+$tag_id = filter_input(INPUT_GET, 'tag_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+if (!$tag_id) {
     $admin->print_error($MESSAGE['GENERIC_SECURITY_ACCESS']
-	 .' (IDKEY) '.__FILE__.':'.__LINE__,
+	 .' (tag_id) '.__FILE__.':'.__LINE__,
          ADMIN_URL.'/pages/index.php');
     $admin->print_footer();
     exit();

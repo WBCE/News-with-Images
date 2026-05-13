@@ -47,7 +47,7 @@ if (!defined('CAT_PATH')) {
 
 // Validate all fields
 if ($admin->get_post('title') == '') {
-    $admin->print_error($MESSAGE['GENERIC_FILL_IN_ALL'], WB_URL.'/modules/news_img/modify_group.php?page_id='.$page_id.'&section_id='.$section_id.'&group_id='.$admin->getIDKEY($group_id).'&tab=g');
+    $admin->print_error($MESSAGE['GENERIC_FILL_IN_ALL'], WB_URL.'/modules/news_img/modify_group.php?page_id='.$page_id.'&section_id='.$section_id.'&group_id='.$group_id.'&tab=g');
     $admin->print_footer();
     exit();
 } else {
@@ -58,8 +58,8 @@ if ($admin->get_post('title') == '') {
 
 // Update row
 $database->query(sprintf(
-    "UPDATE `%smod_news_img_groups` SET `title`='$title', `active`='$active' WHERE `group_id`='$group_id'",
-    TABLE_PREFIX
+    "UPDATE `%smod_news_img_groups` SET `title`='%s', `active`='%s' WHERE `group_id`=%d",
+    TABLE_PREFIX, $title, $active, $group_id
 ));
 
 // Check if the user uploaded an image or wants to delete one
@@ -76,7 +76,10 @@ if (isset($_FILES['image']['tmp_name']) && $_FILES['image']['tmp_name'] != '') {
     // Upload image
     move_uploaded_file($_FILES['image']['tmp_name'], $new_filename);
     // Check if we need to create a thumb
-    $query_settings = $database->query("SELECT `resize_preview`,`crop_preview` FROM `".TABLE_PREFIX."mod_news_img_settings` WHERE `section_id` = '$section_id'");
+    $query_settings = $database->query(sprintf(
+        "SELECT `resize_preview`,`crop_preview` FROM `%smod_news_img_settings` WHERE `section_id`=%d",
+        TABLE_PREFIX, (int)$section_id
+    ));
     $fetch_settings = $query_settings->fetchRow();
     $previewwidth = $previewheight = 0;
     if (substr_count($fetch_settings['resize_preview'], 'x')>0) {
@@ -104,7 +107,7 @@ if (isset($_POST['delete_image']) and $_POST['delete_image'] != '') {
 }
 
 if ($database->is_error()) {
-    $admin->print_error($database->get_error(), WB_URL.'/modules/news_img/modify_group.php?page_id='.$page_id.'&section_id='.$section_id.'&group_id='.$admin->getIDKEY($group_id).'&tab=g');
+    $admin->print_error($database->get_error(), WB_URL.'/modules/news_img/modify_group.php?page_id='.$page_id.'&section_id='.$section_id.'&group_id='.$group_id.'&tab=g');
 } else {
     $admin->print_success($TEXT['SUCCESS'], ADMIN_URL.'/pages/modify.php?page_id='.$page_id.'&tab=g');
 }

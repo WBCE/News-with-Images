@@ -19,17 +19,16 @@ require_once __DIR__.'/functions.inc.php';
 $update_when_modified = false; // Tells script to update when this page was last updated
 require(WB_PATH.'/modules/admin.php');
 
-$tag_id = $admin->checkIDKEY('tag_id', 0, 'GET');
-$section_id = (isset($_GET['section_id']) ? intval($_GET['section_id']) : null);
+$tag_id = filter_input(INPUT_GET, 'tag_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+$section_id = filter_input(INPUT_GET, 'section_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
-if (!$tag_id || !$section_id){
+if (!$tag_id || !$section_id) {
     $admin->print_error($MESSAGE['GENERIC_SECURITY_ACCESS']
-	 .' (IDKEY) '.__FILE__.':'.__LINE__,
+	 .' (tag_id) '.__FILE__.':'.__LINE__,
          ADMIN_URL.'/pages/index.php');
     $admin->print_footer();
     exit();
 }
-$tag_id = intval($tag_id);
 
 
 
@@ -38,8 +37,8 @@ $tag = mod_nwi_get_tag($tag_id);
 
 // remove tag-to-posts-mappings
 $database->query(sprintf(
-    "DELETE FROM `%smod_news_img_tags_posts` WHERE `tag_id`=$tag_id",
-    TABLE_PREFIX
+    "DELETE FROM `%smod_news_img_tags_posts` WHERE `tag_id`=%d",
+    TABLE_PREFIX, $tag_id
 ));
 
 $sections = explode(",",$tag['sections']);
@@ -50,23 +49,23 @@ $sections = explode(",",$tag['sections']);
 if(in_array('0',$sections)) {
     // remove all tag-to-section-mappings
     $database->query(sprintf(
-        "DELETE FROM `%smod_news_img_tags_sections` WHERE `tag_id`=$tag_id",
-        TABLE_PREFIX
+        "DELETE FROM `%smod_news_img_tags_sections` WHERE `tag_id`=%d",
+        TABLE_PREFIX, $tag_id
     ));
     // remove tag
     $database->query(sprintf(
-        "DELETE FROM `%smod_news_img_tags` WHERE `tag_id`=$tag_id",
-        TABLE_PREFIX
+        "DELETE FROM `%smod_news_img_tags` WHERE `tag_id`=%d",
+        TABLE_PREFIX, $tag_id
     ));
 } else {
     // remove the local tag
     $database->query(sprintf(
         "DELETE FROM `%smod_news_img_tags_sections` WHERE `section_id`=%d AND `tag_id`=%d",
-        TABLE_PREFIX, intval($section_id), $tag_id
+        TABLE_PREFIX, $section_id, $tag_id
     ));
-	 $database->query(sprintf(
-        "DELETE FROM `%smod_news_img_tags` WHERE `tag_id`=$tag_id",
-        TABLE_PREFIX
+    $database->query(sprintf(
+        "DELETE FROM `%smod_news_img_tags` WHERE `tag_id`=%d",
+        TABLE_PREFIX, $tag_id
     ));
 }
 

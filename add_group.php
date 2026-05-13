@@ -55,7 +55,7 @@ $database->query(sprintf(
 // Get the id
 $group_id = $database->get_one("SELECT LAST_INSERT_ID()");
 
-$forward_url = WB_URL.'/modules/news_img/modify_group.php?page_id='.$page_id.'&section_id='.$section_id.'&group_id='.$admin->getIDKEY($group_id);
+$forward_url = WB_URL.'/modules/news_img/modify_group.php?page_id='.$page_id.'&section_id='.$section_id.'&group_id='.$group_id;
 if($request=='POST') {
     $forward_url = ADMIN_URL.'/pages/modify.php?page_id='.$page_id.'&tab=g';
 }

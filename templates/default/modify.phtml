@@ -313,7 +313,7 @@
                         </tr>
                     </thead>
                 <tbody>
-<?php foreach($tags as $tag): $tag_id_key = (defined('WB_VERSION') && (version_compare(WB_VERSION, '2.8.3', '>'))) ? $tag['tag_id'] : $admin->getIDKEY($tag['tag_id']); ?>
+<?php foreach($tags as $tag): $tag_id_key = (int)$tag['tag_id']; ?>
                     <tr>
                         <td style="width:20px">
                             <a href="<?php echo WB_URL; ?>/modules/news_img/modify_tag.php?page_id=<?php echo $page_id; ?>&amp;section_id=<?php echo $section_id; ?>&amp;tag_id=<?php echo $tag_id_key; ?>" title="<?php echo $TEXT['MODIFY']; ?>">
