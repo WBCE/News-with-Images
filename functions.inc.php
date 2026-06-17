@@ -1791,15 +1791,14 @@ function mod_nwi_post_process($post, $section_id, $users)
         }
     }
 
-    // 3) Section-Default — Thumb-Variante des Galeriebilds, nicht Vollbild
+    // 3) Section-Default — eigenständige Kopie unter media/.news_img/<file>.
+    // Lebenszyklus ist von Posts entkoppelt; Datei verschwindet nur via
+    // Settings ("entfernen" oder Überschreiben).
     if ($post_img_src === '') {
         $settings_section = mod_nwi_settings_get($section_id);
-        $default_pic_id = (int)($settings_section['default_preview_image'] ?? 0);
-        if ($default_pic_id > 0) {
-            $default_img = mod_nwi_img_get($default_pic_id);
-            if (!empty($default_img['picname'])) {
-                $post_img_src = WB_URL.MEDIA_DIRECTORY.'/.news_img/'.(int)$default_img['post_id'].'/thumb/'.$default_img['picname'];
-            }
+        $default_file = (string)($settings_section['default_preview_image'] ?? '');
+        if ($default_file !== '' && file_exists(WB_PATH.MEDIA_DIRECTORY.'/.news_img/'.$default_file)) {
+            $post_img_src = WB_URL.MEDIA_DIRECTORY.'/.news_img/'.$default_file;
         }
     }
 

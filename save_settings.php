@@ -67,25 +67,101 @@ $post_header = mod_nwi_escapeString(str_replace($friendly, $raw, $_POST['post_he
 $post_content = mod_nwi_escapeString(str_replace($friendly, $raw, $_POST['post_content']));
 $post_footer = mod_nwi_escapeString(str_replace($friendly, $raw, $_POST['post_footer']));
 $posts_per_page = mod_nwi_escapeString($_POST['posts_per_page']);
-$gallery = mod_nwi_escapeString($_POST['gallery']);
+// Security: strip any character that is not a plain dir-name char (prevents path traversal)
+$gallery = preg_replace('/[^a-zA-Z0-9_-]/', '', (string)($_POST['gallery'] ?? ''));
 $use_second_block = ( (isset($_POST['use_second_block']) && $_POST['use_second_block']=='Y') ? 'Y' : 'N');
 $show_settings_only_admins = ( (isset($_POST['show_settings_only_admins']) && $_POST['show_settings_only_admins']=='Y') ? 'Y' : 'N');
 
-// default preview image: pic_id from mod_news_img_img. Verify the chosen image
-// actually belongs to a post in this section so a forged POST can't link to a
-// foreign image.
-$default_preview_image = isset($_POST['default_preview_image']) ? (int)$_POST['default_preview_image'] : 0;
-if ($default_preview_image > 0) {
-    $check = $database->query(sprintf(
-        "SELECT i.`id` FROM `%smod_news_img_img` i "
-        . "INNER JOIN `%smod_news_img_posts` p ON p.`post_id` = i.`post_id` "
-        . "WHERE i.`id` = %d AND p.`section_id` = %d",
-        TABLE_PREFIX, TABLE_PREFIX, $default_preview_image, (int)$section_id
-    ));
-    if (!$check || $check->numRows() === 0) {
-        $default_preview_image = 0;
+// ---------------------------------------------------------------------------
+// default preview image — copy-on-save. Speichert eine eigenständige Kopie
+// der Quelle (Upload ODER aus dem Galerie-Picker) als
+// `default_<section_id>.<ext>` in media/.news_img/. Die Spalte
+// default_preview_image enthält den Dateinamen; bleibt sie leer, fällt die
+// Frontend-Kaskade direkt auf nopic.png durch.
+//
+// Priorität: Entfernen > Upload > Picker > Keep.
+// ---------------------------------------------------------------------------
+$default_preview_image = isset($settings['default_preview_image']) ? (string)$settings['default_preview_image'] : '';
+$default_dir = WB_PATH.MEDIA_DIRECTORY.'/.news_img/';
+$default_remove_old = function() use (&$default_preview_image, $default_dir) {
+    if ($default_preview_image !== '' && file_exists($default_dir.$default_preview_image)) {
+        @unlink($default_dir.$default_preview_image);
+    }
+    $default_preview_image = '';
+};
+$default_make_dest = function(string $ext) use ($section_id) {
+    return 'default_'.(int)$section_id.'.'.strtolower($ext);
+};
+
+// 1) Entfernen
+if (!empty($_POST['default_image_remove'])) {
+    $default_remove_old();
+}
+// 2) Direkt-Upload
+elseif (!empty($_FILES['default_image_upload']['tmp_name']) && is_uploaded_file($_FILES['default_image_upload']['tmp_name'])) {
+    $up = $_FILES['default_image_upload'];
+    $orig_ext = strtolower(pathinfo($up['name'], PATHINFO_EXTENSION));
+    if (in_array($orig_ext, $allowed_suffixes, true)) {
+        // Größe gegen den Sektion-Max-Wert (mit PHP-Limit als Obergrenze)
+        $iniset = mod_nwi_return_bytes(ini_get('upload_max_filesize'));
+        $section_max = (int)($settings['imgmaxsize'] ?? 0);
+        $max_size = ($section_max > 0 && $section_max < $iniset) ? $section_max : $iniset;
+        if ($up['size'] > 0 && $up['size'] <= $max_size) {
+            $dest_name = $default_make_dest($orig_ext);
+            $dest_path = $default_dir.$dest_name;
+            if (!is_dir($default_dir)) {
+                mod_nwi_img_makedir($default_dir, false);
+            }
+            if (move_uploaded_file($up['tmp_name'], $dest_path)) {
+                // auf Preview-Größe runterskalieren
+                list($pw, $ph,) = mod_nwi_get_sizes($section_id);
+                if (empty($pw)) { $pw = 150; }
+                if (empty($ph)) { $ph = 150; }
+                $crop = (($settings['crop_preview'] ?? 'N') === 'Y') ? 1 : 0;
+                if (list($w, $h) = getimagesize($dest_path)) {
+                    if ($w > $pw || $h > $ph) {
+                        @mod_nwi_image_resize($dest_path, $dest_path, $pw, $ph, $crop);
+                    }
+                }
+                // alte Datei nur löschen, falls die Endung gewechselt hat
+                if ($default_preview_image !== '' && $default_preview_image !== $dest_name) {
+                    @unlink($default_dir.$default_preview_image);
+                }
+                $default_preview_image = $dest_name;
+            }
+        }
     }
 }
+// 3) Picker: Galerie-Thumb als Quelle, kopieren
+elseif (!empty($_POST['default_image_source'])) {
+    $source_pic_id = (int)$_POST['default_image_source'];
+    if ($source_pic_id > 0) {
+        $check = $database->query(sprintf(
+            "SELECT i.`picname`, i.`post_id` FROM `%smod_news_img_img` i "
+            . "INNER JOIN `%smod_news_img_posts` p ON p.`post_id` = i.`post_id` "
+            . "WHERE i.`id` = %d AND p.`section_id` = %d",
+            TABLE_PREFIX, TABLE_PREFIX, $source_pic_id, (int)$section_id
+        ));
+        if ($check && $check->numRows() > 0) {
+            $row = $check->fetchRow();
+            $source_path = $default_dir.(int)$row['post_id'].'/thumb/'.$row['picname'];
+            if (file_exists($source_path)) {
+                $src_ext = strtolower(pathinfo($row['picname'], PATHINFO_EXTENSION));
+                if (in_array($src_ext, $allowed_suffixes, true)) {
+                    $dest_name = $default_make_dest($src_ext);
+                    $dest_path = $default_dir.$dest_name;
+                    if (@copy($source_path, $dest_path)) {
+                        if ($default_preview_image !== '' && $default_preview_image !== $dest_name) {
+                            @unlink($default_dir.$default_preview_image);
+                        }
+                        $default_preview_image = $dest_name;
+                    }
+                }
+            }
+        }
+    }
+}
+// 4) Keep — kein Branch nötig, $default_preview_image bleibt unverändert.
 
 // expert mode
 if(isset($settings['mode']) && $settings['mode']=='advanced') {
@@ -93,7 +169,8 @@ if(isset($settings['mode']) && $settings['mode']=='advanced') {
     $gal_img_resize_width = mod_nwi_escapeString($_POST['gal_img_resize_width']);
     $gal_img_resize_height = mod_nwi_escapeString($_POST['gal_img_resize_height']);
     $gal_img_max_size = intval($_POST['gal_img_max_size'])*1024;
-    $view = mod_nwi_escapeString($_POST['view']);
+    // Security: strip any character that is not a plain dir-name char (prevents path traversal)
+    $view = preg_replace('/[^a-zA-Z0-9_-]/', '', (string)($_POST['view'] ?? ''));
     $block2 = mod_nwi_escapeString(str_replace($friendly, $raw, $_POST['block2']));
     $thumbwidth = mod_nwi_escapeString($_POST['thumb_width']);
     $thumbheight = mod_nwi_escapeString($_POST['thumb_height']);

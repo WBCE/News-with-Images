@@ -256,11 +256,13 @@ require(WB_PATH."/index.php");
 	}
 
     // 2026-05-13 Bianka Martinovic
-    //            section-wide default preview image (pic_id from mod_news_img_img,
-    //            used when a post has no own preview image)
+    //            section-wide default preview image. Stores the filename of an
+    //            independent copy in media/.news_img/ (decoupled from any post's
+    //            lifecycle), e.g. "default_23.jpg". Source is either a gallery
+    //            thumb (picked in settings) or a direct upload.
 	if (!$database->field_exists('{TP}mod_news_img_settings','default_preview_image')) {
 		try {
-			$database->query(sprintf("ALTER TABLE `%smod_news_img_settings` ADD COLUMN `default_preview_image` INT NOT NULL DEFAULT '0' AFTER `show_settings_only_admins`",TABLE_PREFIX));
+			$database->query(sprintf("ALTER TABLE `%smod_news_img_settings` ADD COLUMN `default_preview_image` VARCHAR(255) NOT NULL DEFAULT '' AFTER `show_settings_only_admins`",TABLE_PREFIX));
 		} catch(\Exception $e) {}
 	}
 
