@@ -61,6 +61,23 @@ if($query_details->numRows() == 1) {
     }
 }
 
+// Section-Default-Bild aufräumen, bevor die Settings-Zeile verschwindet.
+// Datei liegt unter media/.news_img/default_<section_id>.<ext>; der gespeicherte
+// Dateiname wird trotz kontrollierter Erzeugung defensiv durch basename() gefiltert.
+$q_default = $database->query(sprintf(
+    "SELECT `default_preview_image` FROM `%smod_news_img_settings` WHERE `section_id`=%d",
+    TABLE_PREFIX, (int)$section_id
+));
+if ($q_default && $q_default->numRows() > 0) {
+    $row_default = $q_default->fetchRow();
+    if (!empty($row_default['default_preview_image'])) {
+        $default_file = WB_PATH.MEDIA_DIRECTORY.'/.news_img/'.basename($row_default['default_preview_image']);
+        if (is_file($default_file) && is_writable($default_file)) {
+            @unlink($default_file);
+        }
+    }
+}
+
 $database->query("DELETE FROM `".TABLE_PREFIX."mod_news_img_posts` WHERE `section_id` = '$section_id'");
 $database->query("DELETE FROM `".TABLE_PREFIX."mod_news_img_groups` WHERE `section_id` = '$section_id'");
 $database->query("DELETE FROM `".TABLE_PREFIX."mod_news_img_settings` WHERE `section_id` = '$section_id'");
