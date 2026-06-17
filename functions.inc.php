@@ -2391,7 +2391,7 @@ function mod_nwi_escape_tags($tags)
  * @param $height - new height
  * @param $crop   - 0=no, 1=yes
  **/
-function mod_nwi_image_resize($src, $dst, $width, $height, $crop = 0)
+function mod_nwi_image_resize($src, $dst, $width, $height, $crop = 0, $force_reencode = false)
 {
     //var_dump($src);
     if (!list($w, $h) = getimagesize($src)) {
@@ -2452,20 +2452,35 @@ function mod_nwi_image_resize($src, $dst, $width, $height, $crop = 0)
     // resize
     if ($crop) {
         if ($w < $width or $h < $height) {
-            return 1;
+            // Bild kleiner als Crop-Box. Mit $force_reencode trotzdem in
+            // Originalgröße neu kodieren (strippt eingebettete Payloads),
+            // sonst wie bisher: nichts schreiben.
+            if (!$force_reencode) {
+                return 1;
+            }
+            $width = $w;
+            $height = $h;
+            $x = 0;
+        } else {
+            $ratio = max($width / $w, $height / $h);
+            $h = $height / $ratio;
+            $x = ($w - $width / $ratio) / 2;
+            $w = $width / $ratio;
         }
-        $ratio = max($width / $w, $height / $h);
-        $h = $height / $ratio;
-        $x = ($w - $width / $ratio) / 2;
-        $w = $width / $ratio;
     } else {
         if ($w < $width and $h < $height) {
-            return 1;
+            if (!$force_reencode) {
+                return 1;
+            }
+            $width = $w;
+            $height = $h;
+            $x = 0;
+        } else {
+            $ratio = min($width / $w, $height / $h);
+            $width = $w * $ratio;
+            $height = $h * $ratio;
+            $x = 0;
         }
-        $ratio = min($width / $w, $height / $h);
-        $width = $w * $ratio;
-        $height = $h * $ratio;
-        $x = 0;
     }
 
     $new = imagecreatetruecolor($width, $height);

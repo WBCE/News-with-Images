@@ -113,21 +113,37 @@ elseif (!empty($_FILES['default_image_upload']['tmp_name']) && is_uploaded_file(
                 mod_nwi_img_makedir($default_dir, false);
             }
             if (move_uploaded_file($up['tmp_name'], $dest_path)) {
-                // auf Preview-Größe runterskalieren
-                list($pw, $ph,) = mod_nwi_get_sizes($section_id);
-                if (empty($pw)) { $pw = 150; }
-                if (empty($ph)) { $ph = 150; }
-                $crop = (($settings['crop_preview'] ?? 'N') === 'Y') ? 1 : 0;
-                if (list($w, $h) = getimagesize($dest_path)) {
-                    if ($w > $pw || $h > $ph) {
-                        @mod_nwi_image_resize($dest_path, $dest_path, $pw, $ph, $crop);
+                // Gate: muss ein echtes Bild sein UND der erkannte Bildtyp muss
+                // zur Endung passen (verhindert getarnte Nicht-Bilder/Polyglots,
+                // da oben nur die Endung gegen die Whitelist geprüft wurde).
+                $info = getimagesize($dest_path);
+                $type_ext = array(
+                    IMAGETYPE_JPEG => array('jpg', 'jpeg'),
+                    IMAGETYPE_PNG  => array('png'),
+                    IMAGETYPE_GIF  => array('gif'),
+                    IMAGETYPE_WEBP => array('webp'),
+                );
+                $img_type = ($info !== false) ? (int)$info[2] : 0;
+                if ($info === false || !isset($type_ext[$img_type]) || !in_array($orig_ext, $type_ext[$img_type], true)) {
+                    @unlink($dest_path);
+                } else {
+                    // Immer neu kodieren (auch wenn schon klein genug) -> strippt
+                    // eingebettete Payloads/EXIF. Auf Preview-Größe begrenzen.
+                    list($pw, $ph,) = mod_nwi_get_sizes($section_id);
+                    if (empty($pw)) { $pw = 150; }
+                    if (empty($ph)) { $ph = 150; }
+                    $crop = (($settings['crop_preview'] ?? 'N') === 'Y') ? 1 : 0;
+                    if (mod_nwi_image_resize($dest_path, $dest_path, $pw, $ph, $crop, true) !== true) {
+                        // Verarbeitung fehlgeschlagen -> nicht behalten
+                        @unlink($dest_path);
+                    } else {
+                        // alte Datei nur löschen, falls die Endung gewechselt hat
+                        if ($default_preview_image !== '' && $default_preview_image !== $dest_name) {
+                            @unlink($default_dir.$default_preview_image);
+                        }
+                        $default_preview_image = $dest_name;
                     }
                 }
-                // alte Datei nur löschen, falls die Endung gewechselt hat
-                if ($default_preview_image !== '' && $default_preview_image !== $dest_name) {
-                    @unlink($default_dir.$default_preview_image);
-                }
-                $default_preview_image = $dest_name;
             }
         }
     }
@@ -144,9 +160,12 @@ elseif (!empty($_POST['default_image_source'])) {
         ));
         if ($check && $check->numRows() > 0) {
             $row = $check->fetchRow();
-            $source_path = $default_dir.(int)$row['post_id'].'/thumb/'.$row['picname'];
+            // basename() als Defense-in-Depth, falls je ein DB-Datensatz mit
+            // Pfadanteilen im picname existiert (kein Traversal im Quell-Pfad).
+            $picname = basename((string)$row['picname']);
+            $source_path = $default_dir.(int)$row['post_id'].'/thumb/'.$picname;
             if (file_exists($source_path)) {
-                $src_ext = strtolower(pathinfo($row['picname'], PATHINFO_EXTENSION));
+                $src_ext = strtolower(pathinfo($picname, PATHINFO_EXTENSION));
                 if (in_array($src_ext, $allowed_suffixes, true)) {
                     $dest_name = $default_make_dest($src_ext);
                     $dest_path = $default_dir.$dest_name;
@@ -190,7 +209,7 @@ if(isset($settings['mode']) && $settings['mode']=='advanced') {
 
 // if the user chooses a new view, the settings are overwritten by the
 // defaults of this view!
-if(!empty($view) && $view != $settings['view']) {
+if(!empty($view) && $view != $settings['view'] && preg_match('/^[a-zA-Z0-9_-]+$/', $view)) {
     include __DIR__.'/views/'.$view.'/config.php';
 }
 
@@ -225,7 +244,7 @@ if ($posts_per_page=='') {
 // if the gallery setting changed, load default settings
 $query_content = $database->query("SELECT `gallery` FROM `".TABLE_PREFIX."mod_news_img_settings` WHERE `section_id` = '$section_id'");
 $fetch_content = $query_content->fetchRow();
-if ($fetch_content['gallery'] != $gallery) {
+if ($fetch_content['gallery'] != $gallery && preg_match('/^[a-zA-Z0-9_-]+$/', $gallery)) {
     include WB_PATH.'/modules/news_img/js/galleries/'.$gallery.'/settings.php';
 }
 
@@ -265,6 +284,8 @@ $database->query(
     . " `imgthumbsize`='$thumbsize',"
     . " `use_second_block`='$use_second_block',"
 	. " `show_settings_only_admins`='$show_settings_only_admins',"
+    // $default_preview_image ist serverkontrolliert ('' oder
+    // default_<int>.<whitelist-ext>), nie roher User-Input -> SQL-safe.
     . " `default_preview_image`='$default_preview_image',"
     . " `view`='$view'"
     . " WHERE `section_id` = '$section_id'"
