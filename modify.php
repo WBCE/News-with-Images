@@ -50,6 +50,7 @@ $posts =  mod_nwi_posts_getall($section_id, true, '');
 $num_posts = count($posts);
 $importable_sections = 0;
 $num_groups = 0;
+$demodata_packs = [];
     
 // if there are already some posts, list them
 if (!is_array($posts) || count($posts)<1) {
@@ -57,6 +58,8 @@ if (!is_array($posts) || count($posts)<1) {
     $query_groups = $database->query("SELECT * FROM `".TABLE_PREFIX."mod_news_img_groups` WHERE `section_id` = '$section_id'");
     $num_groups = $query_groups->numRows();
     if ($num_groups == 0) {
+        // Demo-Daten-Packs nur anbieten, wenn die Section noch komplett leer ist
+        $demodata_packs = mod_nwi_demodata_list();
         // news with images
         $query_nwi = $database->query(sprintf(
             "SELECT `section_id` FROM `%ssections`" .

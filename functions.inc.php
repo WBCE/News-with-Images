@@ -3010,6 +3010,300 @@ function mod_nwi_sanitize_input(&$input, $filter)
 }
 
 
+// ========== Demo data ========================================================
+
+/**
+ * Liefert die verfügbaren Demo-Daten-Packs aus modules/news_img/demodata/.
+ * Ein Pack ist ein Unterordner, der mindestens meta.json und data.php enthält.
+ *
+ * Sortierreihenfolge:
+ *   1. Packs der aktuellen Backend-Sprache zuerst (LANGUAGE-Konstante)
+ *   2. Innerhalb derselben Sprache alphabetisch nach Pack-Name
+ *
+ * @return array<string,array>  pack name => meta data
+ */
+function mod_nwi_demodata_list(): array
+{
+    $packs = [];
+    $base  = __DIR__ . '/demodata';
+    if (!is_dir($base)) {
+        return $packs;
+    }
+    foreach (scandir($base) as $entry) {
+        if ($entry === '.' || $entry === '..') {
+            continue;
+        }
+        // Sicherheitsnetz: nur einfache Ordnernamen zulassen, kein Pfad-Trickserei
+        if (!preg_match('/^[A-Za-z0-9_-]+$/', $entry)) {
+            continue;
+        }
+        $dir = $base . '/' . $entry;
+        if (!is_dir($dir) || !is_file($dir.'/meta.json') || !is_file($dir.'/data.php')) {
+            continue;
+        }
+        $meta = json_decode((string)file_get_contents($dir.'/meta.json'), true);
+        if (!is_array($meta)) {
+            continue;
+        }
+        $packs[$entry] = [
+            'name'        => isset($meta['name']) ? (string)$meta['name'] : $entry,
+            'description' => isset($meta['description']) ? (string)$meta['description'] : '',
+            'language'    => isset($meta['language']) ? strtoupper((string)$meta['language']) : '',
+            'author'      => isset($meta['author']) ? (string)$meta['author'] : '',
+            'version'     => isset($meta['version']) ? (string)$meta['version'] : '',
+        ];
+    }
+
+    // Sortieren: aktuelle Sprache zuerst, dann alphabetisch nach Anzeigename
+    $current_lang = defined('LANGUAGE') ? strtoupper((string)LANGUAGE) : '';
+    uasort($packs, function ($a, $b) use ($current_lang) {
+        $a_curr = ($a['language'] === $current_lang) ? 0 : 1;
+        $b_curr = ($b['language'] === $current_lang) ? 0 : 1;
+        if ($a_curr !== $b_curr) {
+            return $a_curr - $b_curr;
+        }
+        // gleiche „Aktuell-Sprache"-Klasse → nach Sprachcode, dann Name
+        $lang_cmp = strcmp($a['language'], $b['language']);
+        if ($lang_cmp !== 0) {
+            return $lang_cmp;
+        }
+        return strcasecmp($a['name'], $b['name']);
+    });
+
+    return $packs;
+}
+
+/**
+ * Demo-Import nur erlauben, wenn die Section noch ohne Beiträge UND ohne
+ * Gruppen ist — sonst würden importierte Daten in eine bereits begonnene
+ * Konfiguration grätschen.
+ */
+function mod_nwi_demodata_can_import(int $section_id): bool
+{
+    global $database;
+    $r1 = $database->query(sprintf(
+        "SELECT COUNT(*) AS c FROM `%smod_news_img_posts` WHERE `section_id`=%d",
+        TABLE_PREFIX, $section_id
+    ));
+    $r2 = $database->query(sprintf(
+        "SELECT COUNT(*) AS c FROM `%smod_news_img_groups` WHERE `section_id`=%d",
+        TABLE_PREFIX, $section_id
+    ));
+    $posts  = ($r1 && $r1->numRows() > 0) ? (int)$r1->fetchRow()['c'] : 0;
+    $groups = ($r2 && $r2->numRows() > 0) ? (int)$r2->fetchRow()['c'] : 0;
+    return ($posts === 0 && $groups === 0);
+}
+
+/**
+ * Demo-Pack importieren. Legt Gruppen, Tags, Posts (samt Page-Datei), Tag-
+ * Mappings und ggf. Vorschau-/Galerie-Bilder in der angegebenen Section an.
+ *
+ * @return array{success:bool,imported:array,errors:array}
+ */
+function mod_nwi_demodata_import(string $pack_name, int $section_id, int $page_id, int $posted_by): array
+{
+    global $database;
+
+    $result = ['success' => false, 'imported' => [], 'errors' => []];
+
+    // --- Pack-Pfad validieren (kein Path-Traversal)
+    if (!preg_match('/^[A-Za-z0-9_-]+$/', $pack_name)) {
+        $result['errors'][] = 'invalid pack name';
+        return $result;
+    }
+    $pack_dir = __DIR__ . '/demodata/' . $pack_name;
+    if (!is_dir($pack_dir) || !is_file($pack_dir.'/data.php')) {
+        $result['errors'][] = 'pack not found';
+        return $result;
+    }
+
+    // --- Eligibility-Recheck (defensive: UI könnte stale sein)
+    if (!mod_nwi_demodata_can_import($section_id)) {
+        $result['errors'][] = 'section not empty';
+        return $result;
+    }
+
+    // --- Pack-Daten laden
+    $data = require $pack_dir.'/data.php';
+    if (!is_array($data)) {
+        $result['errors'][] = 'pack data invalid';
+        return $result;
+    }
+
+    $images_dir = $pack_dir.'/images';
+
+    // --- Groups: title -> group_id
+    $group_map = [];
+    foreach ((array)($data['groups'] ?? []) as $g) {
+        $title    = mod_nwi_escapeString((string)($g['title'] ?? ''));
+        $active   = (int)($g['active'] ?? 1);
+        $position = (int)($g['position'] ?? 0);
+        if ($title === '') { continue; }
+        $database->query(sprintf(
+            "INSERT INTO `%smod_news_img_groups` (`section_id`,`active`,`position`,`title`) "
+            . "VALUES (%d, %d, %d, '%s')",
+            TABLE_PREFIX, $section_id, $active, $position, $title
+        ));
+        if ($database->is_error()) {
+            $result['errors'][] = 'group "'.$g['title'].'": '.$database->get_error();
+            continue;
+        }
+        $group_map[(string)$g['title']] = (int)$database->getLastInsertId();
+        $result['imported']['groups'] = ($result['imported']['groups'] ?? 0) + 1;
+    }
+
+    // --- Tags: name -> tag_id. Globale Tags (section_id=0); falls bereits
+    //     vorhanden, wieder verwenden statt duplizieren.
+    $tag_map = [];
+    foreach ((array)($data['tags'] ?? []) as $t) {
+        $name  = (string)($t['tag'] ?? '');
+        $color = mod_nwi_safe_css_color((string)($t['tag_color'] ?? ''));
+        if ($name === '') { continue; }
+        $esc_name = mod_nwi_escapeString($name);
+        $q = $database->query(sprintf(
+            "SELECT `tag_id` FROM `%smod_news_img_tags` WHERE `tag`='%s' LIMIT 1",
+            TABLE_PREFIX, $esc_name
+        ));
+        if ($q && $q->numRows() > 0) {
+            $tag_id = (int)$q->fetchRow()['tag_id'];
+        } else {
+            $database->query(sprintf(
+                "INSERT INTO `%smod_news_img_tags` (`tag`,`tag_color`) VALUES ('%s','%s')",
+                TABLE_PREFIX, $esc_name, $color
+            ));
+            $tag_id = (int)$database->getLastInsertId();
+            $result['imported']['tags'] = ($result['imported']['tags'] ?? 0) + 1;
+        }
+        $tag_map[$name] = $tag_id;
+        // Tag-Section-Mapping (idempotent dank UNIQUE KEY)
+        $database->query(sprintf(
+            "INSERT IGNORE INTO `%smod_news_img_tags_sections` (`section_id`,`tag_id`) VALUES (%d, %d)",
+            TABLE_PREFIX, $section_id, $tag_id
+        ));
+    }
+
+    // --- Posts
+    foreach ((array)($data['posts'] ?? []) as $p) {
+        $slug     = (string)($p['slug'] ?? '');
+        $title    = mod_nwi_escapeString((string)($p['title'] ?? ''));
+        $link     = mod_nwi_escapeString((string)($p['link'] ?? ''));
+        $group_id = isset($group_map[(string)($p['group'] ?? '')]) ? $group_map[(string)$p['group']] : 0;
+        $active   = (int)($p['active'] ?? 1);
+        $content_short  = mod_nwi_escapeString((string)($p['content_short'] ?? ''));
+        $content_long   = mod_nwi_escapeString((string)($p['content_long'] ?? ''));
+        $content_block2 = mod_nwi_escapeString((string)($p['content_block2'] ?? ''));
+        $published_when  = (int)($p['published_when'] ?? 0);
+        $published_until = (int)($p['published_until'] ?? 0);
+
+        if ($title === '' || $link === '' || $slug === '') {
+            $result['errors'][] = 'post: missing title/link/slug';
+            continue;
+        }
+
+        // Position innerhalb der Section
+        $order    = new order(TABLE_PREFIX.'mod_news_img_posts', 'position', 'post_id', 'section_id');
+        $position = $order->get_new($section_id);
+
+        $database->query(sprintf(
+            "INSERT INTO `%smod_news_img_posts` "
+            . "(`section_id`,`group_id`,`active`,`position`,`title`,`link`,`image`,"
+            . " `content_short`,`content_long`,`content_block2`,"
+            . " `published_when`,`published_until`,`posted_when`,`posted_by`) "
+            . "VALUES (%d, %d, %d, %d, '%s', '%s', '', '%s', '%s', '%s', %d, %d, %d, %d)",
+            TABLE_PREFIX, $section_id, $group_id, $active, $position,
+            $title, $link, $content_short, $content_long, $content_block2,
+            $published_when, $published_until, time(), $posted_by
+        ));
+        if ($database->is_error()) {
+            $result['errors'][] = 'post "'.$p['title'].'": '.$database->get_error();
+            continue;
+        }
+        $post_id = (int)$database->getLastInsertId();
+
+        // Page-Access-Datei anlegen, damit der Link auch auflösbar ist
+        $filename = WB_PATH.PAGES_DIRECTORY.$p['link'].PAGE_EXTENSION;
+        mod_nwi_create_file($filename, null, (string)$post_id, (string)$section_id, (string)$page_id);
+
+        // Tag-Mappings
+        foreach ((array)($p['tags'] ?? []) as $tag_name) {
+            if (isset($tag_map[(string)$tag_name])) {
+                $database->query(sprintf(
+                    "INSERT IGNORE INTO `%smod_news_img_tags_posts` (`post_id`,`tag_id`) VALUES (%d, %d)",
+                    TABLE_PREFIX, $post_id, $tag_map[(string)$tag_name]
+                ));
+            }
+        }
+
+        // Bilder kopieren — Quelle: images/<slug>/<file>
+        $post_image_dir = WB_PATH.MEDIA_DIRECTORY.'/.news_img/'.$post_id.'/';
+        $slug_dir       = $images_dir.'/'.$slug;
+        $preview_name   = (string)($p['preview_image'] ?? '');
+        $gallery_names  = (array)($p['images'] ?? []);
+
+        if ($preview_name !== '' || !empty($gallery_names)) {
+            if (!is_dir($post_image_dir)) {
+                mod_nwi_img_makedir($post_image_dir);
+            }
+        }
+
+        // Vorschaubild
+        if ($preview_name !== '' && is_dir($slug_dir)) {
+            $src = $slug_dir.'/'.basename($preview_name);
+            if (is_file($src) && in_array(strtolower(pathinfo($src, PATHINFO_EXTENSION)), $GLOBALS['allowed_suffixes'], true)) {
+                $safe_name = strtolower(basename($preview_name));
+                $dst = $post_image_dir.$safe_name;
+                if (@copy($src, $dst)) {
+                    $database->query(sprintf(
+                        "UPDATE `%smod_news_img_posts` SET `image`='%s' WHERE `post_id`=%d",
+                        TABLE_PREFIX, mod_nwi_escapeString($safe_name), $post_id
+                    ));
+                }
+            }
+        }
+
+        // Galerie-Bilder (inkl. Thumb-Resize über vorhandenen Pfad)
+        if (!empty($gallery_names) && is_dir($slug_dir)) {
+            list(, , $tw, $th) = mod_nwi_get_sizes($section_id);
+            $tw = empty($tw) ? 100 : (int)$tw;
+            $th = empty($th) ? 100 : (int)$th;
+            $crop = (mod_nwi_settings_get($section_id)['crop_preview'] ?? 'N') === 'Y' ? 1 : 0;
+            $img_order = new order(TABLE_PREFIX.'mod_news_img_img', 'position', 'id', 'post_id');
+
+            foreach ($gallery_names as $fname) {
+                $src = $slug_dir.'/'.basename($fname);
+                if (!is_file($src)) { continue; }
+                $ext = strtolower(pathinfo($src, PATHINFO_EXTENSION));
+                if (!in_array($ext, $GLOBALS['allowed_suffixes'], true)) { continue; }
+                $safe_name = strtolower(basename($fname));
+                $dst = $post_image_dir.$safe_name;
+                if (!@copy($src, $dst)) { continue; }
+                // Thumb
+                if (!is_dir($post_image_dir.'thumb')) {
+                    mod_nwi_img_makedir($post_image_dir, true);
+                }
+                @mod_nwi_image_resize($dst, $post_image_dir.'thumb/'.$safe_name, $tw, $th, $crop);
+                // DB-Eintrag + Mapping
+                $database->query(sprintf(
+                    "INSERT INTO `%smod_news_img_img` (`picname`,`post_id`,`position`) VALUES ('%s', %d, %d)",
+                    TABLE_PREFIX, mod_nwi_escapeString($safe_name), $post_id, $img_order->get_new($post_id)
+                ));
+                $pic_id = (int)$database->getLastInsertId();
+                $database->query(sprintf(
+                    "INSERT IGNORE INTO `%smod_news_img_posts_img` (`post_id`,`pic_id`,`position`) VALUES (%d, %d, %d)",
+                    TABLE_PREFIX, $post_id, $pic_id, 0
+                ));
+            }
+        }
+
+        $result['imported']['posts'] = ($result['imported']['posts'] ?? 0) + 1;
+    }
+
+    $result['success'] = empty($result['errors']);
+    return $result;
+}
+
+// =============================================================================
+
 if (!function_exists('mod_nwi_get_section_array')) {
     /**
      * @brief  Get Array with all the details of a section by using the section_id.
