@@ -169,7 +169,7 @@ if (defined('POST_ID') && is_numeric(POST_ID)) {
 		
 		// include gallery template
         // Regex-Guard vor include() (verhindert Traversal)
-		if (strlen($settings['gallery']) && preg_match('/^[a-zA-Z0-9_-]+\$/', $settings['gallery'])) {
+		if (strlen($settings['gallery']) && preg_match('/^[a-zA-Z0-9_-]+$/', $settings['gallery'])) {
 			include __DIR__.'/js/galleries/'.$settings['gallery'].'/include.tpl';
 		}
 	} 
