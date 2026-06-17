@@ -260,9 +260,27 @@ require(WB_PATH."/index.php");
     //            independent copy in media/.news_img/ (decoupled from any post's
     //            lifecycle), e.g. "default_23.jpg". Source is either a gallery
     //            thumb (picked in settings) or a direct upload.
+    //
+    //            Frühe Dev-Builds hatten die Spalte als INT (pic_id-Referenz auf
+    //            mod_news_img_img). Beim Upgrade auf VARCHAR umstellen; vormalige
+    //            Int-Werte sind im neuen Copy-on-Save-Schema bedeutungslos und
+    //            werden verworfen — eine 1:1-Migration ergäbe selten brauchbares
+    //            Ergebnis (Quell-Galeriebild ggf. längst weg, kein passender
+    //            Section-Default-Resize-Pfad).
 	if (!$database->field_exists('{TP}mod_news_img_settings','default_preview_image')) {
 		try {
 			$database->query(sprintf("ALTER TABLE `%smod_news_img_settings` ADD COLUMN `default_preview_image` VARCHAR(255) NOT NULL DEFAULT '' AFTER `show_settings_only_admins`",TABLE_PREFIX));
+		} catch(\Exception $e) {}
+	} else {
+		// Idempotent: MODIFY auf identischen Typ ist ein No-Op, das REGEXP-UPDATE
+		// trifft Produktions-VARCHAR-Werte (Muster default_<num>.<ext>) nicht.
+		try {
+			$database->query(sprintf("ALTER TABLE `%smod_news_img_settings` MODIFY COLUMN `default_preview_image` VARCHAR(255) NOT NULL DEFAULT ''",TABLE_PREFIX));
+			$database->query(sprintf(
+				"UPDATE `%smod_news_img_settings` SET `default_preview_image`='' "
+				. "WHERE `default_preview_image` NOT REGEXP '^default_[0-9]+\\.(png|jpe?g|gif|webp)\$'",
+				TABLE_PREFIX
+			));
 		} catch(\Exception $e) {}
 	}
 
