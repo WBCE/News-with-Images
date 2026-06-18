@@ -2017,11 +2017,14 @@ function mod_nwi_sections()
  * @access
  * @return
  **/
-function mod_nwi_settings_get($section_id)
+function mod_nwi_settings_get($section_id, bool $bust_cache = false)
 {
     global $database;
     static $cache = [];
     $key = (int)$section_id;
+    if ($bust_cache) {
+        unset($cache[$key]);
+    }
     if (array_key_exists($key, $cache)) {
         return $cache[$key];
     }
@@ -2289,6 +2292,45 @@ function mod_nwi_return_bytes($val)
     }
 
     return $val;
+}
+
+/**
+ * Convenience-Wrapper um mod_nwi_create_file(): nimmt ein Post-Array (mit
+ * mindestens post_id + link) und die Section/Page-IDs, sichert ab, dass das
+ * Parent-Verzeichnis existiert, ruft mod_nwi_create_file() und prüft, ob die
+ * Datei wirklich geschrieben wurde.
+ *
+ * Wird vom Refresh-Access-Files-Button, vom Demo-Import und von den
+ * regulären add/save/move/import-Pfaden genutzt — damit gibt es genau eine
+ * Stelle, die das "Access-Datei anlegen"-Verhalten implementiert.
+ *
+ * @param array       $post        ['post_id'=>int, 'link'=>string]
+ * @param int         $section_id
+ * @param int         $page_id
+ * @param string|null $filetime    optionaler mtime-Wert (für Umbenennungs-Pfade)
+ * @return bool       true wenn die Datei nach dem Aufruf existiert
+ */
+function mod_nwi_post_refresh_access_file(array $post, int $section_id, int $page_id, ?string $filetime = null): bool
+{
+    if (empty($post['post_id']) || empty($post['link'])) {
+        return false;
+    }
+    $filename = WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION;
+    $parent   = dirname($filename);
+    if (!is_dir($parent)) {
+        make_dir($parent);
+    }
+    if (!is_writable($parent)) {
+        return false;
+    }
+    mod_nwi_create_file(
+        $filename,
+        $filetime,
+        (string)$post['post_id'],
+        (string)$section_id,
+        (string)$page_id
+    );
+    return is_file($filename);
 }
 
 function mod_nwi_create_file(string $filename, ?string $filetime = null, ?string $postID = null, ?string $sectionID = null, ?string $pageID = null)
@@ -3095,6 +3137,101 @@ function mod_nwi_demodata_can_import(int $section_id): bool
 }
 
 /**
+ * Wendet Settings aus dem "settings"-Block der meta.json eines Demo-Packs auf
+ * mod_news_img_settings für die gegebene Section an. Strenge Allowlist + per-
+ * Key-Validierung, damit man sich nicht mit einem unsauberen Pack das Modul
+ * zerschießen kann.
+ *
+ * Auto-Verhalten: hat der Pack Tags und ist mode nicht explizit gesetzt, wird
+ * mode auf "advanced" angehoben — sonst werden Tags im Backend nicht angezeigt
+ * und können nicht bearbeitet werden.
+ *
+ * @return array{applied:array<string,mixed>, skipped:string[]}
+ */
+function mod_nwi_demodata_apply_settings(int $section_id, array $settings, bool $has_tags): array
+{
+    global $database;
+    $applied = [];
+    $skipped = [];
+
+    // Validatoren pro erlaubtem Key. Null = abweisen.
+    $is_yn      = function ($v) { return in_array($v, ['Y', 'N'], true) ? $v : null; };
+    $is_slug    = function ($v) { return preg_match('/^[a-zA-Z0-9_-]+$/', $v) ? $v : null; };
+    $is_int     = function ($v) { return is_numeric($v) ? (string)(int)$v : null; };
+    $is_size    = function ($v) { return preg_match('/^\d+x\d+$/', (string)$v) ? (string)$v : null; };
+    $is_string  = function ($v) { return is_string($v) || is_numeric($v) ? (string)$v : null; };
+    $is_mode    = function ($v) { return in_array($v, ['default', 'advanced'], true) ? $v : null; };
+
+    $validators = [
+        'mode'                      => $is_mode,
+        'view'                      => $is_slug,
+        'gallery'                   => $is_slug,
+        'crop_preview'              => $is_yn,
+        'use_second_block'          => $is_yn,
+        'show_settings_only_admins' => $is_yn,
+        'view_order'                => $is_int,
+        'posts_per_page'            => $is_int,
+        'imgmaxwidth'               => $is_int,
+        'imgmaxheight'              => $is_int,
+        'imgmaxsize'                => $is_int,
+        'resize_preview'            => $is_size,
+        'imgthumbsize'              => $is_size,
+        'header'                    => $is_string,
+        'footer'                    => $is_string,
+        'block2'                    => $is_string,
+        'post_loop'                 => $is_string,
+        'post_header'               => $is_string,
+        'post_content'              => $is_string,
+        'image_loop'                => $is_string,
+        'post_footer'               => $is_string,
+    ];
+
+    foreach ($settings as $key => $value) {
+        $key = (string)$key;
+        if (!isset($validators[$key])) {
+            $skipped[] = $key;
+            continue;
+        }
+        $clean = $validators[$key]($value);
+        if ($clean === null) {
+            $skipped[] = $key;
+            continue;
+        }
+        $applied[$key] = $clean;
+    }
+
+    // Auto-advanced wenn Tags vorhanden und mode nicht explizit gesetzt.
+    // Direkt per SQL gegen die DB, NICHT mod_nwi_settings_get — dessen Cache
+    // dürfen wir hier nicht mit Pre-Update-Werten vergiften.
+    if ($has_tags && !isset($applied['mode'])) {
+        $q = $database->query(sprintf(
+            "SELECT `mode` FROM `%smod_news_img_settings` WHERE `section_id`=%d",
+            TABLE_PREFIX, $section_id
+        ));
+        $cur_mode = ($q && $q->numRows() > 0) ? (string)$q->fetchRow()['mode'] : 'default';
+        if ($cur_mode !== 'advanced') {
+            $applied['mode'] = 'advanced';
+        }
+    }
+
+    if (!empty($applied)) {
+        $sets = [];
+        foreach ($applied as $col => $val) {
+            $sets[] = sprintf("`%s`='%s'", $col, mod_nwi_escapeString((string)$val));
+        }
+        $database->query(sprintf(
+            "UPDATE `%smod_news_img_settings` SET %s WHERE `section_id`=%d",
+            TABLE_PREFIX, implode(', ', $sets), $section_id
+        ));
+        // Cache leeren, damit nachfolgende Resize-Calls (preview/gallery) die
+        // frischen Werte lesen.
+        mod_nwi_settings_get($section_id, true);
+    }
+
+    return ['applied' => $applied, 'skipped' => $skipped];
+}
+
+/**
  * Demo-Pack importieren. Legt Gruppen, Tags, Posts (samt Page-Datei), Tag-
  * Mappings und ggf. Vorschau-/Galerie-Bilder in der angegebenen Section an.
  *
@@ -3131,6 +3268,21 @@ function mod_nwi_demodata_import(string $pack_name, int $section_id, int $page_i
     }
 
     $images_dir = $pack_dir.'/images';
+
+    // --- Settings aus data.php['settings'] anwenden (vor allem anderen, damit
+    //     nachfolgende Image-Resize-Calls schon die neuen Werte sehen).
+    //     Wenn der Pack Tags enthält und mode nicht explizit gesetzt wurde,
+    //     schalten wir auf "advanced" — sonst sind die Tags im Backend nicht
+    //     bearbeitbar.
+    $pack_settings = (isset($data['settings']) && is_array($data['settings'])) ? $data['settings'] : [];
+    $pack_has_tags = !empty($data['tags']);
+    $apply_result  = mod_nwi_demodata_apply_settings($section_id, $pack_settings, $pack_has_tags);
+    if (!empty($apply_result['applied'])) {
+        $result['imported']['settings'] = count($apply_result['applied']);
+    }
+    if (!empty($apply_result['skipped'])) {
+        $result['errors'][] = 'settings ignored (unknown or invalid): '.implode(', ', $apply_result['skipped']);
+    }
 
     // --- Groups: title -> group_id
     $group_map = [];
@@ -3186,7 +3338,16 @@ function mod_nwi_demodata_import(string $pack_name, int $section_id, int $page_i
     foreach ((array)($data['posts'] ?? []) as $p) {
         $slug     = (string)($p['slug'] ?? '');
         $title    = mod_nwi_escapeString((string)($p['title'] ?? ''));
-        $link     = mod_nwi_escapeString((string)($p['link'] ?? ''));
+
+        // Link auf WBCE-Konvention /posts/<slug> normalisieren — Access-Dateien
+        // landen sonst direkt unter pages/ statt unter pages/posts/. Wer in
+        // einem Pack bereits explizit /posts/<slug> schreibt, bleibt unbehelligt.
+        $raw_link = (string)($p['link'] ?? '');
+        if ($raw_link !== '' && strpos($raw_link, '/posts/') !== 0) {
+            $raw_link = '/posts/'.ltrim($raw_link, '/');
+        }
+        $link     = mod_nwi_escapeString($raw_link);
+
         $group_id = isset($group_map[(string)($p['group'] ?? '')]) ? $group_map[(string)$p['group']] : 0;
         $active   = (int)($p['active'] ?? 1);
         $content_short  = mod_nwi_escapeString((string)($p['content_short'] ?? ''));
@@ -3220,9 +3381,13 @@ function mod_nwi_demodata_import(string $pack_name, int $section_id, int $page_i
         }
         $post_id = (int)$database->getLastInsertId();
 
-        // Page-Access-Datei anlegen, damit der Link auch auflösbar ist
-        $filename = WB_PATH.PAGES_DIRECTORY.$p['link'].PAGE_EXTENSION;
-        mod_nwi_create_file($filename, null, (string)$post_id, (string)$section_id, (string)$page_id);
+        // Page-Access-Datei anlegen — mit dem normalisierten Link, sonst landet
+        // die Datei am Original-Pfad statt unter /posts/.
+        mod_nwi_post_refresh_access_file(
+            ['post_id' => $post_id, 'link' => $raw_link],
+            $section_id,
+            $page_id
+        );
 
         // Tag-Mappings
         foreach ((array)($p['tags'] ?? []) as $tag_name) {
@@ -3246,13 +3411,26 @@ function mod_nwi_demodata_import(string $pack_name, int $section_id, int $page_i
             }
         }
 
-        // Vorschaubild
+        // Vorschaubild — flach in media/.news_img/, gleiche Konvention wie
+        // mod_nwi_img_upload($post_id, true). Per find_free_filename Kollisionen
+        // (z.B. zwei Packs mit preview.jpg) auflösen, Vorschau auf
+        // resize_preview-Größe runterrechnen.
         if ($preview_name !== '' && is_dir($slug_dir)) {
             $src = $slug_dir.'/'.basename($preview_name);
             if (is_file($src) && in_array(strtolower(pathinfo($src, PATHINFO_EXTENSION)), $GLOBALS['allowed_suffixes'], true)) {
-                $safe_name = strtolower(basename($preview_name));
-                $dst = $post_image_dir.$safe_name;
+                $flat_dir = WB_PATH.MEDIA_DIRECTORY.'/.news_img/';
+                $safe_name = mod_nwi_find_free_filename($flat_dir, strtolower(basename($preview_name)));
+                $dst = $flat_dir.$safe_name;
                 if (@copy($src, $dst)) {
+                    list($pw, $ph,) = mod_nwi_get_sizes($section_id);
+                    if (empty($pw)) { $pw = 150; }
+                    if (empty($ph)) { $ph = 150; }
+                    $crop_p = (mod_nwi_settings_get($section_id)['crop_preview'] ?? 'N') === 'Y' ? 1 : 0;
+                    if (list($w, $h) = getimagesize($dst)) {
+                        if ($w > $pw || $h > $ph) {
+                            @mod_nwi_image_resize($dst, $dst, $pw, $ph, $crop_p);
+                        }
+                    }
                     $database->query(sprintf(
                         "UPDATE `%smod_news_img_posts` SET `image`='%s' WHERE `post_id`=%d",
                         TABLE_PREFIX, mod_nwi_escapeString($safe_name), $post_id

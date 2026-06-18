@@ -130,9 +130,13 @@ if (!is_writable(WB_PATH.PAGES_DIRECTORY.'/posts/')) {
     if ($page_id != $old_page_id or $section_id != $old_section_id) {
         $file_create_time = '';
     }
-    // Specify the filename
-    $filename = WB_PATH.PAGES_DIRECTORY.'/'.$post_link.PAGE_EXTENSION;
-    mod_nwi_create_file($filename, $file_create_time, null, null);
+    // Access-Datei anlegen (mtime erhalten, falls Umbenennung)
+    mod_nwi_post_refresh_access_file(
+        ['post_id' => $post_id, 'link' => $post_link],
+        (int)$section_id,
+        (int)$page_id,
+        $file_create_time !== '' ? (string)$file_create_time : null
+    );
 }
 
 list($publishedwhen, $publisheduntil) = mod_nwi_get_dates();
@@ -211,9 +215,12 @@ if ($active != 1 ) {
 			unlink(WB_PATH.PAGES_DIRECTORY.$post_link.PAGE_EXTENSION);
 	}
 	
-} else{	
-	$filename = WB_PATH.PAGES_DIRECTORY.'/'.$post_link.PAGE_EXTENSION;
-	mod_nwi_create_file($filename, '', $post_id, $section_id, $page['page_id']);
+} else{
+	mod_nwi_post_refresh_access_file(
+		['post_id' => $post_id, 'link' => $post_link],
+		(int)$section_id,
+		(int)$page['page_id']
+	);
 }
 
 // if this went fine so far and we are moving posts across section borders we still have to reorder

@@ -289,16 +289,13 @@ if ($module_type == "news_img") {
                 $post_link .= PAGE_SPACER.$post_id;
             }
 
-            // Make sure the post link is set and exists
-            // Make news post access files dir
-            make_dir(WB_PATH.PAGES_DIRECTORY.'/posts/');
-            $file_create_time = '';
-            if (!is_writable(WB_PATH.PAGES_DIRECTORY.'/posts/')) {
+            // Access-Datei für den neuen Link anlegen
+            if (!mod_nwi_post_refresh_access_file(
+                ['post_id' => $post_id, 'link' => $post_link],
+                (int)$section_id,
+                (int)$page_id
+            )) {
                 $admin->print_error($MESSAGE['PAGES_CANNOT_CREATE_ACCESS_FILE']);
-            } else {
-                // Specify the filename
-                $filename = WB_PATH.PAGES_DIRECTORY.'/'.$post_link.PAGE_EXTENSION;
-                mod_nwi_create_file($filename, $file_create_time, null, null);
             }
 
 
@@ -496,16 +493,13 @@ if ($module_type == "news_img") {
                         $post_link .= PAGE_SPACER.$post_id;
                     }
 
-                    // Make sure the post link is set and exists
-                    // Make news post access files dir
-                    make_dir(WB_PATH.PAGES_DIRECTORY.'/posts/');
-                    $file_create_time = '';
-                    if (!is_writable(WB_PATH.PAGES_DIRECTORY.'/posts/')) {
+                    // Access-Datei für den neuen Link anlegen
+                    if (!mod_nwi_post_refresh_access_file(
+                        ['post_id' => $post_id, 'link' => $post_link],
+                        (int)$section_id,
+                        (int)$page_id
+                    )) {
                         $admin->print_error($MESSAGE['PAGES_CANNOT_CREATE_ACCESS_FILE']);
-                    } else {
-                        // Specify the filename
-                        $filename = WB_PATH.PAGES_DIRECTORY.'/'.$post_link.PAGE_EXTENSION;
-                        mod_nwi_create_file($filename, $file_create_time, null, null);
                     }
 
                     if (!is_dir($mod_nwi_file_dir)) {
@@ -739,16 +733,13 @@ if ($module_type == "news_img") {
                 $post_link .= PAGE_SPACER.$post_id;
             }
 
-            // Make sure the post link is set and exists
-            // Make news post access files dir
-            make_dir(WB_PATH.PAGES_DIRECTORY.'/posts/');
-            $file_create_time = '';
-            if (!is_writable(WB_PATH.PAGES_DIRECTORY.'/posts/')) {
+            // Access-Datei für den neuen Link anlegen
+            if (!mod_nwi_post_refresh_access_file(
+                ['post_id' => $post_id, 'link' => $post_link],
+                (int)$section_id,
+                (int)$page_id
+            )) {
                 $admin->print_error($MESSAGE['PAGES_CANNOT_CREATE_ACCESS_FILE']);
-            } else {
-                // Specify the filename
-                $filename = WB_PATH.PAGES_DIRECTORY.'/'.$post_link.PAGE_EXTENSION;
-                mod_nwi_create_file($filename, $file_create_time, null, null);
             }
 
             if (!is_dir($mod_nwi_file_dir)) {

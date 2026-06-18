@@ -160,6 +160,65 @@
                 var ICONS = '<?php echo WB_URL."/modules/news_img/images" ?>';
             </script>
 
+<?php if (count($posts) > 0): ?>
+            <div class="mod_news_img_maintenance" style="margin-top:1.5em;padding-top:0.5em;border-top:1px solid #ddd;">
+                <form name="refresh_access_files" action="<?php echo WB_URL; ?>/modules/news_img/refresh_access_files.php" method="post" style="margin:0;display:inline;" onsubmit="return confirm('<?php echo addslashes($MOD_NEWS_IMG['REFRESH_ACCESS_FILES_CONFIRM'] ?? 'Access-Dateien aller Beitr&auml;ge dieser Section neu schreiben?'); ?>');">
+                    <?php echo $FTAN; ?>
+                    <input type="hidden" name="section_id" value="<?php echo $section_id; ?>" />
+                    <input type="hidden" name="page_id" value="<?php echo $page_id; ?>" />
+                    <input type="submit" value="<?php echo $MOD_NEWS_IMG['REFRESH_ACCESS_FILES'] ?? 'Access-Dateien erneuern'; ?>" title="<?php echo $MOD_NEWS_IMG['REFRESH_ACCESS_FILES_TOOLTIP'] ?? 'Erstellt die Page-Access-Dateien aller Beitr&auml;ge dieser Section neu — n&uuml;tzlich nach Importen oder bei zerschossenen Links.'; ?>" />
+                </form>
+            </div>
+<?php endif; ?>
+
+<?php if (!empty($demodata_packs)): ?>
+            <h2><?php echo $MOD_NEWS_IMG['DEMODATA_IMPORT'] ?? 'Demo-Daten importieren'; ?></h2>
+            <p style="font-style:italic;font-size:90%;">
+                <?php echo $MOD_NEWS_IMG['DEMODATA_IMPORT_INFO'] ?? 'Diese Section ist noch leer. Hier kannst du beispielhafte Beiträge importieren, um den Aufbau auszuprobieren. Die Option verschwindet, sobald die Section eigene Beiträge oder Gruppen enthält.'; ?>
+            </p>
+            <form name="demodata_import" action="<?php echo WB_URL; ?>/modules/news_img/import_demo.php" method="post" onsubmit="return confirm('<?php echo addslashes($MOD_NEWS_IMG['DEMODATA_CONFIRM'] ?? 'Demo-Daten wirklich in diese Section importieren?'); ?>');">
+                <?php echo $FTAN; ?>
+                <input type="hidden" name="section_id" value="<?php echo $section_id; ?>" />
+                <input type="hidden" name="page_id" value="<?php echo $page_id; ?>" />
+                <table>
+                    <tr>
+                        <td class="setting_name"><?php echo $MOD_NEWS_IMG['DEMODATA_PACK'] ?? 'Daten-Pack'; ?>:</td>
+                        <td class="setting_value">
+                            <select name="pack" style="min-width:250px;" onchange="var p=this.value; document.querySelectorAll('.nwi_demodata_desc').forEach(function(el){el.style.display=el.getAttribute('data-pack')===p?'block':'none';});">
+<?php
+                                // Packs sind durch mod_nwi_demodata_list() bereits sortiert
+                                // (aktuelle Sprache zuerst); hier nur pro Sprachblock optgroup öffnen/schließen.
+                                $first = true;
+                                $current_lang_block = null;
+                                foreach ($demodata_packs as $pack_id => $pack):
+                                    $pl = $pack['language'] !== '' ? $pack['language'] : '?';
+                                    if ($pl !== $current_lang_block) {
+                                        if ($current_lang_block !== null) { echo '                                </optgroup>'."\n"; }
+                                        echo '                                <optgroup label="'.htmlspecialchars($pl, ENT_QUOTES | ENT_HTML5).'">'."\n";
+                                        $current_lang_block = $pl;
+                                    }
+?>
+                                    <option value="<?php echo htmlspecialchars($pack_id, ENT_QUOTES | ENT_HTML5); ?>"<?php if ($first): echo ' selected="selected"'; endif; $first=false; ?>><?php echo htmlspecialchars($pack['name'], ENT_QUOTES | ENT_HTML5); ?></option>
+<?php endforeach; if ($current_lang_block !== null): ?>
+                                </optgroup>
+<?php endif; ?>
+                            </select>
+<?php $first = true; foreach ($demodata_packs as $pack_id => $pack): ?>
+                            <div class="nwi_demodata_desc" data-pack="<?php echo htmlspecialchars($pack_id, ENT_QUOTES | ENT_HTML5); ?>" style="margin-top:6px;font-size:90%;color:#555;<?php if (!$first) echo 'display:none;'; $first=false; ?>">
+                                <?php echo htmlspecialchars($pack['description'], ENT_QUOTES | ENT_HTML5); ?>
+                            </div>
+<?php endforeach; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="left">
+                            <input type="submit" value="<?php echo $MOD_NEWS_IMG['DEMODATA_IMPORT_BUTTON'] ?? 'Importieren'; ?>" />
+                        </td>
+                        <td></td>
+                    </tr>
+                </table>
+            </form>
+<?php endif; ?>
 <?php if ($importable_sections>0): ?>
             <h2><?php echo ucfirst($MOD_NEWS_IMG['IMPORT']).' '.$TEXT['SECTION']; ?></h2>
             <form name="import" action="<?php echo WB_URL; ?>/modules/news_img/import.php" method="post" enctype="multipart/form-data">
