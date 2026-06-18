@@ -101,10 +101,18 @@ td.mod_nwi_table_center,
 
 .mod_nwi_default .mod_nwi_bottom {
   padding: 0.5em 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
 .mod_nwi_default .mod_nwi_tags {
   margin-top: 25px;
+}
+
+.mod_nwi_default .mod_nwi_bottom .mod_nwi_tags {
+  margin-top: 0;
 }
 
 .mod_nwi_default .mod_nwi_tag {
@@ -136,13 +144,32 @@ td.mod_nwi_table_center,
 }
 
 .mod_nwi_default div.mod_nwi_readmore {
-  float: right;
+  margin-left: auto;
 }
 
 .mod_nwi_default div.mod_nwi_readmore a {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: transparent;
+  color: #314B68;
+  font-size: 0.85em;
+  line-height: 1.4;
+  padding: .15rem .6rem;
+  border: 1px solid #314B68;
+  border-radius: 3px;
+  text-decoration: none;
+  transition: background-color .15s ease, color .15s ease;
+}
+
+.mod_nwi_default div.mod_nwi_readmore a::after {
+  content: "\2192";
+  font-size: 1em;
+  line-height: 1;
+}
+
+.mod_nwi_default div.mod_nwi_readmore a:hover,
+.mod_nwi_default div.mod_nwi_readmore a:focus {
   background-color: #314B68;
   color: #fff;
-  padding: 2px 5px;
-  border-radius: 3px;
 }
