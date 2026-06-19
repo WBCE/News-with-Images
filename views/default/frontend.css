@@ -14,24 +14,46 @@
   overflow: hidden;
 }
 
-.mod_nwi_table {width:100%}
-
-.mod_nwi_default td.page-left, .mod_nwi_table_left,
-.mod_nwi_default td.page-center, .mod_nwi_table_center,
-.mod_nwi_default td.page-right, .mod_nwi_table_right {
-  width: 33.33%;
+.mod_nwi_default .mod_nwi_nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 1.5em 0 0;
+  padding-top: 0.8em;
+  border-top: 1px solid rgba(127, 127, 127, 0.25);
+  font-size: 0.9em;
+  background-color: transparent;
 }
 
-.mod_nwi_default td.page-center,
-td.mod_nwi_table_center, 
-.mod_nwi_table_center {
+.mod_nwi_default .mod_nwi_nav > div {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.mod_nwi_default .mod_nwi_nav_center {
   text-align: center;
 }
 
-.mod_nwi_default td.page-right,
-.mod_nwi_table_right,
-.mod_nwi_table_right {
+.mod_nwi_default .mod_nwi_nav_right {
   text-align: right;
+}
+
+.mod_nwi_default .mod_nwi_nav a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.mod_nwi_default .mod_nwi_nav a:hover,
+.mod_nwi_default .mod_nwi_nav a:focus {
+  text-decoration: underline;
+}
+
+.mod_nwi_default .mod_nwi_nav_left a::before {
+  content: "\2190\00a0";
+}
+
+.mod_nwi_default .mod_nwi_nav_right a::after {
+  content: "\00a0\2192";
 }
 
 .mod_nwi_default .mod_nwi_tags_header {
