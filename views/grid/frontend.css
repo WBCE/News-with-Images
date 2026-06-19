@@ -1,6 +1,29 @@
-.mod_nwi_grid_wrapper {
+/*** grid layout ****/
+
+/* --- Leseansicht: Teaser-Box oben (identisch zur default-View) --------- */
+.mod_nwi_grid .mod_nwi_content_short {
+  background-color: #f3f5f8;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin: 1rem 0 1.5rem;
+  overflow: hidden;
+  font-size: 1.05em;
+  line-height: 1.6;
+}
+.mod_nwi_grid .mod_nwi_content_short img {
+  float: left;
+  width: clamp(140px, 32%, 240px);
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  margin: 0 18px 12px 0;
+  border-radius: 6px;
+  display: block;
+}
+
+.mod_nwi_grid .mod_nwi_grid_wrapper {
   display: grid;
-  grid-gap: 2em 1em;
+  grid-gap: 1.5em;
 }
 .mod_nwi_grid_2columns {
   grid-template-columns: 1fr 1fr;
@@ -15,6 +38,183 @@
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
 }
 
-.mod_nwi_grid_box {
-  padding: 20px;
+/* schmale Viewports: immer einspaltig, egal welche Spaltenzahl gewaehlt ist */
+@media (max-width: 600px) {
+  .mod_nwi_grid .mod_nwi_grid_wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Karte ------------------------------------------------------------- */
+.mod_nwi_grid section.mod_nwi_grid_box {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* --- Bildbereich (fester Header) -------------------------------------- */
+/* aspect-ratio sorgt fuer gleiche Hoehe mit Bild UND mit Platzhalter, */
+/* damit Karten ohne Bild keinen schmaleren Header bekommen.            */
+.mod_nwi_grid .mod_nwi_teaserpic {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  padding: 0;
+  overflow: hidden;
+  background: #f4f4f4;
+}
+.mod_nwi_grid .mod_nwi_teaserpic a {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.mod_nwi_grid .mod_nwi_teaserpic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* Platzhalter-Kachel (kein Bild) den Bildbereich voll fuellen lassen */
+.mod_nwi_grid .mod_nwi_teaserpic .mod_nwi_noimage {
+  min-height: 0;
+  border-radius: 0;
+  font-size: 3em;
+}
+
+/* --- Textbereich ------------------------------------------------------- */
+.mod_nwi_grid .mod_nwi_teasertext {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 16px 18px;
+}
+.mod_nwi_grid .mod_nwi_teasertext h3 {
+  margin: 0 0 0.25em 0;
+  padding: 0;
+}
+.mod_nwi_grid .mod_nwi_metadata {
+  font-size: 75%;
+  font-style: italic;
+}
+.mod_nwi_grid .mod_nwi_shorttext {
+  padding: 0.5em 0;
+}
+
+/* --- unterer Bereich: erst Tags, dann Button in eigener Zeile darunter -- */
+/* In den (oft schmalen) Kacheln wird gestapelt statt nebeneinander. */
+.mod_nwi_grid .mod_nwi_bottom {
+  margin-top: auto;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.mod_nwi_grid .mod_nwi_tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  /* Detailansicht: Abstand zur darueberliegenden Vor/Zurueck-Navigation */
+  margin-top: 25px;
+}
+/* In der Listen-Kachel sitzen die Tags in .mod_nwi_bottom -> kein Extra-
+   Abstand (spezifischer, gewinnt gegen die Regel oben). */
+.mod_nwi_grid .mod_nwi_bottom .mod_nwi_tags {
+  margin-top: 0;
+}
+
+/* --- Tags (Navy-Pills, identisch zur default-View) -------------------- */
+.mod_nwi_grid .mod_nwi_tag {
+  display: inline-block;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background-color: #9BA9B9;
+  color: #fff;
+}
+.mod_nwi_grid .mod_nwi_tag:nth-of-type(1) {
+  background-color: #314B68;
+}
+.mod_nwi_grid .mod_nwi_tag:nth-of-type(2) {
+  background-color: #49627E;
+}
+.mod_nwi_grid .mod_nwi_tag:nth-of-type(3) {
+  background-color: #6F839A;
+}
+.mod_nwi_grid .mod_nwi_tag a {
+  color: #fff;
+}
+
+/* --- Weiterlesen-Button (Outline, identisch zur default-View) --------- */
+/* eigene Zeile unter den Tags, linksbuendig (kein margin-left:auto) */
+.mod_nwi_grid div.mod_nwi_readmore {
+  margin-left: 0;
+}
+.mod_nwi_grid div.mod_nwi_readmore a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: transparent;
+  color: #314B68;
+  font-size: 0.85em;
+  line-height: 1.4;
+  padding: .15rem .6rem;
+  border: 1px solid #314B68;
+  border-radius: 3px;
+  text-decoration: none;
+  transition: background-color .15s ease, color .15s ease;
+}
+.mod_nwi_grid div.mod_nwi_readmore a::after {
+  content: "\2192";
+  font-size: 1em;
+  line-height: 1;
+}
+.mod_nwi_grid div.mod_nwi_readmore a:hover,
+.mod_nwi_grid div.mod_nwi_readmore a:focus {
+  background-color: #314B68;
+  color: #fff;
+}
+
+/* --- Spacer ------------------------------------------------------------ */
+.mod_nwi_grid .mod_nwi_spacer {
+  padding: 1em 0;
+  clear: both;
+}
+
+/* --- Navigation / Pagination (neutral, identisch zur default-View) ----- */
+.mod_nwi_grid .mod_nwi_nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 1.5em 0 0;
+  padding-top: 0.8em;
+  border-top: 1px solid rgba(127, 127, 127, 0.25);
+  font-size: 0.9em;
+  background-color: transparent;
+}
+.mod_nwi_grid .mod_nwi_nav > div {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.mod_nwi_grid .mod_nwi_nav_center {
+  text-align: center;
+}
+.mod_nwi_grid .mod_nwi_nav_right {
+  text-align: right;
+}
+.mod_nwi_grid .mod_nwi_nav a {
+  color: inherit;
+  text-decoration: none;
+}
+.mod_nwi_grid .mod_nwi_nav a:hover,
+.mod_nwi_grid .mod_nwi_nav a:focus {
+  text-decoration: underline;
+}
+.mod_nwi_grid .mod_nwi_nav_left a::before {
+  content: "\2190\00a0";
+}
+.mod_nwi_grid .mod_nwi_nav_right a::after {
+  content: "\00a0\2192";
 }
