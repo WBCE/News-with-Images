@@ -7,7 +7,6 @@ $post_loop = '<section class="mod_nwi_grid_box">
     </div>
     <div class="mod_nwi_teasertext mod_nwi_grid_box">
         <a href="[LINK]"><h3>[TITLE]</h3></a>
-        <div class="mod_nwi_metadata">[TEXT_POSTED_BY] [DISPLAY_NAME] [TEXT_ON] [PUBLISHED_DATE] [TEXT_AT] [PUBLISHED_TIME] [TEXT_O_CLOCK]</div>
         <div class="mod_nwi_shorttext">
             [SHORT]
         </div>

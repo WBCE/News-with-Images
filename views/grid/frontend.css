@@ -94,10 +94,23 @@
 .mod_nwi_grid .mod_nwi_teasertext h3 {
   margin: 0 0 0.25em 0;
   padding: 0;
+  line-height: 1.3;
+  /* immer zwei Zeilen hoch reservieren, damit Metadaten/Teaser ueber alle
+     Karten hinweg auf gleicher Hoehe starten; laengere Titel werden auf
+     zwei Zeilen mit Auslassung begrenzt. */
+  min-height: 2.6em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .mod_nwi_grid .mod_nwi_metadata {
   font-size: 75%;
   font-style: italic;
+}
+/* In der Listen-Kachel keine Metadaten-Zeile (Detailansicht behaelt sie). */
+.mod_nwi_grid .mod_nwi_teasertext .mod_nwi_metadata {
+  display: none;
 }
 .mod_nwi_grid .mod_nwi_shorttext {
   padding: 0.5em 0;
