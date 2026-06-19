@@ -1779,9 +1779,11 @@ function mod_nwi_post_process($post, $section_id, $users)
         $thumbheight
     ) = mod_nwi_get_sizes($section_id);
 
-    // posting (preview) image — Kaskade: post → group → default → nopic.
-    // Alle Varianten werden in Preview-Größe ausgeliefert, damit das Layout
-    // (Bild links, Teaser rechts) für alle vier Quellen identisch bleibt.
+    // posting (preview) image — Kaskade: post → group → default. Findet sich
+    // keine Quelle, gibt es KEIN Bild mehr (Detail/Leseansicht) bzw. eine
+    // Platzhalter-Kachel (Liste/Grid) — siehe Schritt 4 unten.
+    // Alle Bildquellen werden in Preview-Größe ausgeliefert, damit das Layout
+    // (Bild links, Teaser rechts) für alle Quellen identisch bleibt.
     $post_img_src = '';
 
     // 1) Beitragsbild
@@ -1811,12 +1813,27 @@ function mod_nwi_post_process($post, $section_id, $users)
         }
     }
 
-    // 4) Fallback
-    if ($post_img_src === '') {
-        $post_img_src = WB_URL.'/modules/news_img/images/nopic.png';
+    // 4) Kein echtes Bild gefunden — bewusst KEIN nopic-Pixel mehr, das nur
+    //    einen leeren, auf Bildgroesse aufgeblasenen Bereich erzeugt.
+    //    - Leseansicht (Detail, POST_ID gesetzt): gar kein Bild ausgeben,
+    //      der Teasertext nutzt die volle Breite.
+    //    - Listen-/Grid-Ansicht: schlichte Platzhalter-Kachel mit der
+    //      Initiale des Titels (Tag-Palette-Navy), damit das Raster optisch
+    //      gleichmaessig bleibt. Optik inline, damit es in allen Views ohne
+    //      zusaetzliches CSS einheitlich aussieht.
+    if ($post_img_src !== '') {
+        $post['post_img'] = "<img src='".$post_img_src."' alt='".htmlspecialchars($post['title'], ENT_QUOTES | ENT_HTML401)."' />";
+    } elseif (defined('POST_ID')) {
+        $post['post_img'] = '';
+    } else {
+        $initial = mb_strtoupper(mb_substr(trim((string)$post['title']), 0, 1));
+        $post['post_img'] = '<span class="mod_nwi_noimage" aria-hidden="true"'
+            . ' style="display:flex;align-items:center;justify-content:center;'
+            . 'width:100%;height:100%;min-height:80px;background:#314B68;'
+            . 'color:#fff;font-size:2.5em;font-weight:500;border-radius:3px;">'
+            . htmlspecialchars($initial, ENT_QUOTES | ENT_HTML5)
+            . '</span>';
     }
-
-    $post['post_img'] = "<img src='".$post_img_src."' alt='".htmlspecialchars($post['title'], ENT_QUOTES | ENT_HTML401)."' />";
 
     // post link
     $post['post_link'] = page_link($post['link']);

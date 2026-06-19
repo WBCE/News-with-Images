@@ -1,17 +1,25 @@
 /*** default layout ****/
 .mod_nwi_default {}
 
-.mod_nwi_default .mod_nwi_content_short img {
-  float: left;
-  margin-right: 15px;
+.mod_nwi_default .mod_nwi_content_short {
+  background-color: #f3f5f8;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin: 1rem 0 1.5rem;
+  overflow: hidden;
+  font-size: 1.05em;
+  line-height: 1.6;
 }
 
-.mod_nwi_default .mod_nwi_content_short {
-  background-color: #eee;
-  border-radius: 5px;
-  padding: 15px;
-  margin: 15px auto;
-  overflow: hidden;
+.mod_nwi_default .mod_nwi_content_short img {
+  float: left;
+  width: clamp(140px, 32%, 240px);
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  margin: 0 18px 12px 0;
+  border-radius: 6px;
+  display: block;
 }
 
 .mod_nwi_default .mod_nwi_nav {
