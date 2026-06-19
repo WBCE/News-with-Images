@@ -1382,8 +1382,17 @@ function mod_nwi_post_show(int $post_id)
             // file (page_id missing); skip silently.
             return $post;
         }
+        // Self-healing: nur anlegen, wenn die Access-Datei wirklich fehlt.
+        // Beim normalen Beitrags-View IST sie die gerade laufende Skript-
+        // datei, existiert also bereits. Sie hier bedingungslos via
+        // mod_nwi_create_file() zu loeschen+neu zu schreiben ist unter
+        // Windows fatal: unlink() der laufenden Datei greift, das fopen()
+        // zum Neuanlegen scheitert aber (Name noch vom Prozess gehalten),
+        // die Datei verschwindet -> naechster Direktaufruf liefert 404.
         $filename = WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION;
-        mod_nwi_create_file($filename, '', $post_id, $section_id, $page['page_id']);
+        if (!file_exists($filename)) {
+            mod_nwi_create_file($filename, '', $post_id, $section_id, $page['page_id']);
+        }
     }
 
     return $post;
@@ -2356,11 +2365,11 @@ function mod_nwi_create_file(string $filename, ?string $filetime = null, ?string
     $safe_section_id = (int)$sectionID;
     $safe_post_id    = (int)$post_id;
 
-    // We need to create a new file
-    // First, delete old file if it exists
+    // Determine the timestamp to keep: preserve the existing file's mtime
+    // if present, otherwise use "now". No upfront unlink here — the old
+    // file stays in place until a complete new one is ready (see below).
     if (file_exists($filename)) {
         $filetime = !empty($filetime) ? $filetime : filemtime($filename);
-        unlink($filename);
     } else {
         $filetime = !empty($filetime) ? $filetime : time();
     }
@@ -2390,14 +2399,47 @@ require(WB_PATH."/index.php");
         $safe_post_id,
         addslashes($index_location)
     );
-    if ($handle = fopen($filename, 'w+')) {
-        fwrite($handle, $content);
-        fclose($handle);
-        if ($filetime) {
-            touch($filename, $filetime);
-        }
-        change_mode($filename);
+    // Atomic write: build the full file in a temp file in the same
+    // directory first, then move it into place. This guarantees we never
+    // leave a missing or half-written access file — the original is only
+    // replaced once a complete new file exists on disk.
+    $dir = dirname($filename);
+    $tmp = @tempnam($dir, 'nwi');
+    if ($tmp === false) {
+        return;
     }
+
+    $written = false;
+    if ($handle = fopen($tmp, 'wb')) {
+        $bytes = fwrite($handle, $content);
+        fflush($handle);
+        fclose($handle);
+        $written = ($bytes !== false && $bytes === strlen($content));
+    }
+    if (!$written) {
+        @unlink($tmp);
+        return;
+    }
+
+    // Move the temp file into place. rename() replaces atomically on POSIX;
+    // on Windows it fails if the target already exists, so fall back to
+    // unlink()+rename() there — but only now that a complete temp file is
+    // guaranteed, so a failure can at worst lose the temp file, never the
+    // freshly written content before it is in place.
+    if (!@rename($tmp, $filename)) {
+        if (file_exists($filename)) {
+            @unlink($filename);
+        }
+        if (!@rename($tmp, $filename)) {
+            @unlink($tmp);
+            return;
+        }
+    }
+
+    if ($filetime) {
+        touch($filename, $filetime);
+    }
+    change_mode($filename);
 }
 
 /**
