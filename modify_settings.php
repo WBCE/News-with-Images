@@ -77,13 +77,23 @@ if (substr_count($settings['imgthumbsize'], 'x')>0) {
 $raw = array('<', '>');
 $friendly = array('&lt;', '&gt;');
 
-// default image sizes
-$SIZES['50'] = '50x50px';
-$SIZES['75'] = '75x75px';
-$SIZES['100'] = '100x100px';
-$SIZES['125'] = '125x125px';
-$SIZES['150'] = '150x150px';
-$SIZES['220'] = '200x200px';
+// default image sizes (Breite x Höhe)
+// Vorschaubild/Teaser: Querformat-Presets, da Vorschaubilder selten quadratisch sind.
+$SIZES_PREVIEW = array(
+    array('w' => 300, 'h' => 200),
+    array('w' => 400, 'h' => 225),
+    array('w' => 400, 'h' => 300),
+    array('w' => 600, 'h' => 400),
+);
+// Thumbnail: quadratisch, mit etwas Reserve nach oben (Retina/HiDPI).
+$SIZES_THUMB = array(
+    array('w' => 50,  'h' => 50),
+    array('w' => 75,  'h' => 75),
+    array('w' => 100, 'h' => 100),
+    array('w' => 150, 'h' => 150),
+    array('w' => 200, 'h' => 200),
+    array('w' => 300, 'h' => 300),
+);
 
 $FTAN = $admin->getFTAN();
 

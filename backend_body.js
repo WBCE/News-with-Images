@@ -1,13 +1,11 @@
 $(function() {
     $("span.resize_defaults").unbind("click").on("click",function(e) {
-        var size = $(this).data("value");
-        $("input#resize_width").val(size);
-        $("input#resize_height").val(size);
+        $("input#resize_width").val($(this).data("width"));
+        $("input#resize_height").val($(this).data("height"));
     });
     $("span.resize_defaults_thumb").unbind("click").on("click",function(e) {
-        var size = $(this).data("value");
-        $("input#thumb_width").val(size);
-        $("input#thumb_height").val(size);
+        $("input#thumb_width").val($(this).data("width"));
+        $("input#thumb_height").val($(this).data("height"));
     });
     $("input#toggle_mode").unbind("click").on("click",function(e) {
         $("form[name=modify_mode]").submit();
@@ -48,7 +46,7 @@ function checkActionAndPosts() {
 }
 
 /*
-    Cross-Browser Tooltip von Mathias Karstädt steht unter einer Creative Commons Namensnennung 3.0 Unported Lizenz.
+    Cross-Browser Tooltip von Mathias Karstï¿½dt steht unter einer Creative Commons Namensnennung 3.0 Unported Lizenz.
     http://webmatze.de/ein-einfacher-cross-browser-tooltip-mit-javascript-und-css/
 */
 (function(window, document, undefined){

@@ -181,8 +181,8 @@
                             <input type="text" maxlength="4" name="resize_height" id="resize_height" style="width:80px" value="<?= $previewheight ?>" /> Pixel<br />
                             <span title="<?= $MOD_NEWS_IMG['TEXT_DEFAULTS_CLICK']; ?>"><?= $MOD_NEWS_IMG['TEXT_DEFAULTS'] ?>:&nbsp;
 <?php
-                    foreach($SIZES AS $size => $size_name) {
-                        echo '[<span class="resize_defaults" data-value="'.$size.'">'.$size_name.'</span>] ';
+                    foreach($SIZES_PREVIEW AS $s) {
+                        echo '[<span class="resize_defaults" data-width="'.$s['w'].'" data-height="'.$s['h'].'">'.$s['w'].'x'.$s['h'].'px</span>] ';
                     }
 ?>
                           </span>
@@ -279,8 +279,8 @@
                             <input type="text" maxlength="4" name="thumb_height" id="thumb_height" style="width:80px" value="<?= $thumbheight ?>" /> Pixel <br />
                             <span title="<?= $MOD_NEWS_IMG['TEXT_DEFAULTS_CLICK']; ?>"><?= $MOD_NEWS_IMG['TEXT_DEFAULTS'] ?>:&nbsp;
 <?php
-                    foreach($SIZES AS $size => $size_name) {
-                        echo '[<span class="resize_defaults_thumb" data-value="'.$size.'">'.$size_name.'</span>] ';
+                    foreach($SIZES_THUMB AS $s) {
+                        echo '[<span class="resize_defaults_thumb" data-width="'.$s['w'].'" data-height="'.$s['h'].'">'.$s['w'].'x'.$s['h'].'px</span>] ';
                     }
 ?>
                           </span>

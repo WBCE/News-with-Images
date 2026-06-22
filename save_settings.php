@@ -293,9 +293,9 @@ $database->query(
 
 // Check result
 if ($database->is_error()) {
-    $admin->print_error($database->get_error(), ADMIN_URL.'/pages/modify.php?page_id='.$page_id);
+    $admin->print_error($database->get_error(), ADMIN_URL.'/pages/modify_settings.php?page_id='.$page_id);
 } else {
-    $admin->print_success($TEXT['SUCCESS'], ADMIN_URL.'/pages/modify.php?page_id='.$page_id);
+    $admin->print_success($TEXT['SUCCESS'], ADMIN_URL.'/pages/modify_settings.php?page_id='.$page_id);
 }
 
 // Print admin footer
