@@ -371,4 +371,23 @@ require(WB_PATH."/index.php");
         CAT_Helper_Droplet::installDroplet(WB_PATH.'/modules/news_img/droplets/droplet_fetchNewsItems.zip');
     }
 
+    // 2026-06-22 Bianka Martinovic
+    //            Veraltete Dateien des alten jQuery-Uploaders (danielm/
+    //            dm-uploader) entfernen – ersetzt durch den Vanilla-JS-Uploader.
+    //            Modul-Updates loeschen vorhandene Dateien nicht, daher hier.
+    $nwi_obsolete = [
+        '/modules/news_img/uploader/js/jquery.dm-uploader.js',
+        '/modules/news_img/uploader/css/jquery.dm-uploader.css',
+        '/modules/news_img/uploader/config.js',
+        '/modules/news_img/uploader/ui.js',
+        '/modules/news_img/uploader/styles.css',
+        '/modules/news_img/uploader/LICENSE.txt',
+    ];
+    foreach ($nwi_obsolete as $nwi_rel) {
+        $nwi_file = WB_PATH.$nwi_rel;
+        if (is_file($nwi_file)) {
+            @unlink($nwi_file);
+        }
+    }
+
 }
