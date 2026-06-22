@@ -52,13 +52,16 @@ if ($admin->get_post('title') == '') {
     exit();
 } else {
     $title = mod_nwi_escapeString($admin->get_post('title'));
-    $active = mod_nwi_escapeString($admin->get_post('active'));
+    // Das Aktiv-Feld ist im Bearbeiten-Formular derzeit auskommentiert und wird
+    // daher nicht mitgeschickt. In diesem Fall den bestehenden Status beibehalten
+    // (Default 1 = aktiv, analog zu add_group.php), statt ihn auf 0 zu setzen.
+    $active = ($admin->get_post('active') === null) ? 1 : (int) $admin->get_post('active');
     $title = strip_tags($title);
 }
 
 // Update row
 $database->query(sprintf(
-    "UPDATE `%smod_news_img_groups` SET `title`='%s', `active`='%s' WHERE `group_id`=%d",
+    "UPDATE `%smod_news_img_groups` SET `title`='%s', `active`='%d' WHERE `group_id`=%d",
     TABLE_PREFIX, $title, $active, $group_id
 ));
 
