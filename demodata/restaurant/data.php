@@ -42,10 +42,10 @@ return [
     ],
 
     'tags' => [
-        ['tag' => 'Saisonal', 'tag_color' => '#5d9e6c'],
-        ['tag' => 'Event',    'tag_color' => '#e67e22'],
-        ['tag' => 'Region',   'tag_color' => '#27ae60'],
-        ['tag' => 'Wein',     'tag_color' => '#8e44ad'],
+        ['tag' => 'Saisonal', 'tag_color' => '#5d9e6c', 'tag_text_color' => '#ffffff'],
+        ['tag' => 'Event',    'tag_color' => '#e67e22', 'tag_text_color' => '#ffffff'],
+        ['tag' => 'Region',   'tag_color' => '#27ae60', 'tag_text_color' => '#ffffff'],
+        ['tag' => 'Wein',     'tag_color' => '#8e44ad', 'tag_text_color' => '#ffffff'],
     ],
 
     'posts' => [

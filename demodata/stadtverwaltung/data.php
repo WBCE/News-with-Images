@@ -39,10 +39,10 @@ return [
     ],
 
     'tags' => [
-        ['tag' => 'Stadtentwicklung', 'tag_color' => '#4a90d9'],
-        ['tag' => 'Veranstaltung',    'tag_color' => '#e67e22'],
-        ['tag' => 'Presse',           'tag_color' => '#8e44ad'],
-        ['tag' => 'Verwaltung',       'tag_color' => '#27ae60'],
+        ['tag' => 'Stadtentwicklung', 'tag_color' => '#4a90d9', 'tag_text_color' => '#ffffff'],
+        ['tag' => 'Veranstaltung',    'tag_color' => '#e67e22', 'tag_text_color' => '#ffffff'],
+        ['tag' => 'Presse',           'tag_color' => '#8e44ad', 'tag_text_color' => '#ffffff'],
+        ['tag' => 'Verwaltung',       'tag_color' => '#27ae60', 'tag_text_color' => '#ffffff'],
     ],
 
     'posts' => [

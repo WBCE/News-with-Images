@@ -3414,6 +3414,7 @@ function mod_nwi_demodata_import(string $pack_name, int $section_id, int $page_i
     foreach ((array)($data['tags'] ?? []) as $t) {
         $name  = (string)($t['tag'] ?? '');
         $color = mod_nwi_safe_css_color((string)($t['tag_color'] ?? ''));
+        $text_color = mod_nwi_safe_css_color((string)($t['tag_text_color'] ?? ''));
         if ($name === '') { continue; }
         $esc_name = mod_nwi_escapeString($name);
         $q = $database->query(sprintf(
@@ -3424,8 +3425,8 @@ function mod_nwi_demodata_import(string $pack_name, int $section_id, int $page_i
             $tag_id = (int)$q->fetchRow()['tag_id'];
         } else {
             $database->query(sprintf(
-                "INSERT INTO `%smod_news_img_tags` (`tag`,`tag_color`) VALUES ('%s','%s')",
-                TABLE_PREFIX, $esc_name, $color
+                "INSERT INTO `%smod_news_img_tags` (`tag`,`tag_color`,`tag_text_color`) VALUES ('%s','%s','%s')",
+                TABLE_PREFIX, $esc_name, $color, $text_color
             ));
             $tag_id = (int)$database->getLastInsertId();
             $result['imported']['tags'] = ($result['imported']['tags'] ?? 0) + 1;
