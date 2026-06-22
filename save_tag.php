@@ -55,6 +55,8 @@ else
     // rgb/rgba/hsl/hsla, or a plain keyword), which neutralizes any attempt
     // to break out of the style attribute on the frontend.
     $tag_color = mod_nwi_escapeString(mod_nwi_safe_css_color((string)$admin->get_post('tag_color')));
+    // Schriftfarbe analog zum Hintergrund validieren + escapen.
+    $tag_text_color = mod_nwi_escapeString(mod_nwi_safe_css_color((string)$admin->get_post('tag_text_color')));
 }
 
 // make global
@@ -68,7 +70,7 @@ if(empty($tag_id)) {
         $admin->print_error($MOD_NEWS_IMG['TAG_EXISTS'], ADMIN_URL.'/pages/modify.php?page_id='.$page_id.'&section_id='.$section_id.'&tab=s');
         exit();
     }
-    $database->query("INSERT INTO `".TABLE_PREFIX."mod_news_img_tags` ( `tag`, `tag_color` ) VALUES ('$tag','$tag_color')");
+    $database->query("INSERT INTO `".TABLE_PREFIX."mod_news_img_tags` ( `tag`, `tag_color`, `tag_text_color` ) VALUES ('$tag','$tag_color','$tag_text_color')");
     if($database->is_error()) {
     	$admin->print_error($database->get_error(), ADMIN_URL.'/pages/modify.php?page_id='.$page_id.'&tab=s');
     } else {
@@ -85,10 +87,11 @@ if(empty($tag_id)) {
 } else {
     $tag_id = (int)$tag_id;
     $database->query(sprintf(
-        "UPDATE `%smod_news_img_tags` SET `tag`='%s', `tag_color`='%s' WHERE `tag_id`=%d",
+        "UPDATE `%smod_news_img_tags` SET `tag`='%s', `tag_color`='%s', `tag_text_color`='%s' WHERE `tag_id`=%d",
         TABLE_PREFIX,
         $tag,
         $tag_color,
+        $tag_text_color,
         $tag_id
     ));
 }

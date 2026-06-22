@@ -170,7 +170,7 @@
 }
 
 .mod_nwi_default .mod_nwi_tag a {
-  color: #fff;
+  color: inherit;
 }
 
 .mod_nwi_default div.mod_nwi_readmore {

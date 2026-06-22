@@ -385,7 +385,17 @@
                             <?php endif; ?>
                         </td>
                         <td><?php echo $tag['tag'] ?></td>
-                        <td><span style="display:inline-block;width:50px;height:25px;<?php if(strlen($tag['tag_color'])>0): echo 'background-color:'.$tag['tag_color'];endif ?>"></span></td>
+                        <td>
+<?php
+                            $sw_bg = mod_nwi_safe_css_color($tag['tag_color'] ?? '');
+                            $sw_fg = mod_nwi_safe_css_color($tag['tag_text_color'] ?? '');
+                            if ($sw_fg === '' && $sw_bg !== '') { $sw_fg = mod_nwi_contrast_color($sw_bg); }
+                            $sw_style = '';
+                            if ($sw_bg !== '') { $sw_style .= 'background-color:'.$sw_bg.';'; }
+                            if ($sw_fg !== '') { $sw_style .= 'color:'.$sw_fg.';'; }
+?>
+                            <span style="display:inline-block;min-width:50px;padding:2px 8px;border-radius:3px;text-align:center;<?php echo htmlspecialchars($sw_style, ENT_QUOTES | ENT_HTML5); ?>"><?php echo htmlspecialchars($tag['tag']); ?></span>
+                        </td>
                         <td style="width:20px">
 <?php if($tag['section_id']!=0 || in_array(1, $admin->get_groups_id())): ?>
                             <a href="javascript: confirm_link('<?php echo $TEXT['ARE_YOU_SURE']; ?>', '<?php echo WB_URL; ?>/modules/news_img/delete_tag.php?page_id=<?php echo $page_id; ?>&amp;section_id=<?php echo $section_id; ?>&amp;tag_id=<?php echo $tag_id_key; ?>');" title="<?php echo $TEXT['DELETE']; ?>">

@@ -102,6 +102,7 @@ if(defined('WB_URL'))
           `tag_id` int(11) NOT NULL AUTO_INCREMENT,
           `tag` varchar(255) NOT NULL,
           `tag_color` VARCHAR(7) NULL DEFAULT NULL,
+          `tag_text_color` VARCHAR(7) NULL DEFAULT NULL,
           PRIMARY KEY (`tag_id`)
         ) ENGINE=InnoDB;",
         TABLE_PREFIX

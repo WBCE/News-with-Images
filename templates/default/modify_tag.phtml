@@ -21,6 +21,12 @@
     	</td>
     </tr>
     <tr>
+    	<td class="setting_name"><?php echo $MOD_NEWS_IMG['TAG_TEXT_COLOR']; ?>:</td>
+    	<td class="setting_value">
+    		<input type="text" name="tag_text_color" value="<?php echo (htmlspecialchars($tag['tag_text_color'] ?? '')); ?>" maxlength="7" />
+    	</td>
+    </tr>
+    <tr>
         <td>
     		<input name="save" type="submit" value="<?php echo $TEXT['SAVE']; ?>" />
     	</td>
@@ -34,6 +40,7 @@
     <script>
     //<![CDATA[
     $("input[name='tag_color']").spectrum({preferredFormat: "hex", allowEmpty: true, showInput: true });
+    $("input[name='tag_text_color']").spectrum({preferredFormat: "hex", allowEmpty: true, showInput: true });
     //]]>
     </script>
 </div>

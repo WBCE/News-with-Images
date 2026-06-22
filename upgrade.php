@@ -291,10 +291,21 @@ require(WB_PATH."/index.php");
           `tag_id` int(11) NOT NULL AUTO_INCREMENT,
           `tag` varchar(255) NOT NULL,
           `tag_color` VARCHAR(7) NULL DEFAULT NULL,
+          `tag_text_color` VARCHAR(7) NULL DEFAULT NULL,
           PRIMARY KEY (`tag_id`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
         TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX, TABLE_PREFIX
     ));
+
+    // 2026-06-22 add per-tag text color (idempotent for existing installs)
+    if (!$database->field_exists('{TP}mod_news_img_tags','tag_text_color')) {
+        try {
+            $database->query(sprintf(
+                "ALTER TABLE `%smod_news_img_tags` ADD COLUMN `tag_text_color` VARCHAR(7) NULL DEFAULT NULL AFTER `tag_color`",
+                TABLE_PREFIX
+            ));
+        } catch(\Exception $e) {}
+    }
 
     $database->query(sprintf("CREATE TABLE IF NOT EXISTS `%smod_news_img_tags_posts` (
           `post_id` int(11) NOT NULL,

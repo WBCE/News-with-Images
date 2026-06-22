@@ -102,6 +102,7 @@ $MOD_NEWS_IMG['SETTINGS'] = 'Configurações de notícias';
 $MOD_NEWS_IMG['SHOW_SETTINGS_ONLY_ADMINS'] = 'Settings can be seen/modified by admins only'; //missing
 $MOD_NEWS_IMG['TAG'] = 'Etiqueta';
 $MOD_NEWS_IMG['TAG_COLOR'] = 'Cor da etiqueta';
+$MOD_NEWS_IMG['TAG_TEXT_COLOR'] = 'Cor do texto';
 $MOD_NEWS_IMG['TAG_EXISTS'] = 'Existe etiqueta';
 $MOD_NEWS_IMG['TAGS'] = 'Etiquetas';
 $MOD_NEWS_IMG['TAGS_INFO'] = 'Para usar etiquetas, edite uma postagem e selecione as postagens desejadas lá.';

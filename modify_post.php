@@ -34,6 +34,10 @@ $post_data['content_short']=str_replace('{SYSVAR:MEDIA_REL}',WB_URL.MEDIA_DIRECT
 $post_data['content_long']=str_replace('{SYSVAR:MEDIA_REL}',WB_URL.MEDIA_DIRECTORY,$post_data['content_long']);
 $post_data['content_block2']=str_replace('{SYSVAR:MEDIA_REL}',WB_URL.MEDIA_DIRECTORY,$post_data['content_block2']);
 
+if(method_exists($admin, 'setViewUrl')) {
+    $admin->setViewUrl(WB_URL.'/pages/posts/'.$post_data['link'].'.php');
+}
+
 // ----- delete previewimage ---------------------------------------------------
 if (isset($_GET['post_img'])) {
     $post_img = basename($post_data['image']);

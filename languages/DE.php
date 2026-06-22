@@ -102,6 +102,7 @@ $MOD_NEWS_IMG['SETTINGS'] = 'News Einstellungen';
 $MOD_NEWS_IMG['SHOW_SETTINGS_ONLY_ADMINS'] = 'Einstellungen können nur Admins sehen/bearbeiten';
 $MOD_NEWS_IMG['TAG'] = 'Stichwort';
 $MOD_NEWS_IMG['TAG_COLOR'] = 'Farbe';
+$MOD_NEWS_IMG['TAG_TEXT_COLOR'] = 'Schriftfarbe';
 $MOD_NEWS_IMG['TAG_EXISTS'] = 'Stichwort existiert bereits';
 $MOD_NEWS_IMG['TAGS'] = 'Stichworte';
 $MOD_NEWS_IMG['TAGS_INFO'] = 'Um Stichworte zu verwenden, einen Beitrag bearbeiten und die gewünschten Stichworte auswählen';

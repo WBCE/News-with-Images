@@ -1668,10 +1668,7 @@ function mod_nwi_posts_render($section_id, $posts, $posts_per_page = 0)
         $tagListArray = [];
         foreach ($tags as $tag_idx => $tag) {
             $tagListArray[] = $tag['tag'];
-            $safe_color = mod_nwi_safe_css_color($tag['tag_color'] ?? '');
-            $style_attr = $safe_color !== ''
-                ? ' style="background-color:' . htmlspecialchars($safe_color, ENT_QUOTES | ENT_HTML5) . '"'
-                : '';
+            $style_attr = mod_nwi_tag_style_attr($tag);
             $tag_id_attr = htmlspecialchars('mod_nwi_tag_' . (int)$post['post_id'] . '_' . (int)$tag_idx, ENT_QUOTES | ENT_HTML5);
             $tag_href    = htmlspecialchars(mod_nwi_build_url($wb->page_link($page_id), ['tags' => $tag['tag']]), ENT_QUOTES | ENT_HTML5);
             $tags[$tag_idx] = '<span class="mod_nwi_tag" id="' . $tag_id_attr . '"' . $style_attr . '>'
@@ -2301,6 +2298,54 @@ function mod_nwi_safe_css_color(?string $color): string
     return '';
 }
 
+/**
+ * Pick a readable text color (black/white) for a given background color.
+ * Only hex colors are evaluated; for anything else '' is returned (the
+ * caller then leaves the text color to CSS).
+ */
+function mod_nwi_contrast_color(string $color): string
+{
+    $hex = ltrim(trim($color), '#');
+    if (preg_match('/^[0-9a-fA-F]{3}$/', $hex)) {
+        $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+    }
+    if (!preg_match('/^[0-9a-fA-F]{6}$/', $hex)) {
+        return '';
+    }
+    $r = hexdec(substr($hex, 0, 2));
+    $g = hexdec(substr($hex, 2, 2));
+    $b = hexdec(substr($hex, 4, 2));
+    // perceived brightness (YIQ): >=140 -> dark text, else light text
+    $yiq = ($r * 299 + $g * 587 + $b * 114) / 1000;
+    return $yiq >= 140 ? '#000000' : '#ffffff';
+}
+
+/**
+ * Build the inline style="" attribute for a tag span from its optional
+ * background (`tag_color`) and text (`tag_text_color`) colors. If a
+ * background is set but no text color, a readable contrast color is chosen
+ * automatically. Returns '' when nothing is set. Result is HTML-escaped.
+ */
+function mod_nwi_tag_style_attr(array $tag): string
+{
+    $styles = [];
+    $bg = mod_nwi_safe_css_color((string)($tag['tag_color'] ?? ''));
+    if ($bg !== '') {
+        $styles[] = 'background-color:' . $bg;
+    }
+    $fg = mod_nwi_safe_css_color((string)($tag['tag_text_color'] ?? ''));
+    if ($fg === '' && $bg !== '') {
+        $fg = mod_nwi_contrast_color($bg);
+    }
+    if ($fg !== '') {
+        $styles[] = 'color:' . $fg;
+    }
+    if (empty($styles)) {
+        return '';
+    }
+    return ' style="' . htmlspecialchars(implode(';', $styles), ENT_QUOTES | ENT_HTML5) . '"';
+}
+
 function mod_nwi_return_bytes($val)
 {
     $val  = trim($val);
@@ -2740,7 +2785,7 @@ function mod_nwi_get_news_items($options = array())
         'tags' => null,                   // show posts with only the given list of tags
         'taglist' => null,				  // show tags as simple list
         'groups_on_tags' => false,        // wether to use the group_id if $skip or $tags is set
-        'view' => 'default',              // use css from subfolder ('default','faq',...)
+        'view' => 'default',              // use css from subfolder ('default','grid','avatar',...)
         'aslist' => false                 // unordered list of titles
     );
 

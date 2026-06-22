@@ -102,6 +102,7 @@ $MOD_NEWS_IMG['SETTINGS'] = 'News Settings';
 $MOD_NEWS_IMG['SHOW_SETTINGS_ONLY_ADMINS'] = 'Settings can be seen/modified by admins only';
 $MOD_NEWS_IMG['TAG'] = 'Tag';
 $MOD_NEWS_IMG['TAG_COLOR'] = 'Tag color';
+$MOD_NEWS_IMG['TAG_TEXT_COLOR'] = 'Text color';
 $MOD_NEWS_IMG['TAG_EXISTS'] = 'Tag exists';
 $MOD_NEWS_IMG['TAGS'] = 'Tags';
 $MOD_NEWS_IMG['TAGS_INFO'] = 'To use tags, edit a post and select the desired posts there.';

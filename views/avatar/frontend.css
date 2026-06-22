@@ -33,18 +33,22 @@
   background-color: #FFEA97;
 }
 
-/* Kontrast: helle Tags (gruen/gelb) dunkle Schrift, dunkle (lila/navy) weiss */
-.mod_nwi_avatar .mod_nwi_tag a {
+/* Default-Palette: Schriftfarbe je Tag-Helligkeit – auf dem Span, damit eine
+   im Backend gesetzte Tag-Schriftfarbe (inline) gewinnt. Der Link erbt. */
+.mod_nwi_avatar .mod_nwi_tag {
   color: #10503b;
 }
-.mod_nwi_avatar .mod_nwi_tag:nth-of-type(1) a {
+.mod_nwi_avatar .mod_nwi_tag:nth-of-type(1) {
   color: #fff;
 }
-.mod_nwi_avatar .mod_nwi_tag:nth-of-type(2) a {
+.mod_nwi_avatar .mod_nwi_tag:nth-of-type(2) {
   color: #6b5800;
 }
-.mod_nwi_avatar .mod_nwi_tag:nth-of-type(3) a {
+.mod_nwi_avatar .mod_nwi_tag:nth-of-type(3) {
   color: #fff;
+}
+.mod_nwi_avatar .mod_nwi_tag a {
+  color: inherit;
 }
 
 /*** list page ***/

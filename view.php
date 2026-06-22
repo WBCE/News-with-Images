@@ -82,10 +82,7 @@ if (defined('POST_ID') && is_numeric(POST_ID)) {
     $tags = mod_nwi_get_tags_for_post(POST_ID);	
     foreach ($tags as $i => $tag) {
 		$tagListArray[$i] = $tag['tag'];
-        $safe_color  = mod_nwi_safe_css_color($tag['tag_color'] ?? '');
-        $style_attr  = $safe_color !== ''
-            ? ' style="background-color:' . htmlspecialchars($safe_color, ENT_QUOTES | ENT_HTML5) . '"'
-            : '';
+        $style_attr  = mod_nwi_tag_style_attr($tag);
         $tag_id_attr = htmlspecialchars('mod_nwi_tag_' . (int)POST_ID . '_' . (int)$i, ENT_QUOTES | ENT_HTML5);
         $tag_href    = htmlspecialchars(mod_nwi_build_url($wb->page_link(PAGE_ID), ['tags' => $tag['tag']]), ENT_QUOTES | ENT_HTML5);
         $tags[$i] = '<span class="mod_nwi_tag" id="' . $tag_id_attr . '"' . $style_attr . '>'
