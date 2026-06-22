@@ -7,23 +7,24 @@ $post_loop = '<div class="mod_nwi_group">
     </div>
     <div class="mod_nwi_teasertext">
         <a href="[LINK]"><h3>[TITLE]</h3></a>
+        <div class="mod_nwi_metadata">[TEXT_POSTED_BY] [DISPLAY_NAME] [TEXT_ON] [PUBLISHED_DATE]</div>
         <div class="mod_nwi_shorttext">
             [SHORT]
         </div>
-        <div class="mod_nwi_readmore" style="visibility:[SHOW_READ_MORE];"><a href="[LINK]">[TEXT_READ_MORE]</a></div>
         <div class="mod_nwi_bottom">
             <div class="mod_nwi_tags">[TAGS]</div>
+            <div class="mod_nwi_readmore" style="visibility:[SHOW_READ_MORE];"><a href="[LINK]">[TEXT_READ_MORE]</a></div>
         </div>
     </div>
 </div>
-<div class="mod_nwi_spacer"><hr /></div>';
-$footer = '<table class="mod_nwi_table" style="visibility:[DISPLAY_PREVIOUS_NEXT_LINKS]">
-<tr>
-    <td class="mod_nwi_table_left">[PREVIOUS_PAGE_LINK]</td>
-    <td class="mod_nwi_table_center">[OF]</td>
-    <td class="mod_nwi_table_right">[NEXT_PAGE_LINK]</td>
-</tr>
-</table>';
+<div class="mod_nwi_spacer"></div>';
+$footer = '</div>
+<div class="mod_nwi_spacer"></div>
+<nav class="mod_nwi_nav" style="visibility:[DISPLAY_PREVIOUS_NEXT_LINKS]">
+    <div class="mod_nwi_nav_left">[PREVIOUS_PAGE_LINK]</div>
+    <div class="mod_nwi_nav_center">[OF]</div>
+    <div class="mod_nwi_nav_right">[NEXT_PAGE_LINK]</div>
+</nav>';
 $block2 = '';
 $post_header = addslashes('<h2>[TITLE]</h2>');
 $post_content = '<div class="mod_nwi_content_short">
@@ -36,11 +37,9 @@ $post_content = '<div class="mod_nwi_content_short">
 ';
 $image_loop = '<img src="[IMAGE]" alt="[DESCRIPTION]" title="[DESCRIPTION]" data-caption="[DESCRIPTION]" />';
 $post_footer = ' <div class="mod_nwi_spacer"></div>
-<table class="mod_nwi_table" style="visibility: [DISPLAY_PREVIOUS_NEXT_LINKS]">
-<tr>
-    <td class="mod_nwi_table_left">[PREVIOUS_PAGE_LINK]</td>
-    <td class="mod_nwi_table_center"><a href="[BACK]">[TEXT_BACK]</a></td>
-    <td class="mod_nwi_table_right">[NEXT_PAGE_LINK]</td>
-</tr>
-</table>
+<nav class="mod_nwi_nav" style="visibility: [DISPLAY_PREVIOUS_NEXT_LINKS]">
+    <div class="mod_nwi_nav_left">[PREVIOUS_PAGE_LINK]</div>
+    <div class="mod_nwi_nav_center"><a href="[BACK]">[TEXT_BACK]</a></div>
+    <div class="mod_nwi_nav_right">[NEXT_PAGE_LINK]</div>
+</nav>
 <div class="mod_nwi_tags">[TAGS]</div>';

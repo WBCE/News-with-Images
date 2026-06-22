@@ -1,0 +1,226 @@
+/*** avatar layout ****/
+.mod_nwi_avatar {}
+
+.mod_nwi_avatar a {
+  text-decoration: none
+}
+
+/*** tags ***/
+.mod_nwi_avatar .mod_nwi_tags {
+  margin-top: 25px;
+}
+
+.mod_nwi_avatar .mod_nwi_tag {
+  display: inline-block;
+  background-color: #ccc;
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+.mod_nwi_avatar .mod_nwi_tag {
+  background-color: #5ec79e;
+}
+
+.mod_nwi_avatar .mod_nwi_tag:nth-of-type(1) {
+  background-color: #887dc2;
+}
+
+.mod_nwi_avatar .mod_nwi_tag:nth-of-type(3) {
+  background-color: #49627E;
+}
+
+.mod_nwi_avatar .mod_nwi_tag:nth-of-type(2) {
+  background-color: #FFEA97;
+}
+
+/* Kontrast: helle Tags (gruen/gelb) dunkle Schrift, dunkle (lila/navy) weiss */
+.mod_nwi_avatar .mod_nwi_tag a {
+  color: #10503b;
+}
+.mod_nwi_avatar .mod_nwi_tag:nth-of-type(1) a {
+  color: #fff;
+}
+.mod_nwi_avatar .mod_nwi_tag:nth-of-type(2) a {
+  color: #6b5800;
+}
+.mod_nwi_avatar .mod_nwi_tag:nth-of-type(3) a {
+  color: #fff;
+}
+
+/*** list page ***/
+.mod_nwi_avatar .mod_nwi_teaserpic {
+  flex: 0 0 auto;
+  width: 84px;
+  height: 84px;
+  margin: 0;
+  overflow: hidden;
+  background: #f4f4f4;
+  border-radius: 50%;
+}
+
+.mod_nwi_avatar .mod_nwi_teaserpic a {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.mod_nwi_avatar .mod_nwi_teaserpic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.mod_nwi_avatar .mod_nwi_metadata {
+  font-size: 75%;
+  font-style: italic;
+}
+
+.mod_nwi_avatar .mod_nwi_content_short {
+  background-color: #f3f5f8;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin: 1rem 0 1.5rem;
+  overflow: hidden;
+  font-size: 1.05em;
+  line-height: 1.6;
+}
+
+/* avatar: Bilder kommen aus dem Fliesstext (kein eigenes [IMAGE]-Element),
+   daher schonend rahmen statt fest auf 4:3 beschneiden. */
+.mod_nwi_avatar .mod_nwi_content_short img {
+  float: left;
+  max-width: clamp(140px, 32%, 240px);
+  height: auto;
+  margin: 0 18px 12px 0;
+  border-radius: 6px;
+}
+
+/*** navigation / pagination ***/
+.mod_nwi_avatar .mod_nwi_nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 1.5em 0 0;
+  padding-top: 0.8em;
+  border-top: 1px solid rgba(127, 127, 127, 0.25);
+  font-size: 0.9em;
+  background-color: transparent;
+}
+
+.mod_nwi_avatar .mod_nwi_nav > div {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.mod_nwi_avatar .mod_nwi_nav_center {
+  text-align: center;
+}
+
+.mod_nwi_avatar .mod_nwi_nav_right {
+  text-align: right;
+}
+
+.mod_nwi_avatar .mod_nwi_nav a:hover,
+.mod_nwi_avatar .mod_nwi_nav a:focus {
+  text-decoration: underline;
+}
+
+/* typische Pfeile: « / » fuer vor/zurueck, ^ fuer die Uebersicht */
+.mod_nwi_avatar .mod_nwi_nav_left a::before {
+  content: "\00AB\00a0";
+}
+
+.mod_nwi_avatar .mod_nwi_nav_right a::after {
+  content: "\00a0\00BB";
+}
+
+.mod_nwi_avatar .mod_nwi_nav_center a::before {
+  content: "\005E\00a0";
+}
+
+.mod_nwi_avatar .mod_nwi_nav_center a::after {
+  content: "\00a0\005E";
+}
+
+.mod_nwi_avatar .mod_nwi_tags_header {
+  margin-bottom: 25px;
+}
+
+/* Blog-/Team-Eintrag als Karte: runder Avatar links, Inhalt rechts */
+.mod_nwi_avatar .mod_nwi_group {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  clear: both;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+
+.mod_nwi_avatar .mod_nwi_teasertext {
+  flex: 1;
+  min-width: 0;
+}
+
+.mod_nwi_avatar .mod_nwi_teasertext h3 {
+  margin: 0 0 0.25em 0;
+  padding: 0;
+}
+
+.mod_nwi_avatar .mod_nwi_grouppic {
+  float: right;
+}
+
+.mod_nwi_avatar .mod_nwi_grouppic img {
+  width: 150px;
+  height: 150px;
+}
+
+.mod_nwi_avatar .mod_nwi_shorttext {
+  padding: 0.5em 0;
+}
+
+.mod_nwi_avatar .mod_nwi_spacer {
+  padding: 1em 0;
+  clear: both;
+}
+
+.mod_nwi_avatar .mod_nwi_bottom {
+  margin-top: 12px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+/* in der Karte kein Extra-Abstand ueber den Tags (gilt nur in der Detailansicht) */
+.mod_nwi_avatar .mod_nwi_bottom .mod_nwi_tags {
+  margin-top: 0;
+}
+
+.mod_nwi_avatar div.mod_nwi_readmore {
+  margin-left: auto;
+}
+
+.mod_nwi_avatar div.mod_nwi_readmore a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #314B68;
+  color: #fff;
+  font-size: 0.85em;
+  line-height: 1.4;
+  padding: .2rem .7rem;
+  border-radius: 3px;
+  transition: background-color .15s ease;
+}
+.mod_nwi_avatar div.mod_nwi_readmore a::after {
+  content: "\00BB";
+}
+.mod_nwi_avatar div.mod_nwi_readmore a:hover,
+.mod_nwi_avatar div.mod_nwi_readmore a:focus {
+  background-color: #24384f;
+}
