@@ -1,0 +1,134 @@
+/* news_img – Bild-Uploader (eigenstaendig, kein Bootstrap) */
+
+.nwi-uploader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: stretch;
+  margin: 1em 0;
+}
+
+.nwi-uploader-dropzone {
+  flex: 1 1 280px;
+  min-height: 160px;
+  box-sizing: border-box;
+  border: 2px dashed #9BA9B9;
+  border-radius: 6px;
+  background: #f3f5f8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 20px;
+  text-align: center;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+
+.nwi-uploader-dropzone.active {
+  border-color: #314B68;
+  border-style: solid;
+  background: #e8edf3;
+}
+
+.nwi-uploader-hint {
+  margin: 0;
+  color: #5a6b7e;
+  font-size: 1.05em;
+}
+
+.nwi-uploader-btn {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  background: #314B68;
+  color: #fff;
+  padding: .45rem 1.1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.nwi-uploader-btn input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.nwi-uploader-files {
+  flex: 1 1 280px;
+  box-sizing: border-box;
+  list-style: none;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  overflow: auto;
+}
+
+.nwi-uploader-empty {
+  color: #9aa7b4;
+  text-align: center;
+  padding: 1em 0;
+}
+
+.nwi-uploader-file {
+  padding: 8px 0;
+  border-bottom: 1px solid #eef1f4;
+}
+.nwi-uploader-file:last-child { border-bottom: 0; }
+
+.nwi-uploader-file-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.nwi-uploader-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nwi-uploader-file-status {
+  white-space: nowrap;
+  font-size: .85em;
+}
+.nwi-uploader-file-status.is-uploading { color: #5a6b7e; }
+.nwi-uploader-file-status.is-success { color: #2e7d4f; }
+.nwi-uploader-file-status.is-error { color: #b3261e; }
+
+.nwi-uploader-progress {
+  height: 8px;
+  border-radius: 4px;
+  background: #e9edf1;
+  overflow: hidden;
+}
+
+.nwi-uploader-progress-bar {
+  height: 100%;
+  width: 0;
+  background: #314B68;
+  transition: width .15s ease;
+}
+.nwi-uploader-progress.is-success .nwi-uploader-progress-bar { background: #3aa76d; }
+.nwi-uploader-progress.is-error .nwi-uploader-progress-bar { background: #d0473e; }
+
+.nwi-uploader-status {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.nwi-uploader-status-item {
+  padding: 8px 12px;
+  background: #f3f5f8;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
