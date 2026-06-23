@@ -79,6 +79,18 @@ if (file_exists(__DIR__.'/views/default/config.private.php')) {
 } 
 
 
+// Freitext-Felder einmalig für die DB escapen. Bis hier sind alle Werte roh —
+// egal ob aus den Inline-Defaults oben oder aus views/default/config.php.
+$header       = mod_nwi_escapeString($header);
+$post_loop    = mod_nwi_escapeString($post_loop);
+$footer       = mod_nwi_escapeString($footer);
+$block2       = mod_nwi_escapeString($block2);
+$post_header  = mod_nwi_escapeString($post_header);
+$post_content = mod_nwi_escapeString($post_content);
+$image_loop   = mod_nwi_escapeString($image_loop);
+$post_footer  = mod_nwi_escapeString($post_footer);
+$section_id   = (int) $section_id;
+
 $database->query(
     "INSERT INTO `".TABLE_PREFIX."mod_news_img_settings` ".
     "(`section_id` ,`header` ,`post_loop` ,`footer` ,`block2` ,`post_header` ,`post_content` ,`image_loop` ,`post_footer` ,`gallery` ,`imgthumbsize`,`resize_preview` ,`imgmaxwidth`,`imgmaxheight`,`imgmaxsize`) VALUES ".

@@ -26,7 +26,7 @@ $footer = '</div>
     <div class="mod_nwi_nav_right">[NEXT_PAGE_LINK]</div>
 </nav>';
 $block2 = '';
-$post_header = addslashes('<h2>[TITLE]</h2>');
+$post_header = '<h2>[TITLE]</h2>';
 $post_content = '<div class="mod_nwi_content_short">
   [CONTENT_SHORT]
 </div>

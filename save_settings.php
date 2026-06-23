@@ -59,14 +59,18 @@ $raw = array('<', '>', '');
 $settings = mod_nwi_settings_get($section_id);
 
 // always there
-$header = mod_nwi_escapeString(str_replace($friendly, $raw, $_POST['header']));
-$post_loop = mod_nwi_escapeString(str_replace($friendly, $raw, $_POST['post_loop']));
+// Hinweis: Werte werden hier ROH gehalten (nur ?php/<>-Filter). Das Escaping
+// für die DB passiert gesammelt einmalig direkt vor dem UPDATE — so werden
+// auch aus $settings bzw. View-/Galerie-Defaults stammende Werte sicher
+// escaped und nichts doppelt escaped.
+$header = str_replace($friendly, $raw, $_POST['header']);
+$post_loop = str_replace($friendly, $raw, $_POST['post_loop']);
 $view_order = intval($_POST['view_order']);
-$footer = mod_nwi_escapeString(str_replace($friendly, $raw, $_POST['footer']));
-$post_header = mod_nwi_escapeString(str_replace($friendly, $raw, $_POST['post_header']));
-$post_content = mod_nwi_escapeString(str_replace($friendly, $raw, $_POST['post_content']));
-$post_footer = mod_nwi_escapeString(str_replace($friendly, $raw, $_POST['post_footer']));
-$posts_per_page = mod_nwi_escapeString($_POST['posts_per_page']);
+$footer = str_replace($friendly, $raw, $_POST['footer']);
+$post_header = str_replace($friendly, $raw, $_POST['post_header']);
+$post_content = str_replace($friendly, $raw, $_POST['post_content']);
+$post_footer = str_replace($friendly, $raw, $_POST['post_footer']);
+$posts_per_page = $_POST['posts_per_page'];
 // Security: strip any character that is not a plain dir-name char (prevents path traversal)
 $gallery = preg_replace('/[^a-zA-Z0-9_-]/', '', (string)($_POST['gallery'] ?? ''));
 $use_second_block = ( (isset($_POST['use_second_block']) && $_POST['use_second_block']=='Y') ? 'Y' : 'N');
@@ -184,15 +188,15 @@ elseif (!empty($_POST['default_image_source'])) {
 
 // expert mode
 if(isset($settings['mode']) && $settings['mode']=='advanced') {
-    $image_loop = mod_nwi_escapeString(str_replace($friendly, $raw, $_POST['image_loop']));
-    $gal_img_resize_width = mod_nwi_escapeString($_POST['gal_img_resize_width']);
-    $gal_img_resize_height = mod_nwi_escapeString($_POST['gal_img_resize_height']);
+    $image_loop = str_replace($friendly, $raw, $_POST['image_loop']);
+    $gal_img_resize_width = $_POST['gal_img_resize_width'];
+    $gal_img_resize_height = $_POST['gal_img_resize_height'];
     $gal_img_max_size = intval($_POST['gal_img_max_size'])*1024;
     // Security: strip any character that is not a plain dir-name char (prevents path traversal)
     $view = preg_replace('/[^a-zA-Z0-9_-]/', '', (string)($_POST['view'] ?? ''));
-    $block2 = mod_nwi_escapeString(str_replace($friendly, $raw, $_POST['block2']));
-    $thumbwidth = mod_nwi_escapeString($_POST['thumb_width']);
-    $thumbheight = mod_nwi_escapeString($_POST['thumb_height']);
+    $block2 = str_replace($friendly, $raw, $_POST['block2']);
+    $thumbwidth = $_POST['thumb_width'];
+    $thumbheight = $_POST['thumb_height'];
 } else {
     $image_loop = $settings['image_loop'];
     $gal_img_resize_width = $settings['imgmaxwidth'];
@@ -260,6 +264,20 @@ if($settings['use_second_block'] != $use_second_block) {
     }
 }
 
+
+// Freitext-Felder hier EINMALIG für die DB escapen. Bis zu diesem Punkt sind
+// alle Werte roh — egal ob aus $_POST, aus $settings (Nicht-Advanced-Modus)
+// oder aus den View-/Galerie-Defaults. So wird konsistent genau einmal
+// escaped und keine Quelle bleibt unescaped in der Query.
+$header        = mod_nwi_escapeString($header);
+$post_loop     = mod_nwi_escapeString($post_loop);
+$footer        = mod_nwi_escapeString($footer);
+$post_header   = mod_nwi_escapeString($post_header);
+$post_content  = mod_nwi_escapeString($post_content);
+$post_footer   = mod_nwi_escapeString($post_footer);
+$block2        = mod_nwi_escapeString($block2);
+$image_loop    = mod_nwi_escapeString($image_loop);
+$posts_per_page = (int) $posts_per_page;
 
 // Update settings
 $database->query(

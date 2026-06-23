@@ -24,8 +24,8 @@ $footer = '<nav class="mod_nwi_nav" style="visibility:[DISPLAY_PREVIOUS_NEXT_LIN
     <div class="mod_nwi_nav_right">[NEXT_PAGE_LINK]</div>
 </nav>';
 $block2 = '';
-$post_header = addslashes('<h2>[TITLE]</h2>
-<div class="mod_nwi_metadata">[TEXT_POSTED_BY] [DISPLAY_NAME] [TEXT_ON] [PUBLISHED_DATE] [TEXT_AT] [PUBLISHED_TIME] [TEXT_O_CLOCK] | [TEXT_LAST_CHANGED] [MODI_DATE] [TEXT_AT] [MODI_TIME] [TEXT_O_CLOCK]</div>');
+$post_header = '<h2>[TITLE]</h2>
+<div class="mod_nwi_metadata">[TEXT_POSTED_BY] [DISPLAY_NAME] [TEXT_ON] [PUBLISHED_DATE] [TEXT_AT] [PUBLISHED_TIME] [TEXT_O_CLOCK] | [TEXT_LAST_CHANGED] [MODI_DATE] [TEXT_AT] [MODI_TIME] [TEXT_O_CLOCK]</div>';
 $post_content = '<div class="mod_nwi_content_short">
   [IMAGE]
   [CONTENT_SHORT]
