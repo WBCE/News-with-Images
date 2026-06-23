@@ -22,8 +22,8 @@ $admin_header = false;
 require WB_PATH.'/modules/admin.php';
 
 $source_id = 0;
-if (isset($_POST['source_id']) && is_numeric($_POST['source_id']) && ($_POST['source_id'] > 0)) {
-    $source_id = $_POST['source_id'];
+if (isset($_POST['source_id']) && is_numeric($_POST['source_id']) && ((int) $_POST['source_id'] > 0)) {
+    $source_id = (int) $_POST['source_id'];
 }
 
 if(!defined('CAT_PATH')) {
@@ -35,8 +35,6 @@ if(!defined('CAT_PATH')) {
                  .' (FTAN) '.__FILE__.':'.__LINE__,
                      ADMIN_URL.'/pages/index.php'
             );
-            $admin->print_footer();
-            exit();
         } else {
             $admin->print_header();
         }
@@ -49,8 +47,6 @@ if(!defined('CAT_PATH')) {
                  .' (IDKEY) '.__FILE__.':'.__LINE__,
                      ADMIN_URL.'/pages/index.php'
             );
-            $admin->print_footer();
-            exit();
         }
     }
 }
