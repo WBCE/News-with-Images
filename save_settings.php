@@ -28,15 +28,13 @@ if (!defined('CAT_PATH')) {
              .' (FTAN) '.__FILE__.':'.__LINE__,
                  ADMIN_URL.'/pages/index.php'
             );
-        $admin->print_footer();
-        exit();
     } else {
         $admin->print_header();
     }
 }
 
 // change mode
-if(isset($_POST['mode']) && in_array($_POST['mode'],array('default','advanced'))) {
+if(isset($_POST['mode']) && in_array($_POST['mode'],['default','advanced'])) {
     $database->query(sprintf(
         "UPDATE `%smod_news_img_settings`"
         . " SET `mode`='%s' WHERE `section_id`=%d",
@@ -52,8 +50,8 @@ if(isset($_POST['mode']) && in_array($_POST['mode'],array('default','advanced'))
 }
 
 // This code removes any <?php tags and adds slashes
-$friendly = array('&lt;', '&gt;', '?php');
-$raw = array('<', '>', '');
+$friendly = ['&lt;', '&gt;', '?php'];
+$raw = ['<', '>', ''];
 
 // get current settings
 $settings = mod_nwi_settings_get($section_id);
@@ -121,12 +119,12 @@ elseif (!empty($_FILES['default_image_upload']['tmp_name']) && is_uploaded_file(
                 // zur Endung passen (verhindert getarnte Nicht-Bilder/Polyglots,
                 // da oben nur die Endung gegen die Whitelist geprüft wurde).
                 $info = getimagesize($dest_path);
-                $type_ext = array(
-                    IMAGETYPE_JPEG => array('jpg', 'jpeg'),
-                    IMAGETYPE_PNG  => array('png'),
-                    IMAGETYPE_GIF  => array('gif'),
-                    IMAGETYPE_WEBP => array('webp'),
-                );
+                $type_ext = [
+                    IMAGETYPE_JPEG => ['jpg', 'jpeg'],
+                    IMAGETYPE_PNG  => ['png'],
+                    IMAGETYPE_GIF  => ['gif'],
+                    IMAGETYPE_WEBP => ['webp'],
+                ];
                 $img_type = ($info !== false) ? (int)$info[2] : 0;
                 if ($info === false || !isset($type_ext[$img_type]) || !in_array($orig_ext, $type_ext[$img_type], true)) {
                     @unlink($dest_path);
@@ -220,8 +218,9 @@ if(!empty($view) && $view != $settings['view'] && preg_match('/^[a-zA-Z0-9_-]+$/
 $resize_preview = '';
 $crop = 'N';
 
-$width = $_POST['resize_width'];
-$height = $_POST['resize_height'];
+// resize_width/height werden nur gerendert, wenn GD verfügbar ist -> ?? ''.
+$width = $_POST['resize_width'] ?? '';
+$height = $_POST['resize_height'] ?? '';
 $thumbsize = "100x100"; // default
 
 $crop = (isset($_POST['crop_preview']) ? $_POST['crop_preview'] : 'N');
@@ -241,14 +240,12 @@ if ($crop=='on') {
     $crop = 'N';
 }
 
-if ($posts_per_page=='') {
-    $posts_per_page = 0; // unlimited
-}
+// leeres posts_per_page (= unbegrenzt) wird beim (int)-Cast vor dem UPDATE zu 0.
 
-// if the gallery setting changed, load default settings
-$query_content = $database->query("SELECT `gallery` FROM `".TABLE_PREFIX."mod_news_img_settings` WHERE `section_id` = '$section_id'");
-$fetch_content = $query_content->fetchRow();
-if ($fetch_content['gallery'] != $gallery && preg_match('/^[a-zA-Z0-9_-]+$/', $gallery)) {
+// if the gallery setting changed, load default settings.
+// Der bisherige Wert steht bereits in $settings (geladen oben) -> keine
+// zweite Query nötig.
+if (($settings['gallery'] ?? '') != $gallery && preg_match('/^[a-zA-Z0-9_-]+$/', $gallery)) {
     include WB_PATH.'/modules/news_img/js/galleries/'.$gallery.'/settings.php';
 }
 
