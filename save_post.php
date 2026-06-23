@@ -189,9 +189,7 @@ if (!($database->is_error())) {
     if (count($images) > 0) {
         foreach ($images as $row) {
             $row_id = $row['id'];
-            $picdesc = isset($_POST['picdesc'][$row_id])
-                     ? mod_nwi_escapeString(strip_tags($_POST['picdesc'][$row_id]))
-                     : '';
+            $picdesc = mod_nwi_escapeString(strip_tags($_POST['picdesc'][$row_id] ?? ''));
             $database->query("UPDATE `".TABLE_PREFIX."mod_news_img_img` SET `picdesc` = '$picdesc' WHERE id = '$row_id'");
         }
     }
@@ -256,7 +254,7 @@ if ($database->is_error()) {
     if ($imageErrorMessage!='') {
         $admin->print_error($MOD_NEWS_IMG['GENERIC_IMAGE_ERROR'].'<br />'.$imageErrorMessage, WB_URL.'/modules/news_img/modify_post.php?page_id='.$page_id.'&section_id='.$section_id.'&post_id='.$id);
     } else {
-        if (isset($_POST['savegoback']) && $_POST['savegoback']=='1') {
+        if (($_POST['savegoback'] ?? '') === '1') {
             $admin->print_success($TEXT['SUCCESS'], ADMIN_URL.'/pages/modify.php?page_id='.$page_id);
         } else {
             $admin->print_success($TEXT['SUCCESS'], WB_URL.'/modules/news_img/modify_post.php?page_id='.$page_id.'&section_id='.$section_id.'&post_id='.$id);

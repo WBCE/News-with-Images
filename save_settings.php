@@ -71,8 +71,8 @@ $post_footer = str_replace($friendly, $raw, $_POST['post_footer']);
 $posts_per_page = $_POST['posts_per_page'];
 // Security: strip any character that is not a plain dir-name char (prevents path traversal)
 $gallery = preg_replace('/[^a-zA-Z0-9_-]/', '', (string)($_POST['gallery'] ?? ''));
-$use_second_block = ( (isset($_POST['use_second_block']) && $_POST['use_second_block']=='Y') ? 'Y' : 'N');
-$show_settings_only_admins = ( (isset($_POST['show_settings_only_admins']) && $_POST['show_settings_only_admins']=='Y') ? 'Y' : 'N');
+$use_second_block = (($_POST['use_second_block'] ?? '') === 'Y') ? 'Y' : 'N';
+$show_settings_only_admins = (($_POST['show_settings_only_admins'] ?? '') === 'Y') ? 'Y' : 'N';
 
 // ---------------------------------------------------------------------------
 // default preview image — copy-on-save. Speichert eine eigenständige Kopie
@@ -223,7 +223,7 @@ $width = $_POST['resize_width'] ?? '';
 $height = $_POST['resize_height'] ?? '';
 $thumbsize = "100x100"; // default
 
-$crop = (isset($_POST['crop_preview']) ? $_POST['crop_preview'] : 'N');
+$crop = $_POST['crop_preview'] ?? 'N';
 if (is_numeric($width) && is_numeric($height)) {
     if ($height>0 && $width>0) {
         $resize_preview = $width.'x'.$height;
