@@ -114,7 +114,7 @@
                                     <input type="checkbox" name="manage_posts[]" value="<?php echo $post['post_id'] ?>" onchange='javascript: document.getElementById("<?php echo $section_id ?>_all").checked &= this.checked' />
                                 </td>
                                 <td>
-                                    <a href="javascript: confirm_link('<?php echo $TEXT['ARE_YOU_SURE']; ?>', '<?php echo WB_URL; ?>/modules/news_img/delete_post.php?page_id=<?php echo $page_id; ?>&amp;section_id=<?php echo $section_id; ?>&amp;post_id=<?php echo $post['id_key']; ?>');" title="<?php echo $TEXT['DELETE']; ?>">
+                                    <a href="javascript: confirm_link('<?php echo $TEXT['ARE_YOU_SURE']; ?>', '<?php echo WB_URL; ?>/modules/news_img/delete_post.php?page_id=<?php echo $page_id; ?>&amp;section_id=<?php echo $section_id; ?>&amp;post_id=<?php echo $post['id_key']; ?>&amp;<?php echo $FTAN_GET; ?>');" title="<?php echo $TEXT['DELETE']; ?>">
                                         <span class="fa fa-fw fa-close nwi-delete"></span>
                                     </a>
                                 </td>

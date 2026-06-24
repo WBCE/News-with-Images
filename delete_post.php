@@ -16,8 +16,9 @@
 
 require_once __DIR__.'/functions.inc.php';
 
-// Get id
-if((!isset($_GET['post_id']))AND(!isset($_POST['manage_posts']))) {
+// Get id (Einzel-Löschung per GET-Link aus der Beitragsliste)
+$post_id = filter_input(INPUT_GET, 'post_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+if (!$post_id) {
 	header("Location: ".ADMIN_URL."/pages/index.php");
 	exit(0);
 }
@@ -25,28 +26,19 @@ if((!isset($_GET['post_id']))AND(!isset($_POST['manage_posts']))) {
 // Include WB admin wrapper script
 $update_when_modified = true; // Tells script to update when this page was last updated
 $admin_header = FALSE;
-// Include WB admin wrapper script
 require WB_PATH.'/modules/admin.php';
-if ( isset($_POST['manage_posts']) && is_array($_POST['manage_posts']) && !$admin->checkFTAN()){
+
+// CSRF: Die Löschung erfolgt über einen GET-Link -> FTAN-Token prüfen.
+if (!defined('CAT_PATH')) {
     $admin->print_header();
-    $admin->print_error($MESSAGE['GENERIC_SECURITY_ACCESS']
-	 .' (FTAN) '.__FILE__.':'.__LINE__,
-         ADMIN_URL.'/pages/index.php');
-    $admin->print_footer();
-    exit();
-} else $admin->print_header();
+    if (!$admin->checkFTAN('GET')) {
+        $admin->print_error($MESSAGE['GENERIC_SECURITY_ACCESS']
+		 .' (FTAN) '.__FILE__.':'.__LINE__,
+             ADMIN_URL.'/pages/index.php');
+    }
+}
 
-$post_id = filter_input(INPUT_GET, 'post_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-
-$posts = array();
-if ($post_id) {
-    $posts = array($post_id);
-} else {
-    if(isset($_POST['manage_posts'])&&is_array($_POST['manage_posts'])) 
-        $posts=$_POST['manage_posts'];
-} 
-
-mod_nwi_post_delete($posts);
+mod_nwi_post_delete([$post_id]);
 
 // Check if there is a db error, otherwise say successful
 if($database->is_error()) {
