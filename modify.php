@@ -41,6 +41,10 @@ $lang_map = array(
 );
 
 $FTAN = $admin->getFTAN();
+// FTAN als Query-String-Fragment (formtoken=...) für GET-Links wie den
+// Aktiv-Toggle (activate_post.php). Ein Token pro Seitenaufruf reicht; FTAN
+// ist zustandslos/sessiongebunden und nicht single-use.
+$FTAN_GET = $admin->getFTAN(false);
 
 // Create new order object and reorder
 $order = new order(TABLE_PREFIX.'mod_news_img_posts', 'position', 'post_id', 'section_id');

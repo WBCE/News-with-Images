@@ -16,8 +16,9 @@
 
 require_once __DIR__.'/functions.inc.php';
 
-// Get id
-if ((!isset($_GET['post_id']))and(!isset($_POST['manage_posts']))) {
+// Get id (Einzel-Toggle per GET-Link aus der Beitragsliste)
+$post_id = filter_input(INPUT_GET, 'post_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+if (!$post_id) {
     header("Location: ".ADMIN_URL."/pages/index.php");
     exit(0);
 }
@@ -25,32 +26,29 @@ if ((!isset($_GET['post_id']))and(!isset($_POST['manage_posts']))) {
 // Include WB admin wrapper script
 $update_when_modified = true; // Tells script to update when this page was last updated
 $admin_header = false;
-// Include WB admin wrapper script
 require WB_PATH.'/modules/admin.php';
-if (isset($_POST['manage_posts']) && is_array($_POST['manage_posts']) && !$admin->checkFTAN()) {
+
+// CSRF: Der Statuswechsel erfolgt über einen GET-Link -> FTAN-Token prüfen.
+if (!defined('CAT_PATH')) {
     $admin->print_header();
-    $admin->print_error(
-        $MESSAGE['GENERIC_SECURITY_ACCESS']
-     .' (FTAN) '.__FILE__.':'.__LINE__,
-         ADMIN_URL.'/pages/index.php'
-    );
-    $admin->print_footer();
-    exit();
-} else {
-    if(!defined('CAT_PATH')) {
-        $admin->print_header();
+    if (!$admin->checkFTAN('GET')) {
+        $admin->print_error(
+            $MESSAGE['GENERIC_SECURITY_ACCESS']
+         .' (FTAN) '.__FILE__.':'.__LINE__,
+             ADMIN_URL.'/pages/index.php'
+        );
     }
 }
 
-$post_id = filter_input(INPUT_GET, 'post_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-
+// value: 1 = aktivieren (Default), 0 = deaktivieren
 $value = 1;
 $filter_value = filter_input(INPUT_GET, 'value', FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 1]]);
-if ($filter_value !== null && $filter_value !== false && $filter_value === 0) {
+if ($filter_value === 0) {
     $value = 0;
 }
 
-$_POST['manage_posts'] = array($post_id);
+// mod_nwi_post_activate() liest die ID-Liste aus $_POST['manage_posts'].
+$_POST['manage_posts'] = [$post_id];
 $result = mod_nwi_post_activate($value);
 
 // Check if there is a db error, otherwise say successful
