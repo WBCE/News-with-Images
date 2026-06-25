@@ -34,8 +34,6 @@ if (!$admin->checkFTAN()) {
      .' (FTAN) '.__FILE__.':'.__LINE__,
          ADMIN_URL.'/pages/index.php'
     );
-    $admin->print_footer();
-    exit();
 } else {
     if(!defined('CAT_PATH')) {
     $admin->print_header();
@@ -44,11 +42,11 @@ if (!$admin->checkFTAN()) {
 
 // validate action
 $action = '';
-$known_actions = array(
+$known_actions = [
     'copy',     'copy_with_tags', 'move', 'move_with_tags', 'delete',
-    'activate', 'deactivate',     'tags', 'group', 
+    'activate', 'deactivate',     'tags', 'group',
     'clear_published_when', 'clear_published_until'
-);
+];
 if (in_array($_POST['action'], $known_actions)) {
     $action = $_POST['action'];
 } else {
@@ -87,7 +85,7 @@ if(isset($_POST['exec']) && isset($_POST['manage_posts'])) {
             break;
         case "group":
             $result = false;
-            $posts = array();
+            $posts = [];
             $group = null;
             // get post IDs
             if(isset($_POST['manage_posts']) && is_array($_POST['manage_posts'])) {
@@ -123,7 +121,7 @@ if(isset($_POST['exec']) && isset($_POST['manage_posts'])) {
             break;
         case "tags":
             $result = false;
-            $posts = array();
+            $posts = [];
             // get post IDs
             if(isset($_POST['manage_posts']) && is_array($_POST['manage_posts'])) {
                 $posts = $_POST['manage_posts'];
@@ -132,23 +130,32 @@ if(isset($_POST['exec']) && isset($_POST['manage_posts'])) {
             }
             $tags = mod_nwi_get_tags($section_id);
             // validate tag IDs
-            $assign = $_POST['tags'];
-            if(is_array($assign) && count($assign)>0) {
+            $assign = (isset($_POST['tags']) && is_array($_POST['tags'])) ? $_POST['tags'] : [];
+            if(count($assign)>0) {
                 for($i=count($assign)-1; $i>=0; $i--) {
                     if(!array_key_exists($assign[$i],$tags)) {
                         unset($assign[$i]);
                     }
                 }
             }
-            // save
+            // save — post_id und tag_id zwingend als int (SQL-Injection-Schutz:
+            // manage_posts[] kommt roh aus dem Request)
             foreach($posts as $post_id) {
+                $post_id = (int)$post_id;
+                if ($post_id <= 0) {
+                    continue;
+                }
                 foreach($assign as $tag_id) {
+                    $tag_id = (int)$tag_id;
+                    if ($tag_id <= 0) {
+                        continue;
+                    }
                     // Update row
                     $database->query(sprintf(
                         "REPLACE INTO `%smod_news_img_tags_posts`"
                         . " (`post_id`, `tag_id`) VALUES "
-                        . " ($post_id, $tag_id)",
-                        TABLE_PREFIX
+                        . " (%d, %d)",
+                        TABLE_PREFIX, $post_id, $tag_id
                     ));
                 }
             }
@@ -165,11 +172,10 @@ if(isset($_POST['exec']) && isset($_POST['manage_posts'])) {
     return;
 }
 
-$section_id = intval($_POST['section_id']);
-$page_id = intval($_POST['page_id']);
+// $section_id / $page_id sind bereits durch modules/admin.php als int gesetzt.
 $FTAN = $admin->getFTAN();
 
-$posts=array();
+$posts=[];
 if (isset($_POST['manage_posts'])&&is_array($_POST['manage_posts'])) {
     $post_ids = $_POST['manage_posts'];
     if(count($post_ids)>0) {
