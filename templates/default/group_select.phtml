@@ -1,6 +1,6 @@
                     <select name="group">
                         <option value="0|<?php echo intval($section_id).'|'.intval($page_id); ?>">
-                            <?php echo $TEXT['NONE']." (".$MOD_NEWS_IMG['CURRENT_SECTION']." #".$section_id ?>)
+                            <?php echo $TEXT['NONE']." (".$MOD_NEWS_IMG['CURRENT_SECTION']." #".(int)$section_id ?>)
                         </option>
 <?php
     if(isset($groups) && is_array($groups) && count($groups)>0):
@@ -8,20 +8,20 @@
             if($pageID != $page_id):
                         // separator (next page)
 ?>
-                        <option disabled="disabled">----- <?php echo $TEXT['PAGE'], " ", $pages[$pageID], " (", $pageID, ")" ?> -----</option>
+                        <option disabled="disabled">----- <?php echo $TEXT['PAGE'], " ", htmlspecialchars((string)$pages[$pageID], ENT_QUOTES), " (", (int)$pageID, ")" ?> -----</option>
 <?php
             endif;
             foreach($sects as $sectionID => $grps):
                 if($sectionID != $section_id):
                     $id = '0|'.intval($sectionID).'|'.intval($pageID);
 ?>
-                        <option value="<?php echo $id ?>"><?php echo $TEXT['NONE']." (".$TEXT['SECTION']." #".$sectionID ?>)</option>
+                        <option value="<?php echo $id ?>"><?php echo $TEXT['NONE']." (".$TEXT['SECTION']." #".(int)$sectionID ?>)</option>
 <?php
                 endif;
                 foreach($grps as $group):
                     $id = intval($group['group_id']).'|'.intval($sectionID).'|'.intval($pageID);
 
 ?>
-                        <option value="<?php echo $id ?>"<?php if ($post_data['group_id'] == $group['group_id']): ?> selected="selected"<?php endif; ?>><?php echo $group['title'].' ('.$TEXT['SECTION'].' #'.$sectionID ?>)</option>
+                        <option value="<?php echo $id ?>"<?php if (($post_data['group_id'] ?? null) == $group['group_id']): ?> selected="selected"<?php endif; ?>><?php echo htmlspecialchars((string)$group['title'], ENT_QUOTES).' ('.$TEXT['SECTION'].' #'.(int)$sectionID ?>)</option>
 <?php endforeach; endforeach; endforeach; endif; ?>
                     </select>
