@@ -30,7 +30,7 @@
 <?php
     foreach($posts as $pid => $title):
         if(is_numeric($pid)):
-            echo "<li><input type=\"checkbox\" name=\"manage_posts[]\" value=\"$pid\" checked=\"checked\" /> ID #$pid - $title</li>";
+            echo '<li><input type="checkbox" name="manage_posts[]" value="'.(int)$pid.'" checked="checked" /> ID #'.(int)$pid.' - '.htmlspecialchars((string)$title, ENT_QUOTES).'</li>';
         endif;
     endforeach;
 ?></ul>
@@ -43,7 +43,7 @@
                 <td colspan="2">
                     <ul>
 <?php foreach($tags as $tag): ?>
-                        <li><input type="checkbox" name="tags[]" value="<?php echo $tag['tag_id'] ?>" /> <?php echo $tag['tag'] ?></li>
+                        <li><input type="checkbox" name="tags[]" value="<?php echo (int)$tag['tag_id'] ?>" /> <?php echo htmlspecialchars((string)$tag['tag'], ENT_QUOTES) ?></li>
 <?php endforeach; ?>
                     </ul>
                 </td>
@@ -56,7 +56,7 @@
 <?php include __DIR__.'/group_select.phtml'; ?>
                 </td>
             </tr>
-<?php endif; if(in_array($action,array('move','move_with_tags','copy','copy_with_tags'))):
+<?php endif; if(in_array($action,['move','move_with_tags','copy','copy_with_tags'])):
 ?>
             <tr>
                 <td class="setting_name"><?php echo $MOD_NEWS_IMG[strtoupper($action)].' '.$MOD_NEWS_IMG['TO'].' ('.$TEXT['GROUP'].')'; ?>:</td>
