@@ -41,7 +41,8 @@ if(jQuery().sortable){
                     url:         MODULE_URL +'/ajax/ajax_dragdrop.php',
                     data:        jQuery(this).sortable("serialize", {
                                      expression: /(.+)[:=](.+)/
-                                 }) + '&action=updatePosition',
+                                 }) + '&action=updatePosition'
+                                 + (window.NWI_FTAN ? '&' + window.NWI_FTAN : ''),
                     dataType:     'json',
                     success:    function(json_respond){
                         if( json_respond.success != true ) {

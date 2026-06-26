@@ -1,4 +1,5 @@
 ﻿<div class="mod_news_img">
+    <script>var NWI_FTAN = <?php echo json_encode($FTAN_GET); ?>;</script>
     <div>
         <input class="mod_news_img_help"  type="button" onclick="window.open('<?php echo WB_URL; ?>/modules/news_img/readme.html','readme','width=800,height=600,top=50,left=50')" name="help" value="Readme" />
        <?php if($settings['show_settings_only_admins']!='Y' || $admin->isAdmin()): ?>

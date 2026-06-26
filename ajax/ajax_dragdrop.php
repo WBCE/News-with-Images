@@ -20,6 +20,11 @@ if (!isset($_POST['action']) || !isset($_POST['post_id']) && !isset($_POST['grou
         $aJsonRespond['message'] = 'insuficcient rights';
         exit(json_encode($aJsonRespond));
     }
+    // CSRF: zustandsändernder POST -> FTAN-Token prüfen.
+    if (!$admin->checkFTAN('POST')) {
+        $aJsonRespond['message'] = 'insufficient rights (FTAN)';
+        exit(json_encode($aJsonRespond));
+    }
 
     // Sanitize variables
     $action = $admin->add_slashes($_POST['action']);

@@ -212,7 +212,8 @@
 
 
 <script type="text/javascript">
-    var NWI_UPLOAD_URL = <?php echo json_encode(WB_URL."/modules/news_img/uploader/upload.php?post_id=".$post_id_key); ?>;
+    var NWI_FTAN = <?php echo json_encode($FTAN_GET); ?>;
+    var NWI_UPLOAD_URL = <?php echo json_encode(WB_URL."/modules/news_img/uploader/upload.php?post_id=".$post_id_key."&".$FTAN_GET); ?>;
     var NWI_COMPLETE_MESSAGE = <?php echo json_encode($MOD_NEWS_IMG['COMPLETE_MESSAGE']); ?>;
     var NWI_IMAGE_MAX_SIZE = <?php echo (int)$imgmaxsize; ?>;
     var NWI_MAX_SIZE_MESSAGE = <?php echo json_encode($MOD_NEWS_IMG['IMAGE_LARGER_THAN'].mod_nwi_byte_convert($imgmaxsize)); ?>;

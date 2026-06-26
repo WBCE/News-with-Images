@@ -11,6 +11,11 @@ if (!($admin->is_authenticated() && $admin->get_permission('news_img', 'module')
     throw new RuntimeException('insuficcient rights');
 }
 
+// CSRF: Upload-Endpunkt -> FTAN-Token (per Query-String) prüfen.
+if (!$admin->checkFTAN('GET')) {
+    throw new RuntimeException('insufficient rights (FTAN)');
+}
+
 $post_id = filter_input(INPUT_GET, 'post_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 if (!$post_id) {
     throw new RuntimeException('missing or invalid post_id parameter');
@@ -27,16 +32,19 @@ $section_id = intval($fetch_content['section_id']);
 // fetch settings
 $query_content = $database->query("SELECT * FROM `".TABLE_PREFIX."mod_news_img_settings` WHERE `section_id` = '$section_id'");
 $fetch_content = $query_content->fetchRow();
+if (!$fetch_content) {
+    throw new RuntimeException('section settings not found');
+}
 
 $fetch_content['imgmaxsize'] = intval($fetch_content['imgmaxsize']);
 $iniset = ini_get('upload_max_filesize');
 $iniset = mod_nwi_return_bytes($iniset);
 
 $previewwidth = $previewheight = $thumbwidth = $thumbheight = '';
-if(substr_count($fetch_content['resize_preview'],'x')>0) {
+if(substr_count((string)($fetch_content['resize_preview'] ?? ''),'x')>0) {
     list($previewwidth,$previewheight) = explode('x',$fetch_content['resize_preview'],2);
 }
-if(substr_count($fetch_content['imgthumbsize'],'x')>0) {
+if(substr_count((string)($fetch_content['imgthumbsize'] ?? ''),'x')>0) {
     list($thumbwidth,$thumbheight) = explode('x',$fetch_content['imgthumbsize'],2);
 }
 
@@ -45,9 +53,13 @@ $imagemaxsize  = ($fetch_content['imgmaxsize']>0 && $fetch_content['imgmaxsize']
     ? $fetch_content['imgmaxsize']
     : $iniset;
 
-$imagemaxwidth  = $fetch_content['imgmaxwidth'];
-$imagemaxheight = $fetch_content['imgmaxheight'];
-$crop           = ($fetch_content['crop_preview'] == 'Y') ? 1 : 0;
+// Dimensionen als positive Ints; 0/leer -> großzügiger Fallback. mod_nwi_image_resize
+// skaliert kleinere Bilder nicht hoch, kodiert sie aber (mit force) neu.
+$imagemaxwidth  = (int)$fetch_content['imgmaxwidth']  ?: 99999;
+$imagemaxheight = (int)$fetch_content['imgmaxheight'] ?: 99999;
+$thumbwidth     = (int)$thumbwidth  ?: 100;
+$thumbheight    = (int)$thumbheight ?: 100;
+$crop           = (($fetch_content['crop_preview'] ?? '') == 'Y') ? 1 : 0;
 
 try {
     if (
@@ -95,6 +107,13 @@ try {
             //small characters
             $imagename = strtolower($imagename) ;
 
+            // Nur erlaubte Bild-Endungen zulassen (Whitelist). media_filename
+            // behält die Endung, daher hier gegen $allowed_suffixes prüfen.
+            $ext = strtolower(pathinfo($imagename, PATHINFO_EXTENSION));
+            if (!in_array($ext, $allowed_suffixes, true)) {
+                throw new RuntimeException(($MOD_NEWS_IMG['GENERIC_FILE_TYPE'] ?? 'Invalid file type').' JPG, JPEG, PNG, GIF, WEBP');
+            }
+
             //            if file exists, find new name by adding a number
             if (file_exists($mod_nwi_file_dir.$imagename)) {
                 $num = 1;
@@ -105,33 +124,44 @@ try {
                 }
                 $imagename = $f_name.'_'.$num.'.'.$suffix;
             }
-	    $filepath=$mod_nwi_file_dir.$imagename;
+            $filepath=$mod_nwi_file_dir.$imagename;
             // check
             if (empty($picture['size']) || $picture['size'] > $imagemaxsize) {
                 $imageErrorMessage .= $MOD_NEWS_IMG['IMAGE_LARGER_THAN'].mod_nwi_byte_convert($imagemaxsize).'<br />';
-            } elseif (strlen($imagename) > '256') {
+            } elseif (strlen($imagename) > 256) {
                 $imageErrorMessage .= $MOD_NEWS_IMG['IMAGE_FILENAME_ERROR'].'1<br />';
             } else {
                 // move to media folder
                 if(true===move_uploaded_file($picture['tmp_name'], $filepath)) {
-                    // resize image (if larger than max width and height)
-                    if (list($w, $h) = getimagesize($mod_nwi_file_dir.$imagename)) {
-                        if ($w>$imagemaxwidth || $h>$imagemaxheight) {
-                            if (true !== ($pic_error = @mod_nwi_image_resize($mod_nwi_file_dir.$imagename, $mod_nwi_file_dir.$imagename, $imagemaxwidth, $imagemaxheight, $crop))) {
-                                $imageErrorMessage .= $pic_error.'<br />';
-                                @unlink($mod_nwi_file_dir.$imagename); // delete image (cleanup)
-                            }
-                        }
+                    // Gate: muss ein echtes Bild sein UND der erkannte Bildtyp muss
+                    // zur Endung passen (verhindert getarnte Nicht-Bilder/Polyglots).
+                    $info = @getimagesize($filepath);
+                    $type_ext = [
+                        IMAGETYPE_JPEG => ['jpg', 'jpeg'],
+                        IMAGETYPE_PNG  => ['png'],
+                        IMAGETYPE_GIF  => ['gif'],
+                        IMAGETYPE_WEBP => ['webp'],
+                    ];
+                    $img_type = ($info !== false) ? (int)$info[2] : 0;
+                    if ($info === false || !isset($type_ext[$img_type]) || !in_array($ext, $type_ext[$img_type], true)) {
+                        @unlink($filepath);
+                        throw new RuntimeException(($MOD_NEWS_IMG['GENERIC_FILE_TYPE'] ?? 'Invalid image file').' JPG, JPEG, PNG, GIF, WEBP');
                     }
-                    // create thumb
-                    if (true !== ($pic_error = @mod_nwi_image_resize($mod_nwi_file_dir.$imagename, $mod_nwi_thumb_dir.$imagename, $thumbwidth, $thumbheight, $crop))) {
+
+                    // Immer neu kodieren (strippt eingebettete Payloads/EXIF) und
+                    // auf die Maximalmaße begrenzen.
+                    if (true !== ($pic_error = @mod_nwi_image_resize($filepath, $filepath, $imagemaxwidth, $imagemaxheight, $crop, true))) {
+                        $imageErrorMessage .= $pic_error.'<br />';
+                        @unlink($filepath); // delete image (cleanup)
+                    } elseif (true !== ($pic_error = @mod_nwi_image_resize($filepath, $mod_nwi_thumb_dir.$imagename, $thumbwidth, $thumbheight, $crop, true))) {
+                        // create thumb
                         $imageErrorMessage.=$pic_error.'<br />';
-                        @unlink($mod_nwi_file_dir.$imagename); // delete image (cleanup)
+                        @unlink($filepath); // delete image (cleanup)
                     } else {
                         //            image position
                         $order = new order(TABLE_PREFIX.'mod_news_img_img', 'position', 'id', 'post_id');
                         $position = $order->get_new($post_id);
-                        $database->query("INSERT INTO ".TABLE_PREFIX."mod_news_img_img (picname, post_id, position) VALUES ('".$imagename."', ".$post_id.", ".$position.')');
+                        $database->query("INSERT INTO ".TABLE_PREFIX."mod_news_img_img (picname, post_id, position) VALUES ('".mod_nwi_escapeString($imagename)."', ".(int)$post_id.", ".(int)$position.')');
                     }
                 } else {
                     $imageErrorMessage .= "Unable to move uploaded image ".$picture['tmp_name']." to ".$mod_nwi_file_dir.$imagename."<br />";
