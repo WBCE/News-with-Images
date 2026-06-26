@@ -21,11 +21,12 @@ require WB_PATH.'/modules/admin.php';
 $post_id = filter_input(INPUT_GET, 'post_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 if (!$post_id) {
     $admin->print_error($MESSAGE['GENERIC_SECURITY_ACCESS'], ADMIN_URL.'/pages/index.php');
-    $admin->print_footer();
-    exit();
 }
 
 $FTAN = $admin->getFTAN();
+// FTAN als Query-String-Fragment (formtoken=...) für die GET-Aktionen dieser
+// Seite (Vorschaubild löschen, Galeriebild löschen, Umsortieren).
+$FTAN_GET = $admin->getFTAN(false);
 $post_id_key = $post_id;
 
 // get post
@@ -40,6 +41,11 @@ if(method_exists($admin, 'setViewUrl')) {
 
 // ----- delete previewimage ---------------------------------------------------
 if (isset($_GET['post_img'])) {
+    // CSRF: Löschung erfolgt per GET -> FTAN-Token prüfen.
+    if (!$admin->checkFTAN('GET')) {
+        $admin->print_error($MESSAGE['GENERIC_SECURITY_ACCESS']
+             .' (FTAN) '.__FILE__.':'.__LINE__, ADMIN_URL.'/pages/index.php');
+    }
     $post_img = basename($post_data['image']);
     $database->query(sprintf(
         "UPDATE `%smod_news_img_posts` SET `image`='' WHERE `post_id`=%d",
@@ -56,15 +62,13 @@ $mod_nwi_thumb_dir = $mod_nwi_file_dir . "thumb/";
 
 // ----- delete gallery image --------------------------------------------------
 if (isset($_GET['img_id'])) {
-    $img_id = $admin->checkIDKEY('img_id', 0, 'GET');
-    if (!$img_id) {
+    // CSRF: Löschung erfolgt per GET -> FTAN-Token prüfen.
+    if (!$admin->checkFTAN('GET')) {
         $admin->print_error($MESSAGE['GENERIC_SECURITY_ACCESS']
-             .' (IDKEY) '.__FILE__.':'.__LINE__, ADMIN_URL.'/pages/index.php');
-        $admin->print_footer();
-        exit();
+             .' (FTAN) '.__FILE__.':'.__LINE__, ADMIN_URL.'/pages/index.php');
     }
-    
-    $img_id = intval($img_id);
+
+    $img_id = (int) filter_input(INPUT_GET, 'img_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     $row = mod_nwi_img_get($img_id);
  
     if (!$row) {
@@ -81,28 +85,27 @@ if (isset($_GET['img_id'])) {
         }
     }
     $database->query(sprintf(
-        "DELETE FROM `%smod_news_img_img` WHERE `id` = '%d'",
-        TABLE_PREFIX, $img_id
+        "DELETE FROM `%smod_news_img_img` WHERE `id` = %d AND `post_id` = %d",
+        TABLE_PREFIX, $img_id, $post_id
     ));
 }   //end delete gallery image
 
 // re-order images
 if (isset($_GET['id']) && (isset($_GET['up']) || isset($_GET['down']))) {
-    $order = new order(TABLE_PREFIX.'mod_news_img_img', 'position', 'id', 'post_id');
-    $id = $admin->checkIDKEY('id', 0, 'GET');
-    if (!$id) {
+    // CSRF: Umsortieren erfolgt per GET -> FTAN-Token prüfen.
+    if (!$admin->checkFTAN('GET')) {
         $admin->print_error(
             $MESSAGE['GENERIC_SECURITY_ACCESS']
-         .' (IDKEY) '.__FILE__.':'.__LINE__,
+         .' (FTAN) '.__FILE__.':'.__LINE__,
                  ADMIN_URL.'/pages/index.php'
         );
-        $admin->print_footer();
-        exit();
     }
+    $order = new order(TABLE_PREFIX.'mod_news_img_img', 'position', 'id', 'post_id');
+    $id = (int) filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     if (isset($_GET['up'])) {
-        $order->move_up(intval($id));
+        $order->move_up($id);
     } else {
-        $order->move_down(intval($id));
+        $order->move_down($id);
     }
 }
 
@@ -115,7 +118,7 @@ if (!defined('WYSIWYG_EDITOR') or WYSIWYG_EDITOR=="none" or !file_exists(WB_PATH
         echo '<textarea name="'.$name.'" id="'.$id.'" rows="10" cols="1" style="width: '.$width.'; height: '.$height.';">'.$content.'</textarea>';
     }
 } else {
-    $id_list=array("short","long");
+    $id_list=["short","long"];
     if ($settings['use_second_block']=='Y') {
         $id_list[]="block2";
     }
@@ -132,7 +135,7 @@ if(strlen(PAGE_SPACER)) {
     array_pop($parts);
     $link = implode(PAGE_SPACER, $parts);
 }
-$assigned = array();
+$assigned = [];
 $tags = mod_nwi_get_tags($section_id);
 $tags = mod_nwi_tag_sort($tags, 'tag', 'asc', true);
 
@@ -151,8 +154,8 @@ $order->clean($post_id);
 
 // get images
 $postimg = mod_nwi_img_get_by_post($post_id,false);
-$images = array();
-$seenimg = array();
+$images = [];
+$seenimg = [];
 
 if (count($postimg)>0) {
     $i=1;
@@ -161,11 +164,11 @@ if (count($postimg)>0) {
         $row['up'] = '<span style="display:inline-block;width:20px;"></span>';
         $row['down'] = $row['up'];
         if ($i>1) { // not first
-            $row['up'] = '<a href="'.WB_URL.'/modules/news_img/modify_post.php?page_id='.$page_id.'&section_id='.$section_id.'&post_id='. $post_id_key.'&id='.$row['id_key'] .'&up=1">'
+            $row['up'] = '<a href="'.WB_URL.'/modules/news_img/modify_post.php?page_id='.$page_id.'&section_id='.$section_id.'&post_id='. $post_id_key.'&id='.$row['id_key'] .'&up=1&'.$FTAN_GET.'">'
                 . '<img src="'.THEME_URL.'/images/up_16.png"  class="mod_news_img_arrow" /></a>';
         }
         if ($i != (count($postimg)-1)) { // not last
-            $row['down'] = '<a href="'.WB_URL.'/modules/news_img/modify_post.php?page_id='.$page_id.'&section_id='.$section_id.'&post_id='. $post_id_key.'&id='.$row['id_key'] .'&down=1">'
+            $row['down'] = '<a href="'.WB_URL.'/modules/news_img/modify_post.php?page_id='.$page_id.'&section_id='.$section_id.'&post_id='. $post_id_key.'&id='.$row['id_key'] .'&down=1&'.$FTAN_GET.'">'
                   . '<img src="'.THEME_URL.'/images/down_16.png"  class="mod_news_img_arrow" /></a>';
         }
         $i++;
@@ -174,7 +177,7 @@ if (count($postimg)>0) {
     }
 }
 
-$settings = mod_nwi_settings_get($section_id);
+// $settings ist oben bereits geladen.
 $imgmaxsize = $settings['imgmaxsize'];
 
 list($groups,$pages) = mod_nwi_get_all_groups($section_id, $page_id);
