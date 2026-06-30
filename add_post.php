@@ -24,8 +24,6 @@ if (!$section_key || $section_key != $section_id) {
 	 .' (IDKEY) '.__FILE__.':'.__LINE__,
          ADMIN_URL.'/pages/index.php'
     );
-    $admin->print_footer();
-    exit();
 }
 
 // Get new order

@@ -39,8 +39,6 @@ if(!defined('CAT_PATH')) {
     	 .' (FTAN) '.__FILE__.':'.__LINE__,
              ADMIN_URL.'/pages/index.php'
         );
-        $admin->print_footer();
-        exit();
     } else {
         $admin->print_header();
     }
@@ -196,10 +194,11 @@ if (!($database->is_error())) {
 }
 
 
-$pageQuery = "SELECT * from `".TABLE_PREFIX."sections` WHERE `section_id`=".$section_id;	
+$pageQuery = "SELECT * from `".TABLE_PREFIX."sections` WHERE `section_id`=".(int)$section_id;
 $query_page = $database->query($pageQuery);
+$page = [];
 if ($query_page->numRows() > 0) {
-$page      = $query_page->fetchRow();
+    $page = $query_page->fetchRow();
 }
 if (!isset($active) || $active != 1) { $active=0; }
 
@@ -217,7 +216,7 @@ if ($active != 1 ) {
 	mod_nwi_post_refresh_access_file(
 		['post_id' => $post_id, 'link' => $post_link],
 		(int)$section_id,
-		(int)$page['page_id']
+		(int)($page['page_id'] ?? $page_id)
 	);
 }
 
