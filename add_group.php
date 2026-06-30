@@ -30,18 +30,16 @@ if (!$section_key || $section_key != $section_id){
 // Get new order
 $order = new order(TABLE_PREFIX.'mod_news_img_groups', 'position', 'group_id', 'section_id');
 $position = $order->get_new($section_id);
-$active = 1;
+// Checkbox "active" (value=1) wird nur bei Anwahl gesendet -> sonst 0.
+$active = ($admin->get_post('active') == 1) ? 1 : 0;
 
 if($admin->get_post('title') == '')
 {
 	$admin->print_error($MESSAGE['GENERIC_FILL_IN_ALL'], ADMIN_URL.'/pages/modify.php?page_id='.$page_id.'&tab=g');
-    $admin->print_footer();
-    exit();
 }
 else
 {
 	$title = mod_nwi_escapeString($admin->get_post('title'));
-	//$active = mod_nwi_escapeString($admin->get_post('active'));
 	$title = strip_tags($title);
 }
 
