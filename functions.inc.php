@@ -1385,6 +1385,11 @@ function mod_nwi_post_show(int $post_id)
     if ($gid != 0) {
         $group = mod_nwi_get_group($gid);
         if (empty($group) || $group['active'] != 1) {
+            // Gruppe inaktiv -> Beitrag verstecken und Access-Datei entfernen,
+            // damit der Direktaufruf 404 liefert (analog zum inaktiven Beitrag).
+            if (is_writable(WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION)) {
+                unlink(WB_PATH.PAGES_DIRECTORY.$post['link'].PAGE_EXTENSION);
+            }
             return false;
         }
     }
@@ -1496,10 +1501,12 @@ function mod_nwi_posts_getall(int $section_id, bool $is_backend, string $query_e
     $query_posts = $database->query($sql);
 
     if (!empty($query_posts) && $query_posts->numRows() > 0) {
-        // map group index to title
+        // map group index to title + active-Status (für die Access-Datei-Logik)
         $group_map = [];
+        $group_active = [];
         foreach ($groups as $i => $g) {
             $group_map[$g['group_id']] = (empty($g['title']) ? $TEXT['NONE'] : $g['title']);
+            $group_active[$g['group_id']] = ($g['active'] == 1);
         }
         // get users
         $users = mod_nwi_users_get();
@@ -1529,6 +1536,9 @@ function mod_nwi_posts_getall(int $section_id, bool $is_backend, string $query_e
             if ($post['active'] != 1) {
                 $createFile = false;
             }												// no, the post is created inactive.
+            if ($post['group_id'] != 0 && empty($group_active[$post['group_id']])) {
+                $createFile = false;
+            }   // no, the post's group is inactive (or gone).
             if (!file_exists($filename) && $createFile == true) {
                 mod_nwi_create_file($filename, '', $post['post_id'], $post['section_id'], $sectionArray['page_id']);
             }

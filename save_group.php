@@ -52,9 +52,8 @@ if ($admin->get_post('title') == '') {
     exit();
 } else {
     $title = mod_nwi_escapeString($admin->get_post('title'));
-    // Das Aktiv-Feld ist im Bearbeiten-Formular derzeit auskommentiert und wird
-    // daher nicht mitgeschickt. In diesem Fall den bestehenden Status beibehalten
-    // (Default 1 = aktiv, analog zu add_group.php), statt ihn auf 0 zu setzen.
+    // Aktiv-Wert aus dem Radio übernehmen; fehlt das Feld (z. B. abweichende
+    // Templates), den Status aktiv lassen (Default 1, analog add_group.php).
     $active = ($admin->get_post('active') === null) ? 1 : (int) $admin->get_post('active');
     $title = strip_tags($title);
 }
@@ -64,6 +63,24 @@ $database->query(sprintf(
     "UPDATE `%smod_news_img_groups` SET `title`='%s', `active`='%d' WHERE `group_id`=%d",
     TABLE_PREFIX, $title, $active, $group_id
 ));
+
+// Bei Deaktivierung die Access-Dateien der Beiträge dieser Gruppe entfernen,
+// damit Direktaufrufe sofort 404 liefern. Reaktivierte Gruppen bekommen die
+// Dateien beim nächsten Listen-Aufruf automatisch wieder (mod_nwi_posts_getall).
+if ($active === 0) {
+    $posts = $database->query(sprintf(
+        "SELECT `link` FROM `%smod_news_img_posts` WHERE `group_id`=%d",
+        TABLE_PREFIX, $group_id
+    ));
+    if ($posts) {
+        while ($p = $posts->fetchRow()) {
+            $access = WB_PATH.PAGES_DIRECTORY.$p['link'].PAGE_EXTENSION;
+            if (is_writable($access)) {
+                unlink($access);
+            }
+        }
+    }
+}
 
 // Check if the user uploaded an image or wants to delete one
 if (isset($_FILES['image']['tmp_name']) && $_FILES['image']['tmp_name'] != '') {
