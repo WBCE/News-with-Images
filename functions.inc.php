@@ -122,6 +122,23 @@ function mod_nwi_tag_sort($array, $index, $order = 'asc', $natsort = false, $cas
 // ========== Groups ===========================================================
 
 /**
+ * SQL-Bedingung für die konsistente Durchsetzung des Gruppen-`active`-Flags
+ * (Variante A): Ein Beitrag ist sichtbar, wenn er keiner Gruppe angehört
+ * (group_id=0) ODER seine Gruppe aktiv ist. In allen Frontend-Abfragen
+ * (Liste, Detail-Prev/Next, Droplet) verwenden, damit deaktivierte Gruppen
+ * ihre Beiträge überall ausblenden.
+ *
+ * @param  string $alias  Tabellen-Alias der posts-Tabelle in der Query
+ * @return string         führende " AND (...) "-Bedingung
+ */
+function mod_nwi_sql_group_active(string $alias = 't1'): string
+{
+    return " AND (`$alias`.`group_id` = 0 OR EXISTS ("
+         . "SELECT 1 FROM `".TABLE_PREFIX."mod_news_img_groups` AS `gx` "
+         . "WHERE `gx`.`group_id` = `$alias`.`group_id` AND `gx`.`active` = '1')) ";
+}
+
+/**
  * get groups for section with ID $section_id
  *
  * @param   int   $section_id
@@ -1181,10 +1198,10 @@ function mod_nwi_post_get($post_id)
     $prev_dir = ($direction == 'DESC' ? 'ASC' : 'DESC');
     $sql = sprintf(
         "SELECT `t1`.*, " .
-        "  (SELECT `link` FROM `%smod_news_img_posts` AS `t2` WHERE `t2`.`$order_by` > `t1`.`$order_by` AND `section_id`=$section_id AND (`published_when` = '0' OR `published_when` <= $t) AND (`published_until` = '0' OR `published_until` >= $t) AND `active`=1 $query_group ORDER BY `$order_by` $prev_dir LIMIT 1 ) as `prev_link`, ".
-        "  (SELECT `post_id` FROM `%smod_news_img_posts` AS `t2b` WHERE `t2b`.`$order_by` > `t1`.`$order_by` AND `section_id`=$section_id AND (`published_when` = '0' OR `published_when` <= $t) AND (`published_until` = '0' OR `published_until` >= $t) AND `active`=1 $query_group ORDER BY `$order_by` $prev_dir LIMIT 1 ) as `prev_id`, ".
-        "  (SELECT `link` FROM `%smod_news_img_posts` AS `t3` WHERE `t3`.`$order_by` < `t1`.`$order_by` AND `section_id`=$section_id AND (`published_when` = '0' OR `published_when` <= $t) AND (`published_until` = '0' OR `published_until` >= $t) AND `active`=1 $query_group ORDER BY `$order_by` $direction LIMIT 1 ) as `next_link`, " .
-        "  (SELECT `post_id` FROM `%smod_news_img_posts` AS `t3b` WHERE `t3b`.`$order_by` < `t1`.`$order_by` AND `section_id`=$section_id AND (`published_when` = '0' OR `published_when` <= $t) AND (`published_until` = '0' OR `published_until` >= $t) AND `active`=1 $query_group ORDER BY `$order_by` $direction LIMIT 1 ) as `next_id` " .
+        "  (SELECT `link` FROM `%smod_news_img_posts` AS `t2` WHERE `t2`.`$order_by` > `t1`.`$order_by` AND `section_id`=$section_id AND (`published_when` = '0' OR `published_when` <= $t) AND (`published_until` = '0' OR `published_until` >= $t) AND `active`=1 $query_group ".mod_nwi_sql_group_active('t2')." ORDER BY `$order_by` $prev_dir LIMIT 1 ) as `prev_link`, ".
+        "  (SELECT `post_id` FROM `%smod_news_img_posts` AS `t2b` WHERE `t2b`.`$order_by` > `t1`.`$order_by` AND `section_id`=$section_id AND (`published_when` = '0' OR `published_when` <= $t) AND (`published_until` = '0' OR `published_until` >= $t) AND `active`=1 $query_group ".mod_nwi_sql_group_active('t2b')." ORDER BY `$order_by` $prev_dir LIMIT 1 ) as `prev_id`, ".
+        "  (SELECT `link` FROM `%smod_news_img_posts` AS `t3` WHERE `t3`.`$order_by` < `t1`.`$order_by` AND `section_id`=$section_id AND (`published_when` = '0' OR `published_when` <= $t) AND (`published_until` = '0' OR `published_until` >= $t) AND `active`=1 $query_group ".mod_nwi_sql_group_active('t3')." ORDER BY `$order_by` $direction LIMIT 1 ) as `next_link`, " .
+        "  (SELECT `post_id` FROM `%smod_news_img_posts` AS `t3b` WHERE `t3b`.`$order_by` < `t1`.`$order_by` AND `section_id`=$section_id AND (`published_when` = '0' OR `published_when` <= $t) AND (`published_until` = '0' OR `published_until` >= $t) AND `active`=1 $query_group ".mod_nwi_sql_group_active('t3b')." ORDER BY `$order_by` $direction LIMIT 1 ) as `next_id` " .
         "FROM `%smod_news_img_posts` AS `t1` " .
         "WHERE `post_id`=%d",
         TABLE_PREFIX,
@@ -1432,8 +1449,10 @@ function mod_nwi_posts_getall(int $section_id, bool $is_backend, string $query_e
     if (!$is_backend) {
         $query_extra .= " AND `active` = '1' AND `title` != '' "
                      .  "AND (`published_when`  = '0' OR `published_when`  <= $t) "
-                     .  "AND (`published_until` = '0' OR `published_until` >= $t) ";
-        $active       = 'AND `active`=1';
+                     .  "AND (`published_until` = '0' OR `published_until` >= $t) "
+                     .  mod_nwi_sql_group_active('t1');
+        // gilt auch für die Prev/Next-Subqueries (Alias t3)
+        $active       = 'AND `active`=1'.mod_nwi_sql_group_active('t3');
     }
 
     if (isset($_GET['tags']) && strlen($_GET['tags'])) {
@@ -2945,6 +2964,7 @@ function mod_nwi_get_news_items($options = array())
     $sql_order_by = $order_by_options[$sort_by - 1];
     $sql_sort_order = ($sort_order == 1) ? 'DESC' : 'ASC';
 
+    $sql_group_active = mod_nwi_sql_group_active('t1');
     $sql = "SELECT t1.*
 		FROM `%smod_news_img_posts` as t1
 		WHERE t1.`active`='1'
@@ -2953,6 +2973,7 @@ function mod_nwi_get_news_items($options = array())
 		AND (t1.`published_when` = '0' or t1.`published_when` <= '$server_time')
 		AND (t1.`published_until` = '0' OR t1.`published_until` >= '$server_time')
 		AND $sql_not_older_than
+		$sql_group_active
         $sql_filter_posts
 		GROUP BY t1.`post_id`
 		ORDER BY $sql_order_by $sql_sort_order

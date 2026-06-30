@@ -69,10 +69,12 @@ echo '<?xml version="1.0" encoding="'.$charset.'"?>';
 <?php
 $time_check_str = "(`published_when` = '0' OR `published_when` <= ".$t.") AND (`published_until` = 0 OR `published_until` >= ".$t.")";
 //Query
+// Gruppen-active durchsetzen (Variante A): Beiträge ohne Gruppe (group_id=0)
+// oder mit aktiver Gruppe.
 if(isset($group_id)) {
-	$query = "SELECT * FROM `".TABLE_PREFIX."mod_news_img_posts` WHERE `group_id`=".$group_id." AND `section_id`=".$section_id." AND `active`=1 AND ".$time_check_str." ORDER BY `posted_when` DESC";
+	$query = "SELECT * FROM `".TABLE_PREFIX."mod_news_img_posts` AS `t1` WHERE `t1`.`group_id`=".$group_id." AND `t1`.`section_id`=".$section_id." AND `t1`.`active`=1 AND ".$time_check_str." AND (`t1`.`group_id`=0 OR EXISTS(SELECT 1 FROM `".TABLE_PREFIX."mod_news_img_groups` AS `gx` WHERE `gx`.`group_id`=`t1`.`group_id` AND `gx`.`active`='1')) ORDER BY `t1`.`posted_when` DESC";
 } else {
-	$query = "SELECT * FROM `".TABLE_PREFIX."mod_news_img_posts` WHERE `section_id`=".$section_id." AND `active`=1 AND ".$time_check_str." ORDER BY `posted_when` DESC";
+	$query = "SELECT * FROM `".TABLE_PREFIX."mod_news_img_posts` AS `t1` WHERE `t1`.`section_id`=".$section_id." AND `t1`.`active`=1 AND ".$time_check_str." AND (`t1`.`group_id`=0 OR EXISTS(SELECT 1 FROM `".TABLE_PREFIX."mod_news_img_groups` AS `gx` WHERE `gx`.`group_id`=`t1`.`group_id` AND `gx`.`active`='1')) ORDER BY `t1`.`posted_when` DESC";
 }
 
 $result = $database->query($query);
