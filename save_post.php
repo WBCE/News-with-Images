@@ -206,12 +206,19 @@ if (!isset($active) || $active != 1) { $active=0; }
 if ($publishedwhen != 0 && $publishedwhen > time()) {$active = 0;}
 if ($publisheduntil != 0 && $publisheduntil < time()) {$active = 0;}
 
+// Sichtbarkeit (Variante A): aktiv UND (keine Gruppe ODER Gruppe aktiv).
+// Ein aktiver Beitrag in einer inaktiven Gruppe bekommt keine Access-Datei.
+$post_visible = ($active == 1);
+if ($post_visible && $group_id != 0) {
+	$g = mod_nwi_get_group((int)$group_id);
+	$post_visible = (!empty($g) && $g['active'] == 1);
+}
 
-if ($active != 1 ) {		
+if (!$post_visible) {
 	if(is_writable(WB_PATH.PAGES_DIRECTORY.$post_link.PAGE_EXTENSION)) {
 			unlink(WB_PATH.PAGES_DIRECTORY.$post_link.PAGE_EXTENSION);
 	}
-	
+
 } else{
 	mod_nwi_post_refresh_access_file(
 		['post_id' => $post_id, 'link' => $post_link],
