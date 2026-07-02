@@ -8,6 +8,12 @@ Ein Beitrag gehört immer zu **genau einer Gruppe** (oder zu keiner Gruppe).
 
 ---
 
+### Historie
+
+Anfangs waren Gruppen der einzige Weg, einem Beitrag in der Listen- oder Beitragsansicht ein Bild zuzuordnen. Auch heute gilt noch: Solange einem Beitrag kein eigenes Beitragsbild zugewiesen ist, wird automatisch das Bild der zugehörigen Gruppe verwendet. Auf diese Weise lassen sich Beiträge allein durch die Gruppenzuordnung visuell als zusammengehörig kennzeichnen – ohne dass jeder Beitrag ein eigenes Bild benötigt.
+
+Beispiel: Ein Sportverein pflegt Neuigkeiten zu seinen Abteilungen. Für jede Abteilung – Fußball, Schwimmen, Tennis – wird eine Gruppe mit passendem Abteilungsbild angelegt. Alle Beiträge der Fußballabteilung erhalten dasselbe Gruppenbild (z. B. ein Foto des Vereinsplatzes), ohne dass der/die Redakteur:in für jeden einzelnen Spielbericht ein Bild hochladen muss. In der Übersichtsliste sind die Beiträge so auf einen Blick ihrer Abteilung zuzuordnen.
+
 ### Gruppen anlegen und bearbeiten
 
 Im Backend der Seite findest du im Modul news_img den Bereich **Gruppen**. Dort kannst du:
