@@ -1,20 +1,24 @@
 ## Tags (Stichworte) in news_img
 
-### Was sind Tags?
+### Was sind Tags aka Stichworte?
 
 Tags (Stichworte) sind freie Beschriftungen, die du einem Beitrag zuordnen kannst, um ihn thematisch einzuordnen. Im Gegensatz zu Gruppen – bei denen ein Beitrag genau einer Gruppe angehört – kann ein Beitrag **beliebig viele Tags** erhalten. Tags eignen sich daher für quer liegende Themen, die sich nicht sauber in eine einzige Kategorie pressen lassen.
 
-Im Frontend werden Tags in der Regel als klickbare Badges am Beitrag angezeigt.
+Im Frontend werden Tags in der Regel als klickbare Badges am Beitrag angezeigt. Ob Tags im Frontend überhaupt angezeigt werden und wie sie aussehen, hängt vom entsprechenden Markup ab, welches in den **Einstellungen** bearbeitet werden kann.
 
 ---
 
 ### Tags anlegen und bearbeiten
 
-Im Backend der Seite findest du im Modul news_img den Bereich **Tags**. Dort kannst du:
+Wechsle im Backend in der Sektion "news_img" auf den Reiter **Stichworte**.
 
-- **Neuen Tag anlegen** – gib ein Stichwort ein und lege optional Farben fest.
-- **Tag bearbeiten** – Bezeichnung und Farben nachträglich ändern.
-- **Tag löschen** – entfernt den Tag aus allen Beiträgen, denen er zugeordnet war.
+**Wichtig:** Den Reiter **Stichworte** siehst du nur, wenn du unter **Einstellungen** den **Expertenmodus** aktiviert hast!
+
+Dort kannst du:
+
+- **Stichwort hinzufügen** – gib ein Stichwort ein und lege optional Farben fest.
+- **Stichwort bearbeiten** – Bezeichnung und Farben nachträglich ändern.
+- **Stichwort löschen** – entfernt das Stichwort aus allen Beiträgen, denen er zugeordnet war.
 
 Jeder Tag hat:
 
