@@ -195,6 +195,9 @@ if(isset($settings['mode']) && $settings['mode']=='advanced') {
     $block2 = str_replace($friendly, $raw, $_POST['block2']);
     $thumbwidth = $_POST['thumb_width'];
     $thumbheight = $_POST['thumb_height'];
+    // Zielverzeichnis der Access-Dateien: leer = automatisch aus Elternseite.
+    // Wie bei view/gallery auf ein einzelnes Pfadsegment reduzieren (kein Traversal).
+    $posts_dir = preg_replace('/[^a-zA-Z0-9_-]/', '', (string)($_POST['posts_dir'] ?? ''));
 } else {
     $image_loop = $settings['image_loop'];
     $gal_img_resize_width = $settings['imgmaxwidth'];
@@ -202,6 +205,7 @@ if(isset($settings['mode']) && $settings['mode']=='advanced') {
     $gal_img_max_size = $settings['imgmaxsize'];
     $view = $settings['view'];
     $block2 = $settings['block2'];
+    $posts_dir = $settings['posts_dir'] ?? '';
     list($previewwidth,
         $previewheight,
         $thumbwidth,
@@ -302,6 +306,8 @@ $database->query(
     // $default_preview_image ist serverkontrolliert ('' oder
     // default_<int>.<whitelist-ext>), nie roher User-Input -> SQL-safe.
     . " `default_preview_image`='$default_preview_image',"
+    // $posts_dir ist serverseitig auf [a-zA-Z0-9_-] reduziert -> SQL-safe.
+    . " `posts_dir`='$posts_dir',"
     . " `view`='$view'"
     . " WHERE `section_id` = '$section_id'"
 );

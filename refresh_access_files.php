@@ -39,8 +39,11 @@ if (empty($section_id) || empty($page_id)) {
     exit();
 }
 
-// /posts/-Subdir vorsorglich sicherstellen — viele Bestands-Links liegen dort
-make_dir(WB_PATH.PAGES_DIRECTORY.'/posts/');
+// Zielverzeichnis der Section (Elternseite oder Override) vorsorglich
+// sicherstellen. Der eigentliche Refresh schreibt jede Datei am jeweils in der
+// DB gespeicherten Link und legt fehlende Parent-Verzeichnisse ohnehin selbst
+// an (s. mod_nwi_post_refresh_access_file()).
+make_dir(WB_PATH.PAGES_DIRECTORY.'/'.mod_nwi_posts_dir((int)$section_id, (int)$page_id).'/');
 
 $q = $database->query(sprintf(
     "SELECT `post_id`, `link` FROM `%smod_news_img_posts` WHERE `section_id`=%d",

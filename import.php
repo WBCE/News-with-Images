@@ -283,7 +283,8 @@ if ($module_type == "news_img") {
             $old_link = $link;
 
             // new link
-            $post_link = '/posts/'.page_filename(preg_replace('/^\/?posts\/?/s', '', preg_replace('/-[0-9]*$/s', '', $link, 1)));
+            $posts_dir = mod_nwi_posts_dir((int)$section_id, (int)$page_id);
+            $post_link = '/'.$posts_dir.'/'.page_filename(basename(preg_replace('/-[0-9]*$/s', '', $link, 1)));
             // make sure to have the post_id as suffix; this will make the link unique (hopefully...)
             if (substr_compare($post_link, $post_id, -(strlen($post_id)), strlen($post_id))!=0) {
                 $post_link .= PAGE_SPACER.$post_id;
@@ -487,7 +488,8 @@ if ($module_type == "news_img") {
                     $old_link = $link;
 
                     // new link
-                    $post_link = '/posts/'.page_filename(preg_replace('/^\/?posts\/?/s', '', preg_replace('/-[0-9]*$/s', '', $link, 1)));
+                    $posts_dir = mod_nwi_posts_dir((int)$section_id, (int)$page_id);
+                    $post_link = '/'.$posts_dir.'/'.page_filename(basename(preg_replace('/-[0-9]*$/s', '', $link, 1)));
                     // make sure to have the post_id as suffix; this will make the link unique (hopefully...)
                     if (substr_compare($post_link, $post_id, -(strlen($post_id)), strlen($post_id))!=0) {
                         $post_link .= PAGE_SPACER.$post_id;
@@ -727,7 +729,8 @@ if ($module_type == "news_img") {
             $old_link = $link;
 
             // new link
-            $post_link = '/posts/'.page_filename(preg_replace('/^\/?posts\/?/s', '', preg_replace('/-[0-9]*$/s', '', $link, 1)));
+            $posts_dir = mod_nwi_posts_dir((int)$section_id, (int)$page_id);
+            $post_link = '/'.$posts_dir.'/'.page_filename(basename(preg_replace('/-[0-9]*$/s', '', $link, 1)));
             // make sure to have the post_id as suffix; this will make the link unique (hopefully...)
             if (substr_compare($post_link, $post_id, -(strlen($post_id)), strlen($post_id))!=0) {
                 $post_link .= PAGE_SPACER.$post_id;

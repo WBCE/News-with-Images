@@ -69,6 +69,7 @@ if(defined('WB_URL'))
 	                 . '`mode` VARCHAR(50) NULL DEFAULT \'default\', '
 					 . '`show_settings_only_admins` CHAR(1) NOT NULL DEFAULT \'N\', '
                      . '`default_preview_image` VARCHAR(255) NOT NULL DEFAULT \'\', '
+                     . '`posts_dir` VARCHAR(64) NOT NULL DEFAULT \'\', '
                      . 'PRIMARY KEY (section_id)'
                 . ' )  ENGINE=InnoDB;';
     $database->query(sprintf($mod_news,TABLE_PREFIX));

@@ -106,7 +106,13 @@ $post = $query_post->fetchRow();
 $old_link = $post['link'];
 
 // potential new link
-$post_link = '/posts/'.page_filename($link);
+// Zielverzeichnis der Section (Elternseite oder Override) — s. mod_nwi_posts_dir().
+$posts_dir = mod_nwi_posts_dir((int)$section_id, (int)$page_id);
+// $link ist der (bloße) Slug aus dem Formular; basename() als Schutz, falls doch
+// ein Verzeichnisanteil mitkommt — ohne eine evtl. legitime Zahl am Slug-Ende
+// zu entfernen (die post_id-Endung hängt erst substr_compare unten an).
+$slug = basename($link);
+$post_link = '/'.$posts_dir.'/'.page_filename($slug);
 // make sure to have the post_id as suffix; this will make the link unique (hopefully...)
 if (substr_compare($post_link, $post_id, -(strlen($post_id)), strlen($post_id))!=0) {
     $post_link .= PAGE_SPACER.$post_id;
@@ -114,9 +120,9 @@ if (substr_compare($post_link, $post_id, -(strlen($post_id)), strlen($post_id))!
 
 // Make sure the post link is set and exists
 // Make news post access files dir
-make_dir(WB_PATH.PAGES_DIRECTORY.'/posts/');
+make_dir(WB_PATH.PAGES_DIRECTORY.'/'.$posts_dir.'/');
 $file_create_time = '';
-if (!is_writable(WB_PATH.PAGES_DIRECTORY.'/posts/')) {
+if (!is_writable(WB_PATH.PAGES_DIRECTORY.'/'.$posts_dir.'/')) {
     $admin->print_error($MESSAGE['PAGES_CANNOT_CREATE_ACCESS_FILE']);
 } elseif (($old_link != $post_link) or !file_exists(WB_PATH.PAGES_DIRECTORY.$post_link.PAGE_EXTENSION) or $page_id != $old_page_id or $section_id != $old_section_id) {
     // We need to create a new file

@@ -41,6 +41,16 @@ $MOD_NEWS_IMG['REFRESH_ACCESS_FILES_CONFIRM'] = 'Access-Dateien aller Beitr&auml
 $MOD_NEWS_IMG['REFRESH_ACCESS_FILES_TOOLTIP'] = 'Erstellt die Page-Access-Dateien aller Beitr&auml;ge dieser Section neu — n&uuml;tzlich nach Importen oder bei zerschossenen Links.';
 $MOD_NEWS_IMG['REFRESH_ACCESS_FILES_SUCCESS'] = '%d Access-Datei(en) erneuert';
 $MOD_NEWS_IMG['REFRESH_ACCESS_FILES_FAILED'] = '%d Access-Datei(en) konnten nicht erneuert werden';
+$MOD_NEWS_IMG['POSTS_DIR'] = 'Verzeichnis f&uuml;r Beitr&auml;ge';
+$MOD_NEWS_IMG['POSTS_DIR_PLACEHOLDER'] = 'automatisch aus dem Seitennamen';
+$MOD_NEWS_IMG['POSTS_DIR_INFO'] = 'Verzeichnis unter /pages/, in dem die Access-Dateien der Beitr&auml;ge liegen. Leer lassen = automatisch aus dem Namen der &uuml;bergeordneten Seite ableiten. &Auml;nderungen wirken nur f&uuml;r neue Beitr&auml;ge, bis die Access-Dateien verschoben werden.';
+$MOD_NEWS_IMG['POSTS_DIR_CURRENT'] = 'Aktuelles Zielverzeichnis';
+$MOD_NEWS_IMG['MIGRATE_POSTS_DIR'] = 'Beitr&auml;ge verschieben';
+$MOD_NEWS_IMG['MIGRATE_POSTS_DIR_CONFIRM'] = 'Access-Dateien aller Beitr&auml;ge dieser Section ins aktuelle Zielverzeichnis verschieben? Bestehende Links werden angepasst.';
+$MOD_NEWS_IMG['MIGRATE_POSTS_DIR_TOOLTIP'] = 'Verschiebt die Access-Dateien aller Beitr&auml;ge dieser Section in das aktuell konfigurierte Zielverzeichnis und passt die Links an.';
+$MOD_NEWS_IMG['MIGRATE_POSTS_DIR_SUCCESS'] = '%d Beitrag/Beitr&auml;ge verschoben';
+$MOD_NEWS_IMG['MIGRATE_POSTS_DIR_SKIPPED'] = '%d bereits im Zielverzeichnis';
+$MOD_NEWS_IMG['MIGRATE_POSTS_DIR_FAILED'] = '%d Beitrag/Beitr&auml;ge konnten nicht verschoben werden';
 $MOD_NEWS_IMG['DEMODATA_IMPORT'] = 'Demo-Daten importieren';
 $MOD_NEWS_IMG['DEMODATA_IMPORT_INFO'] = 'Diese Section ist noch leer. Hier kannst du beispielhafte Beitr&auml;ge importieren, um den Aufbau auszuprobieren. Die Option verschwindet, sobald die Section eigene Beitr&auml;ge oder Gruppen enth&auml;lt.';
 $MOD_NEWS_IMG['DEMODATA_PACK'] = 'Daten-Pack';

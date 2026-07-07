@@ -36,7 +36,10 @@ $post_data['content_long']=str_replace('{SYSVAR:MEDIA_REL}',WB_URL.MEDIA_DIRECTO
 $post_data['content_block2']=str_replace('{SYSVAR:MEDIA_REL}',WB_URL.MEDIA_DIRECTORY,$post_data['content_block2']);
 
 if(method_exists($admin, 'setViewUrl')) {
-    $admin->setViewUrl(WB_URL.'/pages/posts/'.$post_data['link'].'.php');
+    // $post_data['link'] enthält bereits das Verzeichnis-Präfix (z.B.
+    // /aktuelles/slug-42), daher direkt an PAGES_DIRECTORY anhängen — kein
+    // zusätzliches, hartcodiertes /posts/.
+    $admin->setViewUrl(WB_URL.PAGES_DIRECTORY.$post_data['link'].PAGE_EXTENSION);
 }
 
 // ----- delete previewimage ---------------------------------------------------

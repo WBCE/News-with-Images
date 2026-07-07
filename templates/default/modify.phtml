@@ -169,6 +169,12 @@
                     <input type="hidden" name="page_id" value="<?php echo $page_id; ?>" />
                     <input type="submit" value="<?php echo $MOD_NEWS_IMG['REFRESH_ACCESS_FILES'] ?? 'Access-Dateien erneuern'; ?>" title="<?php echo $MOD_NEWS_IMG['REFRESH_ACCESS_FILES_TOOLTIP'] ?? 'Erstellt die Page-Access-Dateien aller Beitr&auml;ge dieser Section neu — n&uuml;tzlich nach Importen oder bei zerschossenen Links.'; ?>" />
                 </form>
+                <form name="migrate_posts_dir" action="<?php echo WB_URL; ?>/modules/news_img/migrate_posts_dir.php" method="post" style="margin:0;display:inline;" onsubmit="return confirm('<?php echo addslashes($MOD_NEWS_IMG['MIGRATE_POSTS_DIR_CONFIRM'] ?? 'Access-Dateien aller Beitr&auml;ge dieser Section ins aktuelle Zielverzeichnis verschieben? Bestehende Links werden angepasst.'); ?>');">
+                    <?php echo $FTAN; ?>
+                    <input type="hidden" name="section_id" value="<?php echo $section_id; ?>" />
+                    <input type="hidden" name="page_id" value="<?php echo $page_id; ?>" />
+                    <input type="submit" value="<?php echo $MOD_NEWS_IMG['MIGRATE_POSTS_DIR'] ?? 'Beitr&auml;ge verschieben'; ?>" title="<?php echo $MOD_NEWS_IMG['MIGRATE_POSTS_DIR_TOOLTIP'] ?? 'Verschiebt die Access-Dateien aller Beitr&auml;ge dieser Section in das aktuell konfigurierte Zielverzeichnis und passt die Links an.'; ?>" />
+                </form>
             </div>
 <?php endif; ?>
 

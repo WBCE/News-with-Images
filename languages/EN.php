@@ -41,6 +41,16 @@ $MOD_NEWS_IMG['REFRESH_ACCESS_FILES_CONFIRM'] = 'Rewrite access files for all po
 $MOD_NEWS_IMG['REFRESH_ACCESS_FILES_TOOLTIP'] = 'Re-creates the page access files for all posts of this section — useful after imports or with broken links.';
 $MOD_NEWS_IMG['REFRESH_ACCESS_FILES_SUCCESS'] = '%d access file(s) refreshed';
 $MOD_NEWS_IMG['REFRESH_ACCESS_FILES_FAILED'] = '%d access file(s) could not be refreshed';
+$MOD_NEWS_IMG['POSTS_DIR'] = 'Directory for posts';
+$MOD_NEWS_IMG['POSTS_DIR_PLACEHOLDER'] = 'automatic (from page name)';
+$MOD_NEWS_IMG['POSTS_DIR_INFO'] = 'Directory under /pages/ where the access files of the posts are stored. Leave empty = derive automatically from the name of the parent page. Changes only apply to new posts until the access files are moved.';
+$MOD_NEWS_IMG['POSTS_DIR_CURRENT'] = 'Current target directory';
+$MOD_NEWS_IMG['MIGRATE_POSTS_DIR'] = 'Move posts';
+$MOD_NEWS_IMG['MIGRATE_POSTS_DIR_CONFIRM'] = 'Move the access files of all posts of this section into the current target directory? Existing links will be updated.';
+$MOD_NEWS_IMG['MIGRATE_POSTS_DIR_TOOLTIP'] = 'Moves the access files of all posts of this section into the currently configured target directory and updates the links.';
+$MOD_NEWS_IMG['MIGRATE_POSTS_DIR_SUCCESS'] = '%d post(s) moved';
+$MOD_NEWS_IMG['MIGRATE_POSTS_DIR_SKIPPED'] = '%d already in target directory';
+$MOD_NEWS_IMG['MIGRATE_POSTS_DIR_FAILED'] = '%d post(s) could not be moved';
 $MOD_NEWS_IMG['DEMODATA_IMPORT'] = 'Import demo data';
 $MOD_NEWS_IMG['DEMODATA_IMPORT_INFO'] = 'This section is still empty. You can import sample posts here to try out the layout. The option disappears as soon as the section contains its own posts or groups.';
 $MOD_NEWS_IMG['DEMODATA_PACK'] = 'Data pack';

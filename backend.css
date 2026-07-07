@@ -45,7 +45,7 @@
 
 .mod_news_img input[type="submit"],
 .mod_news_img input[type="button"] {
-    width: 150px;
+    min-width: 150px;
     padding: 5px;
     margin-top: 5px
 }

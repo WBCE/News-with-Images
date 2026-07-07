@@ -285,6 +285,30 @@ require(WB_PATH."/index.php");
 	}
 
 
+    // 2026-07-06 Bianka Martinovic
+    //            configurable access-file directory per section. Empty = derive
+    //            the directory from the parent page's link (WBCE subpage
+    //            convention, e.g. /pages/aktuelles/). A non-empty value is an
+    //            explicit override.
+    //
+    //            Bestandsinstallationen: alle vorhandenen Sections auf 'posts'
+    //            backfillen, damit die bisher hartcodierten /pages/posts-Pfade
+    //            erhalten bleiben. Erst neu angelegte Sections (Default '')
+    //            leiten automatisch aus der Elternseite ab; Bestand stellt der
+    //            Admin bewusst um (inkl. Migration der Access-Dateien).
+    if (!$database->field_exists('{TP}mod_news_img_settings','posts_dir')) {
+        try {
+            $database->query(sprintf(
+                "ALTER TABLE `%smod_news_img_settings` ADD COLUMN `posts_dir` VARCHAR(64) NOT NULL DEFAULT '' AFTER `default_preview_image`",
+                TABLE_PREFIX
+            ));
+            $database->query(sprintf(
+                "UPDATE `%smod_news_img_settings` SET `posts_dir`='posts'",
+                TABLE_PREFIX
+            ));
+        } catch(\Exception $e) {}
+    }
+
     // 2019-07-05 Bianka Martinovic
     //            add database tables for tags
     $database->query(sprintf("CREATE TABLE IF NOT EXISTS `%smod_news_img_tags` (

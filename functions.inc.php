@@ -879,6 +879,55 @@ function mod_nwi_post_copy_parse_target(int $section_id, int $page_id): array
 
 
 /**
+ * Liefert das (relative) Verzeichnis-Segment, unter dem die Access-Dateien der
+ * Beiträge einer Section abgelegt werden — ohne führenden/abschließenden Slash.
+ *
+ * Quelle:
+ *   - Section-Setting `posts_dir` nicht leer -> expliziter Override, auf ein
+ *     einzelnes Pfadsegment [a-zA-Z0-9_-] reduziert (kein Traversal; gleiches
+ *     Härtungsmuster wie `view`/`gallery` in save_settings.php).
+ *   - `posts_dir` leer -> aus dem `link` der Elternseite abgeleitet
+ *     (WBCE-Unterseiten-Konvention, verschachtelte Pfade inklusive), z.B. Seite
+ *     /aktuelles -> "aktuelles", /service/news -> "service/news".
+ *   - Fallback "posts", falls kein Seiten-Link ermittelbar ist.
+ *
+ * @return string  z.B. "aktuelles", "service/news" oder "posts"
+ */
+function mod_nwi_posts_dir(int $section_id, int $page_id): string
+{
+    global $database;
+
+    $settings = mod_nwi_settings_get($section_id);
+    $override = isset($settings['posts_dir']) ? trim((string)$settings['posts_dir']) : '';
+
+    if ($override !== '') {
+        $dir = preg_replace('/[^a-zA-Z0-9_-]/', '', $override);
+        if ($dir !== '') {
+            return $dir;
+        }
+    }
+
+    // Aus dem Link der Elternseite ableiten.
+    $q = $database->query(sprintf(
+        "SELECT `link` FROM `%spages` WHERE `page_id`=%d",
+        TABLE_PREFIX,
+        $page_id
+    ));
+    if ($q && $q->numRows() > 0) {
+        // Härtung: nur Segment-Zeichen zulassen (entfernt u.a. Punkte, damit
+        // '..' nicht überleben kann), Mehrfach-Slashes zusammenfassen.
+        $link = preg_replace('#[^a-zA-Z0-9_/-]+#', '', (string)$q->fetchRow()['link']);
+        $link = trim(preg_replace('#/+#', '/', $link), '/');
+        if ($link !== '') {
+            return $link;
+        }
+    }
+
+    return 'posts';
+}
+
+
+/**
  * Computes the new post link from the original link and post ID,
  * then creates the access file on disk when the post is active.
  *
@@ -888,15 +937,21 @@ function mod_nwi_post_make_link(string $link, int $post_id, int $section_id, int
 {
     global $admin, $MESSAGE;
 
-    $post_link = '/posts/' . page_filename(
-        preg_replace('/^\/?posts\/?/s', '', preg_replace('/-[0-9]*$/s', '', $link, 1))
-    );
+    $dir = mod_nwi_posts_dir($section_id, $page_id);
+    // $link ist entweder ein bloßer Slug oder ein voll qualifizierter Link mit
+    // (u.U. fremdem) Verzeichnis-Präfix — z.B. beim Kopieren in eine Section mit
+    // anderem Zielverzeichnis. basename() verwirft jeden Verzeichnisanteil, damit
+    // kein fremder Seitenname in den Slug einsickert; die post_id-Endung des
+    // Quell-Links wird zuvor entfernt.
+    $slug = basename(preg_replace('/-[0-9]*$/s', '', $link, 1));
+    $post_link = '/' . $dir . '/' . page_filename($slug);
     if (substr_compare($post_link, (string)$post_id, -(strlen((string)$post_id)), strlen((string)$post_id)) != 0) {
         $post_link .= PAGE_SPACER . $post_id;
     }
 
-    make_dir(WB_PATH . PAGES_DIRECTORY . '/posts/');
-    if (!is_writable(WB_PATH . PAGES_DIRECTORY . '/posts/')) {
+    $target_dir = WB_PATH . PAGES_DIRECTORY . '/' . $dir . '/';
+    make_dir($target_dir);
+    if (!is_writable($target_dir)) {
         $admin->print_error($MESSAGE['PAGES_CANNOT_CREATE_ACCESS_FILE']);
     } elseif ($active == "1") {
         $filename = WB_PATH . PAGES_DIRECTORY . '/' . $post_link . PAGE_EXTENSION;
@@ -3475,12 +3530,14 @@ function mod_nwi_demodata_import(string $pack_name, int $section_id, int $page_i
         $slug     = (string)($p['slug'] ?? '');
         $title    = mod_nwi_escapeString((string)($p['title'] ?? ''));
 
-        // Link auf WBCE-Konvention /posts/<slug> normalisieren — Access-Dateien
-        // landen sonst direkt unter pages/ statt unter pages/posts/. Wer in
-        // einem Pack bereits explizit /posts/<slug> schreibt, bleibt unbehelligt.
+        // Link auf das Zielverzeichnis der Section normalisieren (Elternseite
+        // oder Override, s. mod_nwi_posts_dir()) — Access-Dateien landen sonst
+        // direkt unter pages/ statt im Zielverzeichnis. Wer im Pack bereits
+        // explizit mit diesem Präfix schreibt, bleibt unbehelligt.
+        $posts_dir = mod_nwi_posts_dir($section_id, $page_id);
         $raw_link = (string)($p['link'] ?? '');
-        if ($raw_link !== '' && strpos($raw_link, '/posts/') !== 0) {
-            $raw_link = '/posts/'.ltrim($raw_link, '/');
+        if ($raw_link !== '' && strpos($raw_link, '/'.$posts_dir.'/') !== 0) {
+            $raw_link = '/'.$posts_dir.'/'.ltrim($raw_link, '/');
         }
         $link     = mod_nwi_escapeString($raw_link);
 
@@ -3518,7 +3575,7 @@ function mod_nwi_demodata_import(string $pack_name, int $section_id, int $page_i
         $post_id = (int)$database->getLastInsertId();
 
         // Page-Access-Datei anlegen — mit dem normalisierten Link, sonst landet
-        // die Datei am Original-Pfad statt unter /posts/.
+        // die Datei am Original-Pfad statt im Zielverzeichnis der Section.
         mod_nwi_post_refresh_access_file(
             ['post_id' => $post_id, 'link' => $raw_link],
             $section_id,

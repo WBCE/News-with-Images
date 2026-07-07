@@ -318,6 +318,16 @@
                     <td></td>
                     <td><i><?= $MOD_NEWS_IMG['VIEW_INFO'] ?></i></td>
                 </tr>
+                <tr>
+                    <td class="setting_name"><?= $MOD_NEWS_IMG['POSTS_DIR'] ?? 'Verzeichnis f&uuml;r Beitr&auml;ge'; ?>:</td>
+                    <td class="setting_value">
+                        <input type="text" name="posts_dir" maxlength="64" style="width: 98%;" value="<?= htmlspecialchars((string)($settings['posts_dir'] ?? ''), ENT_QUOTES | ENT_HTML5); ?>" placeholder="<?= htmlspecialchars($MOD_NEWS_IMG['POSTS_DIR_PLACEHOLDER'] ?? 'automatisch aus dem Seitennamen', ENT_QUOTES | ENT_HTML5); ?>" />
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><i><?= $MOD_NEWS_IMG['POSTS_DIR_INFO'] ?? 'Verzeichnis unter /pages/, in dem die Access-Dateien der Beitr&auml;ge liegen. Leer lassen = automatisch aus dem Namen der &uuml;bergeordneten Seite ableiten. &Auml;nderungen wirken nur f&uuml;r neue Beitr&auml;ge, bis die Access-Dateien verschoben werden.'; ?> <?= $MOD_NEWS_IMG['POSTS_DIR_CURRENT'] ?? 'Aktuelles Zielverzeichnis'; ?>: <code><?= htmlspecialchars(PAGES_DIRECTORY.'/'.mod_nwi_posts_dir((int)$section_id, (int)$page_id).'/', ENT_QUOTES | ENT_HTML5); ?></code></i></td>
+                </tr>
             </tbody>
 <?php endif; ?>
         </table>
